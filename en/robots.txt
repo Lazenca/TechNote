@@ -1,0 +1,78 @@
+# robots.txt for Lazenca.net
+
+# ----------------------------------------------------
+# 1. Allow standard web search engine indexers
+# ----------------------------------------------------
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Slurp
+User-agent: DuckDuckBot
+User-agent: Baiduspider
+User-agent: YandexBot
+User-agent: Yeti
+Allow: /
+
+# ----------------------------------------------------
+# 2. Block AI / LLM / Machine Learning Training Crawlers
+# ----------------------------------------------------
+
+# OpenAI
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+Disallow: /
+
+# Anthropic / Claude
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Claude-Web
+Disallow: /
+
+# Google AI Training Crawler (Separate from Google Search)
+User-agent: Google-Extended
+Disallow: /
+
+# Common Crawl (Massive open dataset used for AI training)
+User-agent: CCBot
+Disallow: /
+
+# ByteDance / TikTok
+User-agent: Bytespider
+Disallow: /
+
+# Meta / Facebook AI
+User-agent: FacebookBot
+User-agent: meta-externalagent
+User-agent: Meta-ExternalFetcher
+Disallow: /
+
+# Apple AI Data Collection
+User-agent: Applebot-Extended
+Disallow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Disallow: /
+
+# Cohere AI
+User-agent: cohere-ai
+User-agent: cohere-training-data-crawler
+Disallow: /
+
+# Diffbot & Web Scrapers
+User-agent: Diffbot
+User-agent: ImagesiftBot
+User-agent: Omgilibot
+User-agent: Omgili
+User-agent: Timpibot
+User-agent: YouBot
+User-agent: Amazonbot
+Disallow: /
+
+# ----------------------------------------------------
+# Default crawler rules & Sitemap
+# ----------------------------------------------------
+User-agent: *
+Allow: /
+
+Sitemap: https://www.lazenca.net/sitemap.xml
