@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkwebsite||=[]).push([[5541],{3406(e){e.exports=JSON.parse('{"categoryGeneratedIndex":{"title":"TechNote","slug":"/category/technote","permalink":"/en/category/technote","sidebar":"tutorialSidebar","navigation":{"next":{"title":"01.CTF","permalink":"/en/category/01ctf"}}}}')}}]);
