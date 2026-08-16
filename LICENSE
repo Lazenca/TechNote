@@ -1,0 +1,38 @@
+LAZENCA NON-COMMERCIAL & NO-AI-TRAINING LICENSE
+
+Copyright (c) 2016-present Lazenca. All rights reserved.
+
+Redistribution and use of this documentation, source code, diagrams, and related materials, 
+with or without modification, are permitted for personal and non-commercial educational/research 
+purposes only, provided that the following conditions are met:
+
+1. NON-COMMERCIAL USE
+   The materials provided in this repository and on https://www.lazenca.net may not be used, 
+   copied, distributed, sublicensed, or modified for commercial purposes without explicit, 
+   prior written consent from the copyright holder (Lazenca). This includes, but is not limited 
+   to, inclusion in paid publications, monetized websites, commercial training courses, paid 
+   services, or proprietary software.
+
+2. STRICT PROHIBITION ON ARTIFICIAL INTELLIGENCE (AI) & MACHINE LEARNING (ML) TRAINING
+   You may not use, extract, scrape, harvest, or process any part of the materials (including 
+   text, code, diagrams, metadata, and images) for the purpose of:
+   (a) Training, fine-tuning, validating, or evaluating any Artificial Intelligence (AI), 
+       Machine Learning (ML), Deep Learning, Large Language Model (LLM), or Neural Network models.
+   (b) Creating datasets, embeddings, or retrieval-augmented generation (RAG) corpuses for 
+       third-party AI/ML systems or services.
+   (c) Any Text and Data Mining (TDM) activities as defined under international copyright frameworks.
+   Any exception for text and data mining (TDM) provided by applicable laws is expressly 
+   and strictly reserved (TDM Reservation under Article 4(3) of EU Directive 2019/790 and similar laws).
+
+3. ATTRIBUTION & CITATION
+   Any permitted non-commercial redistribution or citation must retain the above copyright notice, 
+   this list of conditions, and an explicit hyperlink/credit to the original source:
+   - Author: Lazenca
+   - Website: https://www.lazenca.net
+
+4. NO WARRANTY / DISCLAIMER
+   THIS DOCUMENTATION AND CODE ARE PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
+   THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION.

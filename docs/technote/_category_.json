@@ -1,0 +1,8 @@
+{
+  "label": "TechNote",
+  "position": 1,
+  "key": "technote",
+  "link": {
+    "type": "generated-index"
+  }
+}

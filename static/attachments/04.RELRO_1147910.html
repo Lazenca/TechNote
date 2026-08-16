@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TechNote : 04.RELRO</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">TechNote</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="TechNote_327713.html">TechNote</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="02.TechNote_1147060.html">02.TechNote</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="02.Protection-Tech_1147902.html">02.Protection Tech</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            TechNote : 04.RELRO
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+    
+        
+    
+        
+        
+            Created by <span class='author'> Lazenca.0x0</span> on 9월 05, 2017
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <div class="panel" style="border-width: 1px;"><div class="panelContent">
+<p><img class="wysiwyg-unknown-macro" src="plugins/servlet/confluence/placeholder/unknown-macro"/></p>
+</div></div><p style="text-align: center;"><span style="color: rgb(128,128,128);">Excuse the ads! We need some help to keep our site up.</span><img class="wysiwyg-unknown-macro" src="plugins/servlet/confluence/placeholder/unknown-macro"/></p><h1 id="id-04.RELRO-List"><strong>List</strong></h1><p><strong><style type='text/css'>/*<![CDATA[*/
+div.rbtoc1783767938001 {padding: 0px;}
+div.rbtoc1783767938001 ul {margin-left: 0px;}
+div.rbtoc1783767938001 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style><div class='toc-macro rbtoc1783767938001'>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-RELRO'>RELRO</a>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-Explanation'>Explanation</a></li>
+<li><a href='#id-04.RELRO-Exampleprogram'>Example program</a>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-Sourcecode'>Source code</a></li>
+</ul>
+</li>
+<li><a href='#id-04.RELRO-Checktheprotectiontechniquesofbinaryfiles.'>Check the protection techniques of binary files.</a>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-checksec.sh'>checksec.sh</a></li>
+<li><a href='#id-04.RELRO-Programheader&amp;DynamicSection'>Program header &amp; Dynamic Section</a></li>
+</ul>
+</li>
+<li><a href='#id-04.RELRO-Overwritetest'>Overwrite test</a>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-NoRELRO'>No RELRO</a></li>
+<li><a href='#id-04.RELRO-PartialRELRO'>Partial RELRO</a></li>
+<li><a href='#id-04.RELRO-FullRELRO'>Full RELRO</a></li>
+</ul>
+</li>
+<li><a href='#id-04.RELRO-Comparisonoffunctioncalls'>Comparison of function calls</a>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-PartialRELRO.1'>Partial RELRO</a></li>
+<li><a href='#id-04.RELRO-FullRELRO.1'>Full RELRO</a></li>
+</ul>
+</li>
+<li><a href='#id-04.RELRO-HowtodetectNXinthe&quot;Checksec.sh&quot;file'>How to detect NX in the &quot;Checksec.sh&quot; file</a>
+<ul class='toc-indentation'>
+<li><a href='#id-04.RELRO-Binary'>Binary</a></li>
+<li><a href='#id-04.RELRO-Process'>Process</a></li>
+</ul>
+</li>
+<li><a href='#id-04.RELRO-Relatedinformation'>Related information</a></li>
+</ul>
+</li>
+</ul>
+</div></strong></p><h1 id="id-04.RELRO-RELRO"><strong style="font-family: &quot;Roboto Condensed&quot; , sans-serif;">RELRO</strong></h1><h2 id="id-04.RELRO-Explanation"><strong><span style="color: rgb(51,51,51);">Explanation</span></strong></h2><ul><li>RELRO는 RELocation Read-Only의 줄임말이며, ELF 바이너리 / 프로세스의 데이터 섹션의 보안을 강화하는 일반적인 기술입니다</li><li>RELRO에는 Partial RELRO와 Full RELRO 두 가지 모드가 있습니다.<br/><ul><li>Partial RELRO</li><li>Full RELRO</li></ul></li><li>아래와 같이 RELRO, Partial RELRO, Full RELRO의 차이점이 있습니다.<ul><li>자세한 내용은 아래 &quot;Program header &amp; Dynamic Section&quot;에서 설명합니다.</li></ul></li></ul><div class="panel" style="border-width: 1px;"><div class="panelHeader" style="border-bottom-width: 1px;"><b>Comparison of No RELRO, Partial RELRO, Full RELRO</b></div><div class="panelContent">
+<div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/><col/><col/></colgroup><tbody><tr><th class="confluenceTh"><br/></th><th style="text-align: center;" class="confluenceTh">No RELRO</th><th style="text-align: center;" colspan="1" class="confluenceTh">Partial RELRO</th><th style="text-align: center;" class="confluenceTh">Full RELRO</th></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">Compiler command line</th><td style="text-align: center;" colspan="1" class="confluenceTd">gcc -Wl,-z,norelro</td><td style="text-align: center;" colspan="1" class="confluenceTd">gcc -Wl,-z,relro</td><td style="text-align: center;" colspan="1" class="confluenceTd">gcc -Wl,-z,relro,-z,now</td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">Lazy binding</th><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue"><span>O</span></td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue"><span>O</span></td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red"><span>X</span></td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">Now binding</th><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red"><span>X</span></td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red"><span>X</span></td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue"><span>O</span></td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">Write to GOT</th><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red"><span>X</span></td></tr><tr><th style="text-align: center;" class="confluenceTh"><strong>RELRO in the Program header</strong></th><td class="highlight-red confluenceTd" style="text-align: center;" data-highlight-colour="red">X</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-blue confluenceTd" style="text-align: center;" data-highlight-colour="blue">O</td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh"><strong>Section include in RELRO<br/></strong></th><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red">X</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">INIT_ARRAY, FINI_ARRAY</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">INIT_ARRAY, FINI_ARRAY, PLTGOT</td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">PLTRELSZ include in Dynamic Section</th><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red">X</td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">PLTREL include in Dynamic Section</th><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red">X</td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">JMPREL include in Dynamic Section</th><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red">X</td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh">BIND_NOW include in Dynamic Section</th><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red">X</td><td class="highlight-red confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="red">X</td><td class="highlight-blue confluenceTd" style="text-align: center;" colspan="1" data-highlight-colour="blue">O</td></tr></tbody></table></div>
+</div></div><h2 id="id-04.RELRO-Exampleprogram"><strong>Example program</strong></h2><h3 id="id-04.RELRO-Sourcecode"><strong>Source code</strong></h3><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>RELRO.c</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: cpp; gutter: false; theme: Confluence" data-theme="Confluence">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+void main(){
+
+        char address[16];
+        size_t *pointer;
+        int count = 1;
+
+        while(count != 100)
+        {
+                printf(&quot;----- %d -----\n&quot;,count);
+                memset(address,0,16);
+                printf(&quot;Input Pointer address : &quot;);
+                fgets(address,16,stdin);
+
+                pointer = strtol(address,0,16);
+                printf(&quot;Pointer address : %p\n&quot;,pointer);
+
+                printf(&quot;Input Pointer text : &quot;);
+                fgets(pointer,16,stdin);
+                printf(&quot;Pointer text : %s\n&quot;,pointer);
+                count++;
+        }
+        scanf(&quot;%s&quot;,address);
+}</pre>
+</div></div><h2 id="id-04.RELRO-Checktheprotectiontechniquesofbinaryfiles."><strong>Check the protection techniques of binary files.</strong></h2><h3 id="id-04.RELRO-checksec.sh"><strong>checksec.sh</strong></h3><div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/></colgroup><tbody><tr><th style="text-align: center;" class="confluenceTh"><p><span style="color: rgb(51,51,51);">No RELRO</span></p></th><td class="confluenceTd"><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>gcc -Wl,-z,norelro -o RELRO-NoRelro RELRO.c</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ checksec.sh --file ./RELRO-NoRelro 
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
+No RELRO        Canary found      NX enabled    No PIE          No RPATH   No RUNPATH   ./RELRO-NoRelro
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ </pre>
+</div></div></td></tr><tr><th style="text-align: center;" class="confluenceTh"><p><span style="color: rgb(51,51,51);">Partial RELRO</span></p></th><td class="confluenceTd"><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>gcc -Wl,-z,relro -o RELRO-Relro RELRO.c</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ checksec.sh --file ./RELRO-Relro 
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
+Partial RELRO   Canary found      NX enabled    No PIE          No RPATH   No RUNPATH   ./RELRO-Relro
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ </pre>
+</div></div></td></tr><tr><th style="text-align: center;" class="confluenceTh"><p><span style="color: rgb(51,51,51);">Full RELRO</span></p></th><td class="confluenceTd"><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>gcc -Wl,-z,relro,-z,now -o RELRO-FullRelro RELRO.c</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ checksec.sh --file ./RELRO-FullRelro 
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
+Full RELRO      Canary found      NX enabled    No PIE          No RPATH   No RUNPATH   ./RELRO-FullRelro
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ </pre>
+</div></div></td></tr></tbody></table></div><h3 id="id-04.RELRO-Programheader&amp;DynamicSection"><strong>Program header &amp; Dynamic Section</strong></h3><ul><li><p><strong>다음과 같이 RELRO 적용시 &quot;Program Header&quot;와 &quot;Dynamic Section&quot;의 변화를 확인할 수 있습니다.</strong></p><ul><li><p><strong><span style="color: rgb(51,51,51);">Partial RELRO를 적용하게되면 다음과 같은 변화가 발생합니다.</span></strong><strong><span style="color: rgb(51,51,51);"><br/></span></strong></p><ul><li><p><span style="color: rgb(51,51,51);">'Program Header'에 'RELRO' 영역이 생성됩니다.</span></p><ul><li><p><span style="color: rgb(51,51,51);">해당 영역의 권한은 Read only 입니다.</span></p></li></ul></li><li><p><span style="color: rgb(51,51,51);">해당 영역에 포함되는 Section은 다음과 같습니다.</span></p><ul><li><p>INIT_ARRAY, FINI_ARRAY</p></li></ul></li><li>즉, GOT영역을 덮어쓸수 있습니다.</li></ul></li><li><p><strong><span style="color: rgb(51,51,51);">Full RELRO를 적용하게되면 다음과 같은 변화가 발생합니다.</span></strong></p><ul><li><p><span style="color: rgb(51,51,51);">'Program Header'에 'RELRO' 영역이 생성됩니다.</span></p><ul><li><p><span style="color: rgb(51,51,51);">해당 영역의 권한은 Read only 입니다.</span></p></li></ul></li><li><p><span style="color: rgb(51,51,51);"><span style="color: rgb(51,51,51);">해당 영역에 포함되는 Section은 다음과 같습니다.</span></span><strong><span style="color: rgb(51,51,51);"><br/></span></strong></p><ul><li><p>INIT_ARRAY, FINI_ARRAY, PLTGOT<span style="color: rgb(51,51,51);"><span style="color: rgb(51,51,51);"><br/></span></span></p></li></ul></li><li><p>그리고 Section영역에서 PLTRELSZ, PLTREL, JMPREL가 제거되고, 'BIND_NOW', 'FLAGS_1' Section이 추가됩니다.</p></li><li>즉, GOT영역을 덮어쓸수 없습니다.</li></ul></li></ul></li></ul><div class="panel" style="border-width: 1px;"><div class="panelHeader" style="border-bottom-width: 1px;"><b>Program header &amp; Dynamic Section</b></div><div class="panelContent">
+<div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/><col/></colgroup><tbody><tr><th style="text-align: center;" class="confluenceTh"><p>No RELRO</p></th><th style="text-align: center;" class="confluenceTh"><p><span>Partial RELRO</span></p></th><th style="text-align: center;" class="confluenceTh"><p><span>Full RELRO</span></p></th></tr><tr><td class="confluenceTd"><pre>./RELRO-NoRelro:     file format elf64-x86-64<br/><br/>Program Header:<br/>    PHDR off    0x0000000000000040 vaddr 0x0000000000400040 paddr 0x0000000000400040 align 2**3<br/>         filesz 0x00000000000001c0 memsz 0x00000000000001c0 flags r-x<br/>  INTERP off    0x0000000000000200 vaddr 0x0000000000400200 paddr 0x0000000000400200 align 2**0<br/>         filesz 0x000000000000001c memsz 0x000000000000001c flags r--<br/>    LOAD off    0x0000000000000000 vaddr 0x0000000000400000 paddr 0x0000000000400000 align 2**21<br/>         filesz 0x0000000000000a2c memsz 0x0000000000000a2c flags r-x<br/>    LOAD off    0x0000000000000a30 vaddr 0x0000000000600a30 paddr 0x0000000000600a30 align 2**21<br/>         filesz 0x0000000000000250 memsz 0x0000000000000260 flags rw-<br/> DYNAMIC off    0x0000000000000a48 vaddr 0x0000000000600a48 paddr 0x0000000000600a48 align 2**3<br/>         filesz 0x00000000000001d0 memsz 0x00000000000001d0 flags rw-<br/>    NOTE off    0x000000000000021c vaddr 0x000000000040021c paddr 0x000000000040021c align 2**2<br/>         filesz 0x0000000000000044 memsz 0x0000000000000044 flags r--<br/>EH_FRAME off    0x0000000000000900 vaddr 0x0000000000400900 paddr 0x0000000000400900 align 2**2<br/>         filesz 0x0000000000000034 memsz 0x0000000000000034 flags r--<br/>   STACK off    0x0000000000000000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**4<br/>         filesz 0x0000000000000000 memsz 0x0000000000000000 flags rw-<br/><br/>Dynamic Section:<br/>  NEEDED               libc.so.6<br/>  INIT                 0x0000000000400538<br/>  FINI                 0x0000000000400884<br/>  INIT_ARRAY           0x0000000000600a30<br/>  INIT_ARRAYSZ         0x0000000000000008<br/>  FINI_ARRAY           0x0000000000600a38<br/>  FINI_ARRAYSZ         0x0000000000000008<br/>  GNU_HASH             0x0000000000400260<br/>  STRTAB               0x0000000000400378<br/>  SYMTAB               0x0000000000400288<br/>  STRSZ                0x000000000000008d<br/>  SYMENT               0x0000000000000018<br/>  DEBUG                0x0000000000000000<br/>  PLTGOT               0x0000000000600c20<br/>  PLTRELSZ             0x00000000000000a8<br/>  PLTREL               0x0000000000000007<br/>  JMPREL               0x0000000000400490<br/>  RELA                 0x0000000000400460<br/>  RELASZ               0x0000000000000030<br/>  RELAENT              0x0000000000000018<br/>  VERNEED              0x0000000000400420<br/>  VERNEEDNUM           0x0000000000000001<br/>  VERSYM               0x0000000000400406<br/><br/>Version References:<br/>  required from libc.so.6:<br/>    0x0d696917 0x00 04 GLIBC_2.7<br/>    0x0d696914 0x00 03 GLIBC_2.4<br/>    0x09691a75 0x00 02 GLIBC_2.2.5</pre></td><td class="confluenceTd"><pre>./RELRO-Relro:     file format elf64-x86-64<br/><br/>Program Header:<br/>    PHDR off    0x0000000000000040 vaddr 0x0000000000400040 paddr 0x0000000000400040 align 2**3<br/>         filesz 0x00000000000001f8 memsz 0x00000000000001f8 flags r-x<br/>  INTERP off    0x0000000000000238 vaddr 0x0000000000400238 paddr 0x0000000000400238 align 2**0<br/>         filesz 0x000000000000001c memsz 0x000000000000001c flags r--<br/>    LOAD off    0x0000000000000000 vaddr 0x0000000000400000 paddr 0x0000000000400000 align 2**21<br/>         filesz 0x0000000000000a5c memsz 0x0000000000000a5c flags r-x<br/>    LOAD off    0x0000000000000e10 vaddr 0x0000000000600e10 paddr 0x0000000000600e10 align 2**21<br/>         filesz 0x0000000000000250 memsz 0x0000000000000260 flags rw-<br/> DYNAMIC off    0x0000000000000e28 vaddr 0x0000000000600e28 paddr 0x0000000000600e28 align 2**3<br/>         filesz 0x00000000000001d0 memsz 0x00000000000001d0 flags rw-<br/>    NOTE off    0x0000000000000254 vaddr 0x0000000000400254 paddr 0x0000000000400254 align 2**2<br/>         filesz 0x0000000000000044 memsz 0x0000000000000044 flags r--<br/>EH_FRAME off    0x0000000000000930 vaddr 0x0000000000400930 paddr 0x0000000000400930 align 2**2<br/>         filesz 0x0000000000000034 memsz 0x0000000000000034 flags r--<br/>   STACK off    0x0000000000000000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**4<br/>         filesz 0x0000000000000000 memsz 0x0000000000000000 flags rw-<br/>   RELRO off    0x0000000000000e10 vaddr 0x0000000000600e10 paddr 0x0000000000600e10 align 2**0<br/>         filesz 0x00000000000001f0 memsz 0x00000000000001f0 flags r--<br/><br/>Dynamic Section:<br/>  NEEDED               libc.so.6<br/>  INIT                 0x0000000000400570<br/>  FINI                 0x00000000004008b4<br/>  INIT_ARRAY           0x0000000000600e10<br/>  INIT_ARRAYSZ         0x0000000000000008<br/>  FINI_ARRAY           0x0000000000600e18<br/>  FINI_ARRAYSZ         0x0000000000000008<br/>  GNU_HASH             0x0000000000400298<br/>  STRTAB               0x00000000004003b0<br/>  SYMTAB               0x00000000004002c0<br/>  STRSZ                0x000000000000008d<br/>  SYMENT               0x0000000000000018<br/>  DEBUG                0x0000000000000000<br/>  PLTGOT               0x0000000000601000<br/>  PLTRELSZ             0x00000000000000a8<br/>  PLTREL               0x0000000000000007<br/>  JMPREL               0x00000000004004c8<br/>  RELA                 0x0000000000400498<br/>  RELASZ               0x0000000000000030<br/>  RELAENT              0x0000000000000018<br/>  VERNEED              0x0000000000400458<br/>  VERNEEDNUM           0x0000000000000001<br/>  VERSYM               0x000000000040043e<br/><br/>Version References:<br/>  required from libc.so.6:<br/>    0x0d696917 0x00 04 GLIBC_2.7<br/>    0x0d696914 0x00 03 GLIBC_2.4<br/>    0x09691a75 0x00 02 GLIBC_2.2.5</pre></td><td class="confluenceTd"><pre>./RELRO-FullRelro:     file format elf64-x86-64<br/><br/>Program Header:<br/>    PHDR off    0x0000000000000040 vaddr 0x0000000000400040 paddr 0x0000000000400040 align 2**3<br/>         filesz 0x00000000000001f8 memsz 0x00000000000001f8 flags r-x<br/>  INTERP off    0x0000000000000238 vaddr 0x0000000000400238 paddr 0x0000000000400238 align 2**0<br/>         filesz 0x000000000000001c memsz 0x000000000000001c flags r--<br/>    LOAD off    0x0000000000000000 vaddr 0x0000000000400000 paddr 0x0000000000400000 align 2**21<br/>         filesz 0x0000000000000a3c memsz 0x0000000000000a3c flags r-x<br/>    LOAD off    0x0000000000000dd0 vaddr 0x0000000000600dd0 paddr 0x0000000000600dd0 align 2**21<br/>         filesz 0x0000000000000240 memsz 0x0000000000000250 flags rw-<br/> DYNAMIC off    0x0000000000000de8 vaddr 0x0000000000600de8 paddr 0x0000000000600de8 align 2**3<br/>         filesz 0x00000000000001c0 memsz 0x00000000000001c0 flags rw-<br/>    NOTE off    0x0000000000000254 vaddr 0x0000000000400254 paddr 0x0000000000400254 align 2**2<br/>         filesz 0x0000000000000044 memsz 0x0000000000000044 flags r--<br/>EH_FRAME off    0x0000000000000910 vaddr 0x0000000000400910 paddr 0x0000000000400910 align 2**2<br/>         filesz 0x0000000000000034 memsz 0x0000000000000034 flags r--<br/>   STACK off    0x0000000000000000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**4<br/>         filesz 0x0000000000000000 memsz 0x0000000000000000 flags rw-<br/>   RELRO off    0x0000000000000dd0 vaddr 0x0000000000600dd0 paddr 0x0000000000600dd0 align 2**0<br/>         filesz 0x0000000000000230 memsz 0x0000000000000230 flags r--<br/><br/>Dynamic Section:<br/>  NEEDED               libc.so.6<br/>  INIT                 0x0000000000400590<br/>  FINI                 0x0000000000400894<br/>  INIT_ARRAY           0x0000000000600dd0<br/>  INIT_ARRAYSZ         0x0000000000000008<br/>  FINI_ARRAY           0x0000000000600dd8<br/>  FINI_ARRAYSZ         0x0000000000000008<br/>  GNU_HASH             0x0000000000400298<br/>  STRTAB               0x00000000004003d0<br/>  SYMTAB               0x00000000004002e0<br/>  STRSZ                0x000000000000008d<br/>  SYMENT               0x0000000000000018<br/>  DEBUG                0x0000000000000000<br/>  PLTGOT               0x0000000000600fa8<br/>  RELA                 0x00000000004004b8<br/>  RELASZ               0x00000000000000d8<br/>  RELAENT              0x0000000000000018<br/>  BIND_NOW             0x0000000000000000<br/>  FLAGS_1              0x0000000000000001<br/>  VERNEED              0x0000000000400478<br/>  VERNEEDNUM           0x0000000000000001<br/>  VERSYM               0x000000000040045e<br/><br/>Version References:<br/>  required from libc.so.6:<br/>    0x0d696917 0x00 04 GLIBC_2.7<br/>    0x0d696914 0x00 03 GLIBC_2.4<br/>    0x09691a75 0x00 02 GLIBC_2.2.5</pre></td></tr></tbody></table></div>
+</div></div><h2 id="id-04.RELRO-Overwritetest"><strong>Overwrite test</strong></h2><h3 id="id-04.RELRO-NoRELRO"><strong>No RELRO</strong></h3><ul><li><p><strong>&quot;__isoc99_scanf&quot;의 GOT Address는 <span>0x600c68</span>이며, 아래와 같이 해당 영역에 값을 변경할 수 있습니다.</strong></p></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-NoRelro 
+Reading symbols from ./RELRO-NoRelro...(no debugging symbols found)...done.
+gdb-peda$ elfsymbol __isoc99_scanf
+Detail symbol info
+__isoc99_scanf@reloc = 0x6
+__isoc99_scanf@plt = 0x4005d0
+__isoc99_scanf@got = 0x600c68
+gdb-peda$ x/gx 0x600c68
+0x600c68:	0x00000000004005d6
+gdb-peda$ r
+Starting program: /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-NoRelro 
+----- 1 -----
+Input Pointer address : 600c68  
+Pointer address : 0x600c68
+Input Pointer text : AAAA
+Pointer text : AAAA
+
+----- 2 -----
+Input Pointer address : ^C
+Program received signal SIGINT, Interrupt.
+
+gdb-peda$ x/gx 0x600c68
+0x600c68:	0x0000000a41414141
+gdb-peda$</pre>
+</div></div><ul><li><strong>다음과 같이 프로그램 헤더 정보와 메모리 맵을 통해 조금더 자세한 내용을 확인할 수 있습니다.</strong><ul><li><span>&quot;__isoc99_scanf&quot;의 주소값은 '.got.plt'영역에 저장되어 있습니다.</span><ul><li>'.got.plt' 영역의 시작 주소는 0x600c20 입니다.<span><br/></span></li></ul></li><li><span><span>메모리 맵을 통해 해당 영역(</span></span>0x00600000 ~ 0x00601000)<span>에 'W' 쓰기 권한이 설정되어 있습니다.</span></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Check permission for memory</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">gdb-peda$ elfheader 
+.interp = 0x400200
+.note.ABI-tag = 0x40021c
+.note.gnu.build-id = 0x40023c
+.gnu.hash = 0x400260
+.dynsym = 0x400288
+.dynstr = 0x400378
+.gnu.version = 0x400406
+.gnu.version_r = 0x400420
+.rela.dyn = 0x400460
+.rela.plt = 0x400490
+.init = 0x400538
+.plt = 0x400560
+.plt.got = 0x4005e0
+.text = 0x4005f0
+.fini = 0x400884
+.rodata = 0x400890
+.eh_frame_hdr = 0x400900
+.eh_frame = 0x400938
+.init_array = 0x600a30
+.fini_array = 0x600a38
+.jcr = 0x600a40
+.dynamic = 0x600a48
+.got = 0x600c18
+.got.plt = 0x600c20
+.data = 0x600c70
+.bss = 0x600c80
+gdb-peda$ vmmap
+Start              End                Perm	Name
+0x00400000         0x00401000         r-xp	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-NoRelro
+0x00600000         0x00601000         rw-p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-NoRelro
+0x00601000         0x00622000         rw-p	[heap]
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p	mapped
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p	mapped
+0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p	mapped
+0x00007ffff7ff8000 0x00007ffff7ffa000 r--p	[vvar]
+0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp	[vdso]
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffe000 0x00007ffff7fff000 rw-p	mapped
+0x00007ffffffde000 0x00007ffffffff000 rw-p	[stack]
+0xffffffffff600000 0xffffffffff601000 r-xp	[vsyscall]
+gdb-peda$</pre>
+</div></div><h3 id="id-04.RELRO-PartialRELRO"><span style="color: rgb(51,51,51);">Partial RELRO</span></h3><ul><li><strong style="font-size: 10.0pt;">&quot;__isoc99_scanf&quot;의 GOT Address는 0x601048이며, 아래와 같이 해당 영역에 값을 변경할 수 있습니다.</strong></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-Relro 
+Reading symbols from ./RELRO-Relro...(no debugging symbols found)...done.
+gdb-peda$ elfsymbol __isoc99_scanf
+Detail symbol info
+__isoc99_scanf@reloc = 0x6
+__isoc99_scanf@plt = 0x400600
+__isoc99_scanf@got = 0x601048
+gdb-peda$ x/gx 0x601048
+0x601048:	0x0000000000400606
+gdb-peda$ r
+Starting program: /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro 
+----- 1 -----
+Input Pointer address : 601048
+Pointer address : 0x601048
+Input Pointer text : AAAA
+Pointer text : AAAA
+
+----- 2 -----
+Input Pointer address : ^C
+Program received signal SIGINT, Interrupt.
+
+
+gdb-peda$ x/gx 0x601048
+0x601048:	0x0000000a41414141
+gdb-peda$ </pre>
+</div></div><ul><li><strong>다음과 같이 프로그램 헤더 정보와 메모리 맵을 통해 조금더 자세한 내용을 확인할 수 있습니다.</strong><ul><li>'.got.plt' 영역의 시작 주소는 0x601000 입니다.</li><li>메모리 맵에서 RELRO가 적용되지 않은 프로그램과 다른 부분을 확인할 수 있습니다.<ul><li>0x600000 ~ <span>0x601000 영역의 권한은 r--p 입니다.</span><ul><li><span><span>해당 영역에는 </span></span>.init_array, .fini_array, .jcr, .dynamic, .got 헤더가 포함됩니다.</li></ul></li><li>0x601000 ~ 0x602000 영역의 권한은 rw-p 입니다.<span><br/></span><ul><li>해당 영역에는 .got.plt,등의 헤더가 포함됩니다.</li><li>즉, 이로 인해 .got.plt 영역에 값을 변경할 수 있습니다.</li></ul></li></ul></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Check permission for memory</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">gdb-peda$ elfheader 
+.interp = 0x400238
+.note.ABI-tag = 0x400254
+.note.gnu.build-id = 0x400274
+.gnu.hash = 0x400298
+.dynsym = 0x4002c0
+.dynstr = 0x4003b0
+.gnu.version = 0x40043e
+.gnu.version_r = 0x400458
+.rela.dyn = 0x400498
+.rela.plt = 0x4004c8
+.init = 0x400570
+.plt = 0x400590
+.plt.got = 0x400610
+.text = 0x400620
+.fini = 0x4008b4
+.rodata = 0x4008c0
+.eh_frame_hdr = 0x400930
+.eh_frame = 0x400968
+.init_array = 0x600e10
+.fini_array = 0x600e18
+.jcr = 0x600e20
+.dynamic = 0x600e28
+.got = 0x600ff8
+.got.plt = 0x601000
+.data = 0x601050
+.bss = 0x601060
+gdb-peda$ vmmap 
+Start              End                Perm	Name
+0x00400000         0x00401000         r-xp	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
+0x00600000         0x00601000         r--p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
+0x00601000         0x00602000         rw-p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
+0x00602000         0x00623000         rw-p	[heap]
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p	mapped
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p	mapped
+0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p	mapped
+0x00007ffff7ff8000 0x00007ffff7ffa000 r--p	[vvar]
+0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp	[vdso]
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffe000 0x00007ffff7fff000 rw-p	mapped
+0x00007ffffffde000 0x00007ffffffff000 rw-p	[stack]
+0xffffffffff600000 0xffffffffff601000 r-xp	[vsyscall]
+gdb-peda$</pre>
+</div></div><h3 id="id-04.RELRO-FullRELRO"><span style="color: rgb(51,51,51);">Full RELRO</span></h3><ul><li><strong><span style="color: rgb(51,51,51);">앞에서 테스트한 프로그램과 달리 GOT 영역에 값을 변경할 수 없습니다.</span></strong><span style="color: rgb(51,51,51);"><br/></span><ul><li><span style="color: rgb(51,51,51);">디버거에서 </span>'__isoc99_scanf'의 심볼 정보를 찾을 수 없습니다.</li></ul></li><li><strong>디스어셈블 코드에서 호출되는 함수를 분석해보겠습니다.</strong><ul><li>0x4007fd 영역의 코드에서 0x4005f8 영역을 호출합니다.</li><li><span><span>0x4005f8 영역의 코드에서 &quot;rip+0x2009fa&quot; 영역에 저장된 주소로 이동합니다.</span></span></li><li><span><span><span><span><span>&quot;rip+0x2009fa&quot; 영역은 0x600ff8 이며, 해당 영역에 저장된 값은 0x00007ffff7a784d0 입니다.</span></span></span></span></span></li><li><p>0x00007ffff7a784d0 영역은 __isoc99_scanf 함수의 시작 주소 입니다.</p></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-FullRelro 
+Reading symbols from ./RELRO-FullRelro...(no debugging symbols found)...done.
+gdb-peda$ elfsymbol __isoc99_scanf
+&#39;__isoc99_scanf&#39;: no match found
+gdb-peda$ disassemble main
+Dump of assembler code for function main:
+   0x00000000004006f6 &lt;+0&gt;:	push   rbp
+   0x00000000004006f7 &lt;+1&gt;:	mov    rbp,rsp
+   0x00000000004006fa &lt;+4&gt;:	sub    rsp,0x30
+   0x00000000004006fe &lt;+8&gt;:	mov    rax,QWORD PTR fs:0x28
+   0x0000000000400707 &lt;+17&gt;:	mov    QWORD PTR [rbp-0x8],rax
+   0x000000000040070b &lt;+21&gt;:	xor    eax,eax
+   0x000000000040070d &lt;+23&gt;:	mov    DWORD PTR [rbp-0x2c],0x1
+   0x0000000000400714 &lt;+30&gt;:	jmp    0x4007e2 &lt;main+236&gt;
+   0x0000000000400719 &lt;+35&gt;:	mov    eax,DWORD PTR [rbp-0x2c]
+   0x000000000040071c &lt;+38&gt;:	mov    esi,eax
+   0x000000000040071e &lt;+40&gt;:	mov    edi,0x4008a4
+   0x0000000000400723 &lt;+45&gt;:	mov    eax,0x0
+   0x0000000000400728 &lt;+50&gt;:	call   0x4005c8
+   0x000000000040072d &lt;+55&gt;:	lea    rax,[rbp-0x20]
+   0x0000000000400731 &lt;+59&gt;:	mov    edx,0x10
+   0x0000000000400736 &lt;+64&gt;:	mov    esi,0x0
+   0x000000000040073b &lt;+69&gt;:	mov    rdi,rax
+   0x000000000040073e &lt;+72&gt;:	call   0x4005d0
+   0x0000000000400743 &lt;+77&gt;:	mov    edi,0x4008b4
+   0x0000000000400748 &lt;+82&gt;:	mov    eax,0x0
+   0x000000000040074d &lt;+87&gt;:	call   0x4005c8
+   0x0000000000400752 &lt;+92&gt;:	mov    rdx,QWORD PTR [rip+0x2008b7]        # 0x601010 &lt;stdin@@GLIBC_2.2.5&gt;
+   0x0000000000400759 &lt;+99&gt;:	lea    rax,[rbp-0x20]
+   0x000000000040075d &lt;+103&gt;:	mov    esi,0x10
+   0x0000000000400762 &lt;+108&gt;:	mov    rdi,rax
+   0x0000000000400765 &lt;+111&gt;:	call   0x4005e0
+   0x000000000040076a &lt;+116&gt;:	lea    rax,[rbp-0x20]
+   0x000000000040076e &lt;+120&gt;:	mov    edx,0x10
+   0x0000000000400773 &lt;+125&gt;:	mov    esi,0x0
+   0x0000000000400778 &lt;+130&gt;:	mov    rdi,rax
+   0x000000000040077b &lt;+133&gt;:	mov    eax,0x0
+   0x0000000000400780 &lt;+138&gt;:	call   0x4005f0
+   0x0000000000400785 &lt;+143&gt;:	cdqe   
+   0x0000000000400787 &lt;+145&gt;:	mov    QWORD PTR [rbp-0x28],rax
+   0x000000000040078b &lt;+149&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x000000000040078f &lt;+153&gt;:	mov    rsi,rax
+   0x0000000000400792 &lt;+156&gt;:	mov    edi,0x4008cd
+   0x0000000000400797 &lt;+161&gt;:	mov    eax,0x0
+   0x000000000040079c &lt;+166&gt;:	call   0x4005c8
+   0x00000000004007a1 &lt;+171&gt;:	mov    edi,0x4008e3
+   0x00000000004007a6 &lt;+176&gt;:	mov    eax,0x0
+   0x00000000004007ab &lt;+181&gt;:	call   0x4005c8
+   0x00000000004007b0 &lt;+186&gt;:	mov    rdx,QWORD PTR [rip+0x200859]        # 0x601010 &lt;stdin@@GLIBC_2.2.5&gt;
+   0x00000000004007b7 &lt;+193&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007bb &lt;+197&gt;:	mov    esi,0x10
+   0x00000000004007c0 &lt;+202&gt;:	mov    rdi,rax
+   0x00000000004007c3 &lt;+205&gt;:	call   0x4005e0
+   0x00000000004007c8 &lt;+210&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007cc &lt;+214&gt;:	mov    rsi,rax
+   0x00000000004007cf &lt;+217&gt;:	mov    edi,0x4008f9
+   0x00000000004007d4 &lt;+222&gt;:	mov    eax,0x0
+   0x00000000004007d9 &lt;+227&gt;:	call   0x4005c8
+   0x00000000004007de &lt;+232&gt;:	add    DWORD PTR [rbp-0x2c],0x1
+   0x00000000004007e2 &lt;+236&gt;:	cmp    DWORD PTR [rbp-0x2c],0x64
+   0x00000000004007e6 &lt;+240&gt;:	jne    0x400719 &lt;main+35&gt;
+   0x00000000004007ec &lt;+246&gt;:	lea    rax,[rbp-0x20]
+   0x00000000004007f0 &lt;+250&gt;:	mov    rsi,rax
+   0x00000000004007f3 &lt;+253&gt;:	mov    edi,0x40090c
+   0x00000000004007f8 &lt;+258&gt;:	mov    eax,0x0
+   0x00000000004007fd &lt;+263&gt;:	call   0x4005f8
+   0x0000000000400802 &lt;+268&gt;:	nop
+   0x0000000000400803 &lt;+269&gt;:	mov    rax,QWORD PTR [rbp-0x8]
+   0x0000000000400807 &lt;+273&gt;:	xor    rax,QWORD PTR fs:0x28
+   0x0000000000400810 &lt;+282&gt;:	je     0x400817 &lt;main+289&gt;
+   0x0000000000400812 &lt;+284&gt;:	call   0x4005c0
+   0x0000000000400817 &lt;+289&gt;:	leave  
+   0x0000000000400818 &lt;+290&gt;:	ret    
+End of assembler dump.
+
+gdb-peda$ r
+Starting program: /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro 
+----- 1 -----
+Input Pointer address : ^C
+Program received signal SIGINT, Interrupt.
+
+
+gdb-peda$ x/i 0x4005f8
+   0x4005f8:	jmp    QWORD PTR [rip+0x2009fa]        # 0x600ff8
+gdb-peda$ x/gx 0x600ff8
+0x600ff8:	0x00007ffff7a784d0
+gdb-peda$ x/5i 0x00007ffff7a784d0
+   0x7ffff7a784d0 &lt;__isoc99_scanf&gt;:	push   rbx
+   0x7ffff7a784d1 &lt;__isoc99_scanf+1&gt;:	mov    r10,rdi
+   0x7ffff7a784d4 &lt;__isoc99_scanf+4&gt;:	sub    rsp,0xd0
+   0x7ffff7a784db &lt;__isoc99_scanf+11&gt;:	test   al,al
+   0x7ffff7a784dd &lt;__isoc99_scanf+13&gt;:	mov    QWORD PTR [rsp+0x28],rsi
+gdb-peda$ </pre>
+</div></div><ul><li><strong>해당 프로그램의 헤더 구성이 No RELRO, Partial RELRO 와 다릅니다.</strong><ul><li><span class="s1"><span class="s1">해당 프로그램의 헤더 정보에 '.rela.plt', '</span></span><span class="s1">.got.plt' 헤더가 존재하지 않습니다.</span></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Check permission for memory</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">gdb-peda$ elfheader 
+.interp = 0x400238
+.note.ABI-tag = 0x400254
+.note.gnu.build-id = 0x400274
+.gnu.hash = 0x400298
+.dynsym = 0x4002e0
+.dynstr = 0x4003d0
+.gnu.version = 0x40045e
+.gnu.version_r = 0x400478
+.rela.dyn = 0x4004b8
+.init = 0x400590
+.plt = 0x4005b0
+.plt.got = 0x4005c0
+.text = 0x400600
+.fini = 0x400894
+.rodata = 0x4008a0
+.eh_frame_hdr = 0x400910
+.eh_frame = 0x400948
+.init_array = 0x600dd0
+.fini_array = 0x600dd8
+.jcr = 0x600de0
+.dynamic = 0x600de8
+.got = 0x600fa8
+.data = 0x601000
+.bss = 0x601010
+gdb-peda$ vmmap
+Start              End                Perm	Name
+0x00400000         0x00401000         r-xp	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
+0x00600000         0x00601000         r--p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
+0x00601000         0x00602000         rw-p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
+0x00602000         0x00623000         rw-p	[heap]
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p	mapped
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p	mapped
+0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p	mapped
+0x00007ffff7ff8000 0x00007ffff7ffa000 r--p	[vvar]
+0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp	[vdso]
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffe000 0x00007ffff7fff000 rw-p	mapped
+0x00007ffffffde000 0x00007ffffffff000 rw-p	[stack]
+0xffffffffff600000 0xffffffffff601000 r-xp	[vsyscall]
+gdb-peda$ </pre>
+</div></div><h2 id="id-04.RELRO-Comparisonoffunctioncalls"><strong style="font-family: &quot;Roboto Condensed&quot; , sans-serif;font-size: 22.0px;"><span style="color: rgb(16,16,16);">Comparison of function calls</span></strong></h2><h3 id="id-04.RELRO-PartialRELRO.1"><strong style="font-family: &quot;Roboto Condensed&quot; , sans-serif;font-size: 22.0px;"><span style="color: rgb(16,16,16);">Partial RELRO</span></strong></h3><ul><li><p><strong>다음과 같이 동적 라이브러리의 주소가 호출 됩니다.</strong></p><ul><li><p>main 함수에서 printf 함수를 사용하기 위해 메모리 주소 0x4005b0을 호출합니다.</p><ul><li><p><span>메모리 주소 0x4005b0는 &quot;.plt&quot; 영역입니다.</span></p></li><li><p><span><span><span>&quot;.plt&quot; 영역은 0x400590 ~ 0x400610 입니다.</span></span></span><span><br/></span></p></li></ul></li><li><p><span><span>0x4005b0 영역의 코드는 &quot;jmp QWORD PTR [rip+0x200a6a]&quot; 입니다.</span></span></p></li><ul><li><p><span><span>즉, 메모리 주소 0x601020에 저장된 주소로 JUMP 합니다.</span></span></p><ul><li><p><span><span><span>메모리 주소 0x601020은 &quot;.got.plt&quot; 영역입니다.</span></span></span></p></li><li><p><span><span><span><span><span>&quot;.got.plt&quot; 영역은 0x601000 ~ 0x601050 입니다.</span></span></span></span></span><span><span><span><br/></span></span></span></p></li></ul></li><li><p><span><span><span><span>메모리 주소 0x601020에 저장된 값은 동적 라이브러리의 주소가 아닌 '.plt' 영역입니다.</span></span></span></span></p><ul><li><p><span><span><span><span>이는 해당 프로그램에서 printf 함수가 호출되지 않았기 때문에 Stub 코드(<span>&quot;printf@plt+6&quot;</span><span>)</span>의</span></span></span></span><span><span><span> 주소 값이 저장되어 있습니다.</span></span></span></p></li></ul></li><li><p><span><span>프로그램을 실행하고 printf 함수가 호출되기 시작하면 <span>메모리 주소 0x601020(&quot;.got.plt&quot; 영역) 영역에 동적라이브러리의 printf 함수의 시작 주소 값이 저장됩니다.</span></span></span></p></li></ul><li>즉, Partial<span> RELRO가 적용된 바이너리는 &quot;.got.plt&quot;영역이 Write가 가능하도록 설정되어 있기 때문에 &quot;.got.plt&quot; 영역에 저장된 값을 변경할 수 있습니다.</span></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>function call of "Partial RELRO"</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-Relro 
+gdb-peda$ disassemble main
+Dump of assembler code for function main:
+   0x0000000000400716 &lt;+0&gt;:	push   rbp
+   0x0000000000400717 &lt;+1&gt;:	mov    rbp,rsp
+   0x000000000040071a &lt;+4&gt;:	sub    rsp,0x30
+   0x000000000040071e &lt;+8&gt;:	mov    rax,QWORD PTR fs:0x28
+   0x0000000000400727 &lt;+17&gt;:	mov    QWORD PTR [rbp-0x8],rax
+   0x000000000040072b &lt;+21&gt;:	xor    eax,eax
+   0x000000000040072d &lt;+23&gt;:	mov    DWORD PTR [rbp-0x2c],0x1
+   0x0000000000400734 &lt;+30&gt;:	jmp    0x400802 &lt;main+236&gt;
+   0x0000000000400739 &lt;+35&gt;:	mov    eax,DWORD PTR [rbp-0x2c]
+   0x000000000040073c &lt;+38&gt;:	mov    esi,eax
+   0x000000000040073e &lt;+40&gt;:	mov    edi,0x4008c4
+   0x0000000000400743 &lt;+45&gt;:	mov    eax,0x0
+   0x0000000000400748 &lt;+50&gt;:	call   0x4005b0 &lt;printf@plt&gt;
+   0x000000000040074d &lt;+55&gt;:	lea    rax,[rbp-0x20]
+   0x0000000000400751 &lt;+59&gt;:	mov    edx,0x10
+   0x0000000000400756 &lt;+64&gt;:	mov    esi,0x0
+   0x000000000040075b &lt;+69&gt;:	mov    rdi,rax
+   0x000000000040075e &lt;+72&gt;:	call   0x4005c0 &lt;memset@plt&gt;
+   0x0000000000400763 &lt;+77&gt;:	mov    edi,0x4008d4
+   0x0000000000400768 &lt;+82&gt;:	mov    eax,0x0
+   0x000000000040076d &lt;+87&gt;:	call   0x4005b0 &lt;printf@plt&gt;
+   0x0000000000400772 &lt;+92&gt;:	mov    rdx,QWORD PTR [rip+0x2008e7]        # 0x601060 &lt;stdin@@GLIBC_2.2.5&gt;
+   0x0000000000400779 &lt;+99&gt;:	lea    rax,[rbp-0x20]
+   0x000000000040077d &lt;+103&gt;:	mov    esi,0x10
+   0x0000000000400782 &lt;+108&gt;:	mov    rdi,rax
+   0x0000000000400785 &lt;+111&gt;:	call   0x4005e0 &lt;fgets@plt&gt;
+   0x000000000040078a &lt;+116&gt;:	lea    rax,[rbp-0x20]
+   0x000000000040078e &lt;+120&gt;:	mov    edx,0x10
+   0x0000000000400793 &lt;+125&gt;:	mov    esi,0x0
+   0x0000000000400798 &lt;+130&gt;:	mov    rdi,rax
+   0x000000000040079b &lt;+133&gt;:	mov    eax,0x0
+   0x00000000004007a0 &lt;+138&gt;:	call   0x4005f0 &lt;strtol@plt&gt;
+   0x00000000004007a5 &lt;+143&gt;:	cdqe   
+   0x00000000004007a7 &lt;+145&gt;:	mov    QWORD PTR [rbp-0x28],rax
+   0x00000000004007ab &lt;+149&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007af &lt;+153&gt;:	mov    rsi,rax
+   0x00000000004007b2 &lt;+156&gt;:	mov    edi,0x4008ed
+   0x00000000004007b7 &lt;+161&gt;:	mov    eax,0x0
+   0x00000000004007bc &lt;+166&gt;:	call   0x4005b0 &lt;printf@plt&gt;
+   0x00000000004007c1 &lt;+171&gt;:	mov    edi,0x400903
+   0x00000000004007c6 &lt;+176&gt;:	mov    eax,0x0
+   0x00000000004007cb &lt;+181&gt;:	call   0x4005b0 &lt;printf@plt&gt;
+   0x00000000004007d0 &lt;+186&gt;:	mov    rdx,QWORD PTR [rip+0x200889]        # 0x601060 &lt;stdin@@GLIBC_2.2.5&gt;
+   0x00000000004007d7 &lt;+193&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007db &lt;+197&gt;:	mov    esi,0x10
+   0x00000000004007e0 &lt;+202&gt;:	mov    rdi,rax
+   0x00000000004007e3 &lt;+205&gt;:	call   0x4005e0 &lt;fgets@plt&gt;
+   0x00000000004007e8 &lt;+210&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007ec &lt;+214&gt;:	mov    rsi,rax
+   0x00000000004007ef &lt;+217&gt;:	mov    edi,0x400919
+   0x00000000004007f4 &lt;+222&gt;:	mov    eax,0x0
+   0x00000000004007f9 &lt;+227&gt;:	call   0x4005b0 &lt;printf@plt&gt;
+   0x00000000004007fe &lt;+232&gt;:	add    DWORD PTR [rbp-0x2c],0x1
+   0x0000000000400802 &lt;+236&gt;:	cmp    DWORD PTR [rbp-0x2c],0x64
+   0x0000000000400806 &lt;+240&gt;:	jne    0x400739 &lt;main+35&gt;
+   0x000000000040080c &lt;+246&gt;:	lea    rax,[rbp-0x20]
+   0x0000000000400810 &lt;+250&gt;:	mov    rsi,rax
+   0x0000000000400813 &lt;+253&gt;:	mov    edi,0x40092c
+   0x0000000000400818 &lt;+258&gt;:	mov    eax,0x0
+   0x000000000040081d &lt;+263&gt;:	call   0x400600 &lt;__isoc99_scanf@plt&gt;
+   0x0000000000400822 &lt;+268&gt;:	nop
+   0x0000000000400823 &lt;+269&gt;:	mov    rax,QWORD PTR [rbp-0x8]
+   0x0000000000400827 &lt;+273&gt;:	xor    rax,QWORD PTR fs:0x28
+   0x0000000000400830 &lt;+282&gt;:	je     0x400837 &lt;main+289&gt;
+   0x0000000000400832 &lt;+284&gt;:	call   0x4005a0 &lt;__stack_chk_fail@plt&gt;
+   0x0000000000400837 &lt;+289&gt;:	leave  
+   0x0000000000400838 &lt;+290&gt;:	ret    
+End of assembler dump.
+Reading symbols from ./RELRO-Relro...(no debugging symbols found)...done.
+gdb-peda$ elfheader 
+.interp = 0x400238
+.note.ABI-tag = 0x400254
+.note.gnu.build-id = 0x400274
+.gnu.hash = 0x400298
+.dynsym = 0x4002c0
+.dynstr = 0x4003b0
+.gnu.version = 0x40043e
+.gnu.version_r = 0x400458
+.rela.dyn = 0x400498
+.rela.plt = 0x4004c8
+.init = 0x400570
+.plt = 0x400590
+.plt.got = 0x400610
+.text = 0x400620
+.fini = 0x4008b4
+.rodata = 0x4008c0
+.eh_frame_hdr = 0x400930
+.eh_frame = 0x400968
+.init_array = 0x600e10
+.fini_array = 0x600e18
+.jcr = 0x600e20
+.dynamic = 0x600e28
+.got = 0x600ff8
+.got.plt = 0x601000
+.data = 0x601050
+.bss = 0x601060
+gdb-peda$ x/i 0x4005b0
+   0x4005b0 &lt;printf@plt&gt;:	jmp    QWORD PTR [rip+0x200a6a]        # 0x601020
+gdb-peda$ x/gx 0x601020
+0x601020:	0x00000000004005b6
+gdb-peda$ x/i 0x00000000004005b6
+   0x4005b6 &lt;printf@plt+6&gt;:	push   0x1
+gdb-peda$ r
+Starting program: /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro 
+----- 1 -----
+Input Pointer address : ^C
+Program received signal SIGINT, Interrupt.
+
+
+gdb-peda$ x/gx 0x601020
+0x601020:	0x00007ffff7a62800
+gdb-peda$ x/5i 0x00007ffff7a62800
+   0x7ffff7a62800 &lt;__printf&gt;:	sub    rsp,0xd8
+   0x7ffff7a62807 &lt;__printf+7&gt;:	test   al,al
+   0x7ffff7a62809 &lt;__printf+9&gt;:	mov    QWORD PTR [rsp+0x28],rsi
+   0x7ffff7a6280e &lt;__printf+14&gt;:	mov    QWORD PTR [rsp+0x30],rdx
+   0x7ffff7a62813 &lt;__printf+19&gt;:	mov    QWORD PTR [rsp+0x38],rcx
+gdb-peda$ vmmap
+Start              End                Perm	Name
+0x00400000         0x00401000         r-xp	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
+0x00600000         0x00601000         r--p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
+0x00601000         0x00602000         rw-p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
+0x00602000         0x00623000         rw-p	[heap]
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p	mapped
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p	mapped
+0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p	mapped
+0x00007ffff7ff8000 0x00007ffff7ffa000 r--p	[vvar]
+0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp	[vdso]
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffe000 0x00007ffff7fff000 rw-p	mapped
+0x00007ffffffde000 0x00007ffffffff000 rw-p	[stack]
+0xffffffffff600000 0xffffffffff601000 r-xp	[vsyscall]
+gdb-peda$ </pre>
+</div></div><ul><li><strong>다음과 같이 아직 호출되지 않은 함수들의 GOT 값은 어떤지 확인해보겠습니다.</strong><ul><li><p><span>main 함수에서 <span>scanf</span> 함수를 사용하기 위해 메모리 주소 <span>0x400600(&quot;.plt&quot;)</span>을 호출합니다.</span></p></li><li><p><span><span>0x400600</span> 영역의 코드는 &quot;jmp QWORD PTR [rip+0x200a42]&quot; 이며, 0x601048 영역에 저장된 주소로 이동합니다.</span></p></li><li>0x601048 영역에 저장된 값은 0x400606 이며, 해당 영역은 Stub 코드가 저장되어 있습니다.</li><li>scanf 함수가 아직 호출된 적이 없기 때문에 <span>0x601048(&quot;</span><span>.got.plt&quot;) 영역에 <span>동적라이브러리의 scanf 함수의 시작 주소 값이 저장되어 있지 않습니다.</span></span></li><li>Partial RELRO에 Lazy binding을 사용하기 때문에 함수를 호출하지 않으면 동적라이브러리의 주소 값을 <span>&quot;.got.plt&quot; 영역에 저장되지 않습니다.</span></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>GOT area of uncalled function</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">gdb-peda$ x/i 0x400600
+   0x400600 &lt;__isoc99_scanf@plt&gt;:	jmp    QWORD PTR [rip+0x200a42]        # 0x601048
+gdb-peda$ x/gx 0x601048
+0x601048:	0x0000000000400606
+gdb-peda$ x/2i 0x0000000000400606
+   0x400606 &lt;__isoc99_scanf@plt+6&gt;:	push   0x6
+   0x40060b &lt;__isoc99_scanf@plt+11&gt;:	jmp    0x400590
+gdb-peda$ </pre>
+</div></div><h3 id="id-04.RELRO-FullRELRO.1"><strong style="font-family: &quot;Roboto Condensed&quot; , sans-serif;font-size: 22.0px;"><span style="color: rgb(16,16,16);">Full RELRO</span></strong></h3><ul><li><p><strong>다음과 같이 동적 라이브러리의 주소를 호출하게 됩니다.</strong></p><ul><li><p>main 함수에서 printf 함수를 사용하기 위해 메모리 주소 0x4005c8을 호출합니다.</p><ul><li><p>메모리 주소 <span>0x4005c8</span>는 &quot;.plt.got&quot; 영역입니다.</p></li><li><p>&quot;<span>.plt.got</span>&quot; 영역은 <span>0x4005c0 ~ 0x400600 입니다.</span></p></li></ul></li><li><p><span>0x4005c8</span> 영역의 코드는 &quot;jmp QWORD PTR [rip+0x2009fa]&quot; 입니다.</p></li></ul><ul><li style="list-style-type: none;background-image: none;"><ul><li><p>즉, 메모리 주소 <span>0x600fc8</span>에 저장된 주소로 JUMP 합니다.</p><ul><li><p>메모리 주소 <span>0x600fc8</span>은 &quot;.got&quot; 영역입니다.</p></li><li><p>&quot;.got.plt&quot; 영역은 <span>0x600fa8 ~ 0x601000</span>입니다.</p></li></ul></li><li><p>메모리 주소 <span>0x600fc8</span>에 아무런 값도 저장되어 있지 않습니다.</p><ul><li><p>이는 해당 프로그램에서 printf 함수가 호출되지 않았기 때문입니다.</p></li></ul></li><li><p>프로그램을 실행하고 printf 함수가 호출되기 시작하면 메모리 주소 <span>0x600fc8</span>(&quot;.got&quot; 영역) 영역에 동적라이브러리의 printf 함수의 시작 주소 값이 저장됩니다.</p></li></ul></li><li>즉, Full RELRO가 적용된 바이너리는 &quot;.got&quot;영역이 Read-only로 설정되지 때문에 &quot;.got&quot; 영역에 저장된 값을 변경할 수 없습니다.</li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>function call of "Full RELRO"</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-FullRelro 
+Reading symbols from ./RELRO-FullRelro...(no debugging symbols found)...done.
+gdb-peda$ disassemble main
+Dump of assembler code for function main:
+   0x00000000004006f6 &lt;+0&gt;:	push   rbp
+   0x00000000004006f7 &lt;+1&gt;:	mov    rbp,rsp
+   0x00000000004006fa &lt;+4&gt;:	sub    rsp,0x30
+   0x00000000004006fe &lt;+8&gt;:	mov    rax,QWORD PTR fs:0x28
+   0x0000000000400707 &lt;+17&gt;:	mov    QWORD PTR [rbp-0x8],rax
+   0x000000000040070b &lt;+21&gt;:	xor    eax,eax
+   0x000000000040070d &lt;+23&gt;:	mov    DWORD PTR [rbp-0x2c],0x1
+   0x0000000000400714 &lt;+30&gt;:	jmp    0x4007e2 &lt;main+236&gt;
+   0x0000000000400719 &lt;+35&gt;:	mov    eax,DWORD PTR [rbp-0x2c]
+   0x000000000040071c &lt;+38&gt;:	mov    esi,eax
+   0x000000000040071e &lt;+40&gt;:	mov    edi,0x4008a4
+   0x0000000000400723 &lt;+45&gt;:	mov    eax,0x0
+   0x0000000000400728 &lt;+50&gt;:	call   0x4005c8
+   0x000000000040072d &lt;+55&gt;:	lea    rax,[rbp-0x20]
+   0x0000000000400731 &lt;+59&gt;:	mov    edx,0x10
+   0x0000000000400736 &lt;+64&gt;:	mov    esi,0x0
+   0x000000000040073b &lt;+69&gt;:	mov    rdi,rax
+   0x000000000040073e &lt;+72&gt;:	call   0x4005d0
+   0x0000000000400743 &lt;+77&gt;:	mov    edi,0x4008b4
+   0x0000000000400748 &lt;+82&gt;:	mov    eax,0x0
+   0x000000000040074d &lt;+87&gt;:	call   0x4005c8
+   0x0000000000400752 &lt;+92&gt;:	mov    rdx,QWORD PTR [rip+0x2008b7]        # 0x601010 &lt;stdin@@GLIBC_2.2.5&gt;
+   0x0000000000400759 &lt;+99&gt;:	lea    rax,[rbp-0x20]
+   0x000000000040075d &lt;+103&gt;:	mov    esi,0x10
+   0x0000000000400762 &lt;+108&gt;:	mov    rdi,rax
+   0x0000000000400765 &lt;+111&gt;:	call   0x4005e0
+   0x000000000040076a &lt;+116&gt;:	lea    rax,[rbp-0x20]
+   0x000000000040076e &lt;+120&gt;:	mov    edx,0x10
+   0x0000000000400773 &lt;+125&gt;:	mov    esi,0x0
+   0x0000000000400778 &lt;+130&gt;:	mov    rdi,rax
+   0x000000000040077b &lt;+133&gt;:	mov    eax,0x0
+   0x0000000000400780 &lt;+138&gt;:	call   0x4005f0
+   0x0000000000400785 &lt;+143&gt;:	cdqe   
+   0x0000000000400787 &lt;+145&gt;:	mov    QWORD PTR [rbp-0x28],rax
+   0x000000000040078b &lt;+149&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x000000000040078f &lt;+153&gt;:	mov    rsi,rax
+   0x0000000000400792 &lt;+156&gt;:	mov    edi,0x4008cd
+   0x0000000000400797 &lt;+161&gt;:	mov    eax,0x0
+   0x000000000040079c &lt;+166&gt;:	call   0x4005c8
+   0x00000000004007a1 &lt;+171&gt;:	mov    edi,0x4008e3
+   0x00000000004007a6 &lt;+176&gt;:	mov    eax,0x0
+   0x00000000004007ab &lt;+181&gt;:	call   0x4005c8
+   0x00000000004007b0 &lt;+186&gt;:	mov    rdx,QWORD PTR [rip+0x200859]        # 0x601010 &lt;stdin@@GLIBC_2.2.5&gt;
+   0x00000000004007b7 &lt;+193&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007bb &lt;+197&gt;:	mov    esi,0x10
+   0x00000000004007c0 &lt;+202&gt;:	mov    rdi,rax
+   0x00000000004007c3 &lt;+205&gt;:	call   0x4005e0
+   0x00000000004007c8 &lt;+210&gt;:	mov    rax,QWORD PTR [rbp-0x28]
+   0x00000000004007cc &lt;+214&gt;:	mov    rsi,rax
+   0x00000000004007cf &lt;+217&gt;:	mov    edi,0x4008f9
+   0x00000000004007d4 &lt;+222&gt;:	mov    eax,0x0
+   0x00000000004007d9 &lt;+227&gt;:	call   0x4005c8
+   0x00000000004007de &lt;+232&gt;:	add    DWORD PTR [rbp-0x2c],0x1
+   0x00000000004007e2 &lt;+236&gt;:	cmp    DWORD PTR [rbp-0x2c],0x64
+   0x00000000004007e6 &lt;+240&gt;:	jne    0x400719 &lt;main+35&gt;
+   0x00000000004007ec &lt;+246&gt;:	lea    rax,[rbp-0x20]
+   0x00000000004007f0 &lt;+250&gt;:	mov    rsi,rax
+   0x00000000004007f3 &lt;+253&gt;:	mov    edi,0x40090c
+   0x00000000004007f8 &lt;+258&gt;:	mov    eax,0x0
+   0x00000000004007fd &lt;+263&gt;:	call   0x4005f8
+   0x0000000000400802 &lt;+268&gt;:	nop
+   0x0000000000400803 &lt;+269&gt;:	mov    rax,QWORD PTR [rbp-0x8]
+   0x0000000000400807 &lt;+273&gt;:	xor    rax,QWORD PTR fs:0x28
+   0x0000000000400810 &lt;+282&gt;:	je     0x400817 &lt;main+289&gt;
+   0x0000000000400812 &lt;+284&gt;:	call   0x4005c0
+   0x0000000000400817 &lt;+289&gt;:	leave  
+   0x0000000000400818 &lt;+290&gt;:	ret    
+End of assembler dump.
+gdb-peda$ elfheader 
+.interp = 0x400238
+.note.ABI-tag = 0x400254
+.note.gnu.build-id = 0x400274
+.gnu.hash = 0x400298
+.dynsym = 0x4002e0
+.dynstr = 0x4003d0
+.gnu.version = 0x40045e
+.gnu.version_r = 0x400478
+.rela.dyn = 0x4004b8
+.init = 0x400590
+.plt = 0x4005b0
+.plt.got = 0x4005c0
+.text = 0x400600
+.fini = 0x400894
+.rodata = 0x4008a0
+.eh_frame_hdr = 0x400910
+.eh_frame = 0x400948
+.init_array = 0x600dd0
+.fini_array = 0x600dd8
+.jcr = 0x600de0
+.dynamic = 0x600de8
+.got = 0x600fa8
+.data = 0x601000
+.bss = 0x601010
+gdb-peda$ x/i 0x4005c8
+   0x4005c8:	jmp    QWORD PTR [rip+0x2009fa]        # 0x600fc8
+gdb-peda$ x/gx 0x600fc8
+0x600fc8:	0x0000000000000000
+gdb-peda$ r
+Starting program: /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro 
+----- 1 -----
+Input Pointer address : ^C
+Program received signal SIGINT, Interrupt.
+
+gdb-peda$ x/gx 0x600fc8
+0x600fc8:	0x00007ffff7a62800
+gdb-peda$ x/5i 0x00007ffff7a62800
+   0x7ffff7a62800 &lt;__printf&gt;:	sub    rsp,0xd8
+   0x7ffff7a62807 &lt;__printf+7&gt;:	test   al,al
+   0x7ffff7a62809 &lt;__printf+9&gt;:	mov    QWORD PTR [rsp+0x28],rsi
+   0x7ffff7a6280e &lt;__printf+14&gt;:	mov    QWORD PTR [rsp+0x30],rdx
+   0x7ffff7a62813 &lt;__printf+19&gt;:	mov    QWORD PTR [rsp+0x38],rcx
+gdb-peda$ vmmap
+Start              End                Perm	Name
+0x00400000         0x00401000         r-xp	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
+0x00600000         0x00601000         r--p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
+0x00601000         0x00602000         rw-p	/home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
+0x00602000         0x00623000         rw-p	[heap]
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p	/lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p	mapped
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p	mapped
+0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p	mapped
+0x00007ffff7ff8000 0x00007ffff7ffa000 r--p	[vvar]
+0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp	[vdso]
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p	/lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffe000 0x00007ffff7fff000 rw-p	mapped
+0x00007ffffffde000 0x00007ffffffff000 rw-p	[stack]
+0xffffffffff600000 0xffffffffff601000 r-xp	[vsyscall]
+gdb-peda$</pre>
+</div></div><ul><li><strong>다음과 같이 아직 호출되지 않은 함수들의 GOT 값은 어떤지 확인해보겠습니다.</strong><ul><li><p>main 함수에서 scanf 함수를 사용하기 위해 메모리 주소 0x4005f8(&quot;.plt.got&quot;)을 호출합니다.</p></li><li><p>0x4005f8 영역의 코드는 &quot;jmp QWORD PTR [rip+0x2009fa]&quot; 이며, 0x600ff8 영역에 저장된 주소로 이동합니다.</p></li><li><span>0x600ff8</span> 영역에 저장된 값은 0x00007ffff7a784d0 이며, 해당 영역은 동적라이브러리의 scanf 함수의 시작 주소 값 입니다.</li><li>Full RELRO에서는 Now binding을 사용하기 때문에 프로그래임 메모리에 로드 될때 해당 프로그램에서 사용되는 모든 동적 함수의 <span>주소를</span> &quot;.got&quot; 영역에 저장됩니다.</li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>GOT area of uncalled function</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">gdb-peda$ x/i 0x4005f8
+   0x4005f8:	jmp    QWORD PTR [rip+0x2009fa]        # 0x600ff8
+gdb-peda$ x/gx 0x600ff8
+0x600ff8:	0x00007ffff7a784d0
+gdb-peda$ </pre>
+</div></div><div class="confluence-information-macro confluence-information-macro-information"><p class="title conf-macro-render">Calling the printf function</p><span class="aui-icon aui-icon-small aui-iconfont-info confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><ul><li>다음과 같이 printf 함수가 호출됩니다.</li></ul><div class="table-wrap"><table class="wrapped confluenceTable"><colgroup><col/><col/><col/><col/></colgroup><tbody><tr><th style="text-align: center;" class="confluenceTh"><br/></th><th style="text-align: center;" class="confluenceTh"><span>Partial RELRO</span></th><th colspan="1" class="confluenceTh"><br/></th><th style="text-align: center;" class="confluenceTh"><span>Full RELRO</span></th></tr><tr><th style="text-align: center;" class="confluenceTh">main()</th><td class="confluenceTd"><span>call 0x4005b0 &lt;printf@plt&gt;</span></td><th style="text-align: center;" colspan="1" class="confluenceTh">main()</th><td class="confluenceTd"><p>call 0x4005c8</p></td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh"><span>.plt(printf@plt)</span></th><td colspan="1" class="confluenceTd"><span>jmp QWORD PTR [rip+0x200a6a] # 0x601020</span></td><th style="text-align: center;" colspan="1" class="confluenceTh"><span>.plt.got(<span>0x4005c8)</span></span></th><td colspan="1" class="confluenceTd"><span>jmp QWORD PTR [rip+0x2009fa]</span></td></tr><tr><th style="text-align: center;" colspan="1" class="confluenceTh"><p><span><span>.got.plt(</span>0x601020)</span></p></th><td colspan="1" class="confluenceTd"><span>0x7ffff7a62800</span></td><th style="text-align: center;" colspan="1" class="confluenceTh">.got(0x600fc8)</th><td colspan="1" class="confluenceTd">0x7ffff7a62800</td></tr></tbody></table></div></div></div><h2 id="id-04.RELRO-HowtodetectNXinthe&quot;Checksec.sh&quot;file"><strong style="font-family: &quot;Roboto Condensed&quot; , sans-serif;font-size: 22.0px;">How to detect NX in the &quot;Checksec.sh&quot; file</strong></h2><h3 id="id-04.RELRO-Binary"><span style="color: rgb(51,51,51);">Binary</span></h3><ul><li><span style="color: rgb(51,51,51);"><strong>다음과 같은 방법으로 바이너리의 RELRO 설정여부를 확인합니다.</strong><br class="_mce_tagged_br"/></span><ul><li>'readelf' 명령어를 이용해 해당 파일의 프로그래 헤더와 <span class="s1">Dynamic section 정보를 가져와 </span>RELRO를 설졍여부를 확인합니다.<span style="color: rgb(51,51,51);"><strong><br/></strong></span></li><li><span><span>파일의 프로그래 헤더에 'GNU_RELRO'가 있으면 RELRO가 적용되었다고 판단합니다.</span></span><br/><ul><li><span><span><span>그리고 <span>Dynamic section에 </span></span></span></span>BIND_NOW가 있으면 Full RELRO가 적용되었다고 판단합니다.</li><li>Dynamic section에 BIND_NOW가 없으면 Partial RELRO가 적용되었다고 판단합니다.</li></ul></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Checksec.sh - line 145</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">  # check for RELRO support
+  if readelf -l $1 2&gt;/dev/null | grep -q &#39;GNU_RELRO&#39;; then
+    if readelf -d $1 2&gt;/dev/null | grep -q &#39;BIND_NOW&#39;; then
+      echo -n -e &#39;\033[32mFull RELRO   \033[m   &#39;
+    else
+      echo -n -e &#39;\033[33mPartial RELRO\033[m   &#39;
+    fi
+  else
+    echo -n -e &#39;\033[31mNo RELRO     \033[m   &#39;
+  fi</pre>
+</div></div><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>No RELRO</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-NoRelro |grep &#39;GNU_RELRO&#39;
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$</pre>
+</div></div><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Partial RELRO</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-Relro |grep &#39;GNU_RELRO&#39;
+  GNU_RELRO      0x0000000000000e10 0x0000000000600e10 0x0000000000600e10
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -d RELRO-Relro |grep &#39;BIND_NOW&#39;
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ </pre>
+</div></div><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Full RELRO</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-FullRelro |grep &#39;GNU_RELRO&#39;
+  GNU_RELRO      0x0000000000000dd0 0x0000000000600dd0 0x0000000000600dd0
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -d RELRO-FullRelro |grep &#39;BIND_NOW&#39;
+ 0x0000000000000018 (BIND_NOW)           
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$</pre>
+</div></div><h3 id="id-04.RELRO-Process">Process</h3><ul><li><strong>다음과 같은 방법으로 프로세서의 RELRO 설정여부를 확인합니다.</strong><ul><li>Binary의 확인 방식과 비슷하며, 전달되는 파일의 경로가 다음과 같이 다릅니다.<strong><strong><strong><br/></strong></strong></strong><ul><li>Ex) /proc/&lt;PID&gt;/exe</li></ul></li><li><span>추가된 동작은 '</span><span><span>/proc/&lt;PID&gt;/exe' 파일에 'Program Headers</span></span><span>' 정보가 있는지 확인합니다.</span></li></ul></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;"><b>Checksec.sh - line 199</b></div><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">  # check for RELRO support
+  if readelf -l $1/exe 2&gt;/dev/null | grep -q &#39;Program Headers&#39;; then
+    if readelf -l $1/exe 2&gt;/dev/null | grep -q &#39;GNU_RELRO&#39;; then
+      if readelf -d $1/exe 2&gt;/dev/null | grep -q &#39;BIND_NOW&#39;; then
+        echo -n -e &#39;\033[32mFull RELRO       \033[m &#39;
+      else
+        echo -n -e &#39;\033[33mPartial RELRO    \033[m &#39;
+      fi
+    else
+      echo -n -e &#39;\033[31mNo RELRO         \033[m &#39;
+    fi
+  else
+    echo -n -e &#39;\033[31mPermission denied (please run as root)\033[m\n&#39;
+    exit 1
+  fi</pre>
+</div></div><h2 id="id-04.RELRO-Relatedinformation"><strong>Related </strong><strong style="font-family: &quot;Roboto Condensed&quot; , sans-serif;">information</strong></h2><ul><li><p><a class="external-link" href="http://tk-blog.blogspot.jp/2009/02/relro-not-so-well-known-memory.html" rel="nofollow">http://tk-blog.blogspot.jp/2009/02/relro-not-so-well-known-memory.html</a></p></li></ul><div class="panel" style="border-width: 1px;"><div class="panelContent">
+<p><img class="wysiwyg-unknown-macro" src="plugins/servlet/confluence/placeholder/unknown-macro"/></p>
+</div></div>
+                    </div>
+
+                                        
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on 7월 11, 2026 11:05</p>
+                    <div id="footer-logo"><a href="https://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

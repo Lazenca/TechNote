@@ -1,0 +1,187 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #1c7ec0;
+  --ifm-color-primary-dark: #1971ad;
+  --ifm-color-primary-darker: #176b03;
+  --ifm-color-primary-darkest: #135887;
+  --ifm-color-primary-light: #2d8bc9;
+  --ifm-color-primary-lighter: #3692cd;
+  --ifm-color-primary-lightest: #52a4da;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-font-family-base: Verdana, "Signika Negative", Geneva, sans-serif;
+  --ifm-heading-font-family: "Roboto Condensed", sans-serif;
+  --ifm-font-size-base: 14px;
+  --ifm-line-height-base: 1.6;
+  --ifm-font-color-base: #444444;
+  --ifm-link-color: #002BAD;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #52a4da;
+  --ifm-color-primary-dark: #3692cd;
+  --ifm-color-primary-darker: #2d8bc9;
+  --ifm-color-primary-darkest: #1c7ec0;
+  --ifm-font-color-base: #e3e3e3;
+  --ifm-link-color: #6fbaff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Confluence Custom Signature Styles */
+
+.markdown {
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-base);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.markdown p,
+.markdown table,
+.markdown tr,
+.markdown td,
+.markdown th,
+.markdown ol,
+.markdown ul,
+.markdown li {
+  color: var(--ifm-font-color-base);
+  line-height: 1.6;
+  font-size: 10pt;
+}
+
+.markdown a:link,
+.markdown a:visited,
+.markdown a:hover,
+.markdown a:active,
+.markdown a:focus {
+  color: var(--ifm-link-color);
+}
+
+/* Headings */
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  border: none;
+  background: none;
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: 700; /* Bold headings */
+}
+
+[data-theme='light'] .markdown h1 {
+  padding: 3px 6px 6px 6px; /* Reverted to original Confluence padding */
+  border-top: 3px solid #aeaeae;
+  background: #eeeeee;
+  font-size: 26px;
+  color: #333333;
+}
+
+[data-theme='dark'] .markdown h1 {
+  padding: 3px 6px 6px 6px;
+  border-top: 3px solid #555555;
+  background: #2a2a2a;
+  font-size: 26px;
+  color: #ffffff;
+}
+
+[data-theme='light'] .markdown h2 {
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-top: 4px;
+  background: #f9f9f9;
+  font-size: 22px;
+  color: #333333;
+}
+
+[data-theme='dark'] .markdown h2 {
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-top: 4px;
+  background: #1f1f1f;
+  font-size: 22px;
+  color: #ffffff;
+}
+
+[data-theme='light'] .markdown h3 {
+  padding-left: 6px;
+  border-bottom: 1px solid #DEDFE0;
+  font-size: 20px;
+  color: #333333;
+}
+
+[data-theme='dark'] .markdown h3 {
+  padding-left: 6px;
+  border-bottom: 1px solid #444444;
+  font-size: 20px;
+  color: #ffffff;
+}
+
+[data-theme='light'] .markdown h4 {
+  padding-left: 3px;
+  border-left: 4px solid #999;
+  margin-left: 6px;
+  font-size: 18px;
+  color: #333333;
+}
+
+[data-theme='dark'] .markdown h4 {
+  padding-left: 3px;
+  border-left: 4px solid #666;
+  margin-left: 6px;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.markdown h5 {
+  padding-left: 6px;
+  border-bottom: 0;
+  font-size: 18px;
+}
+
+.markdown h6 {
+  padding-left: 6px;
+  border-bottom: 0;
+  font-size: 16px;
+}
+
+.markdown h1 a,
+.markdown h2 a,
+.markdown h3 a,
+.markdown h4 a,
+.markdown h5 a,
+.markdown h6 a {
+  color: #1c7ec0 !important;
+}
+
+.markdown h1 + h2,
+.markdown h2 + h3 {
+  margin-top: 0.5em;
+}
+
+/* Code & Pre */
+.markdown code,
+.markdown pre {
+  font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+}
+
+.codeContent {
+  font-size: 100%;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  color: #888;
+  background-color: #888;
+}

@@ -1,0 +1,8 @@
+{
+  "label": "04.RELRO",
+  "position": 1,
+  "link": {
+    "type": "doc",
+    "id": "technote/technote/protection-tech/relro/index"
+  }
+}
