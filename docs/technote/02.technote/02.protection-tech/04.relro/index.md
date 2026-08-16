@@ -8,12 +8,12 @@ slug: /category/04relro
 
 ## **Explanation**
 
-* RELRO는 RELocation Read-Only의 줄임말이며, ELF 바이너리 / 프로세스의 데이터 섹션의 보안을 강화하는 일반적인 기술입니다
-* RELRO에는 Partial RELRO와 Full RELRO 두 가지 모드가 있습니다.  
+* RELRO stands for RELocation Read-Only, a security technique that hardens data sections of ELF binaries and processes against memory corruption exploits.
+* RELRO has two operational modes: Partial RELRO and Full RELRO.
   + Partial RELRO
   + Full RELRO
-* 아래와 같이 RELRO, Partial RELRO, Full RELRO의 차이점이 있습니다.
-  + 자세한 내용은 아래 "Program header & Dynamic Section"에서 설명합니다.
+* The differences between No RELRO, Partial RELRO, and Full RELRO are summarized below:
+  + For more details, refer to the "Program header & Dynamic Section" section below.
 
 ### **Comparison of No RELRO, Partial RELRO, Full RELRO**
 
@@ -23,7 +23,7 @@ slug: /category/04relro
 | Lazy binding | O | O | X |
 | Now binding | X | X | O |
 | Write to GOT | O | O | X |
-| RELRO in the Program header | X | O | O |
+| RELRO in the Program header | X | O | O |
 | Section include in RELRO | X | INIT\_ARRAY, FINI\_ARRAY | INIT\_ARRAY, FINI\_ARRAY, PLTGOT |
 | PLTRELSZ include in Dynamic Section | O | O | X |
 | PLTREL include in Dynamic Section | O | O | X |
@@ -39,7 +39,7 @@ slug: /category/04relro
 #include <string.h>
 void main(){
 char address[16];
-size\_t \*pointer;
+size_t *pointer;
 int count = 1;
 while(count != 100)
 {
@@ -85,20 +85,20 @@ lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$
 
 ### **Program header & Dynamic Section**
 
-* **다음과 같이 RELRO 적용시 "Program Header"와 "Dynamic Section"의 변화를 확인할 수 있습니다.**
-  + **Partial RELRO를 적용하게되면 다음과 같은 변화가 발생합니다.**
-    - 'Program Header'에 'RELRO' 영역이 생성됩니다.
-      * 해당 영역의 권한은 Read only 입니다.
-    - 해당 영역에 포함되는 Section은 다음과 같습니다.
+* **When RELRO is enabled, changes to the "Program Header" and "Dynamic Section" can be observed as follows:**
+  + **When Partial RELRO is enabled, the following changes occur:**
+    - A 'GNU_RELRO' segment is added to the Program Headers.
+      * The permissions for this region become Read-only after relocation.
+    - Sections included in the RELRO segment are:
       * INIT\_ARRAY, FINI\_ARRAY
-    - 즉, GOT영역을 덮어쓸수 있습니다.
-  + **Full RELRO를 적용하게되면 다음과 같은 변화가 발생합니다.**
-    - 'Program Header'에 'RELRO' 영역이 생성됩니다.
-      * 해당 영역의 권한은 Read only 입니다.
-    - 해당 영역에 포함되는 Section은 다음과 같습니다.
+    - Thus, the .got.plt section remains writable, meaning the GOT can still be overwritten.
+  + **When Full RELRO is enabled, the following changes occur:**
+    - A 'GNU_RELRO' segment is added to the Program Headers.
+      * The permissions for this region become Read-only after relocation.
+    - Sections included in the RELRO segment are:
       * INIT\_ARRAY, FINI\_ARRAY, PLTGOT
-    - 그리고 Section영역에서 PLTRELSZ, PLTREL, JMPREL가 제거되고, 'BIND\_NOW', 'FLAGS\_1' Section이 추가됩니다.
-    - 즉, GOT영역을 덮어쓸수 없습니다.
+    - In the Dynamic section, PLTRELSZ, PLTREL, and JMPREL are removed, and 'BIND_NOW' and 'FLAGS_1' are added.
+    - Thus, the GOT cannot be overwritten.
 
 **Program header & Dynamic Section**
 
@@ -268,16 +268,16 @@ Version References:
 
 ### **No RELRO**
 
-* **"\_\_isoc99\_scanf"의 GOT Address는 0x600c68이며, 아래와 같이 해당 영역에 값을 변경할 수 있습니다.**
+* **The GOT address of "\_\_isoc99\_scanf" is 0x600c68, and its value can be modified as shown below:**
 
 ```sh title="Check ELF symbol"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-NoRelro
 Reading symbols from ./RELRO-NoRelro...(no debugging symbols found)...done.
-gdb-peda$ elfsymbol \_\_isoc99\_scanf
+gdb-peda$ elfsymbol __isoc99_scanf
 Detail symbol info
-\_\_isoc99\_scanf@reloc = 0x6
-\_\_isoc99\_scanf@plt = 0x4005d0
-\_\_isoc99\_scanf@got = 0x600c68
+__isoc99_scanf@reloc = 0x6
+__isoc99_scanf@plt = 0x4005d0
+__isoc99_scanf@got = 0x600c68
 gdb-peda$ x/gx 0x600c68
 0x600c68: 0x00000000004005d6
 gdb-peda$ r
@@ -295,10 +295,10 @@ gdb-peda$ x/gx 0x600c68
 gdb-peda$
 ```
 
-* **다음과 같이 프로그램 헤더 정보와 메모리 맵을 통해 조금더 자세한 내용을 확인할 수 있습니다.**
-  + "\_\_isoc99\_scanf"의 주소값은 '.got.plt'영역에 저장되어 있습니다.
-    - '.got.plt' 영역의 시작 주소는 0x600c20 입니다.
-  + 메모리 맵을 통해 해당 영역(0x00600000 ~ 0x00601000)에 'W' 쓰기 권한이 설정되어 있습니다.
+* **More details can be verified via program header information and memory mappings:**
+  + The address of "\_\_isoc99\_scanf" is stored in the '.got.plt' section.
+    - The start address of '.got.plt' is 0x600c20.
+  + In the memory map, write ('w') permission is granted to this range (0x00600000 ~ 0x00601000).
 
 ```sh title="Check permission for memory"
 gdb-peda$ elfheader
@@ -309,7 +309,7 @@ gdb-peda$ elfheader
 .dynsym = 0x400288
 .dynstr = 0x400378
 .gnu.version = 0x400406
-.gnu.version\_r = 0x400420
+.gnu.version_r = 0x400420
 .rela.dyn = 0x400460
 .rela.plt = 0x400490
 .init = 0x400538
@@ -318,10 +318,10 @@ gdb-peda$ elfheader
 .text = 0x4005f0
 .fini = 0x400884
 .rodata = 0x400890
-.eh\_frame\_hdr = 0x400900
-.eh\_frame = 0x400938
-.init\_array = 0x600a30
-.fini\_array = 0x600a38
+.eh_frame_hdr = 0x400900
+.eh_frame = 0x400938
+.init_array = 0x600a30
+.fini_array = 0x600a38
 .jcr = 0x600a40
 .dynamic = 0x600a48
 .got = 0x600c18
@@ -333,18 +333,18 @@ Start End Perm Name
 0x00400000 0x00401000 r-xp /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-NoRelro
 0x00600000 0x00601000 rw-p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-NoRelro
 0x00601000 0x00622000 rw-p [heap]
-0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86\_64-linux-gnu/libc-2.23.so
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86_64-linux-gnu/libc-2.23.so
 0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p mapped
-0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p mapped
 0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p mapped
 0x00007ffff7ff8000 0x00007ffff7ffa000 r--p [vvar]
 0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp [vdso]
-0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86\_64-linux-gnu/ld-2.23.so
-0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7ffe000 0x00007ffff7fff000 rw-p mapped
 0x00007ffffffde000 0x00007ffffffff000 rw-p [stack]
 0xffffffffff600000 0xffffffffff601000 r-xp [vsyscall]
@@ -353,16 +353,16 @@ gdb-peda$
 
 ### Partial RELRO
 
-* **"\_\_isoc99\_scanf"의 GOT Address는 0x601048이며, 아래와 같이 해당 영역에 값을 변경할 수 있습니다.**
+* **The GOT address of "\_\_isoc99\_scanf" is 0x601048, and its value can be modified as shown below:**
 
 ```sh title="Check ELF symbol"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-Relro
 Reading symbols from ./RELRO-Relro...(no debugging symbols found)...done.
-gdb-peda$ elfsymbol \_\_isoc99\_scanf
+gdb-peda$ elfsymbol __isoc99_scanf
 Detail symbol info
-\_\_isoc99\_scanf@reloc = 0x6
-\_\_isoc99\_scanf@plt = 0x400600
-\_\_isoc99\_scanf@got = 0x601048
+__isoc99_scanf@reloc = 0x6
+__isoc99_scanf@plt = 0x400600
+__isoc99_scanf@got = 0x601048
 gdb-peda$ x/gx 0x601048
 0x601048: 0x0000000000400606
 gdb-peda$ r
@@ -380,14 +380,14 @@ gdb-peda$ x/gx 0x601048
 gdb-peda$
 ```
 
-* **다음과 같이 프로그램 헤더 정보와 메모리 맵을 통해 조금더 자세한 내용을 확인할 수 있습니다.**
-  + '.got.plt' 영역의 시작 주소는 0x601000 입니다.
-  + 메모리 맵에서 RELRO가 적용되지 않은 프로그램과 다른 부분을 확인할 수 있습니다.
-    - 0x600000 ~ 0x601000 영역의 권한은 r--p 입니다.
-      * 해당 영역에는 .init\_array, .fini\_array, .jcr, .dynamic, .got 헤더가 포함됩니다.
-    - 0x601000 ~ 0x602000 영역의 권한은 rw-p 입니다.  
-      * 해당 영역에는 .got.plt,등의 헤더가 포함됩니다.
-      * 즉, 이로 인해 .got.plt 영역에 값을 변경할 수 있습니다.
+* **More details can be verified via program header information and memory mappings:**
+  + The start address of '.got.plt' is 0x601000.
+  + Differences from the No RELRO binary can be observed in the memory map:
+    - 0x600000 ~ 0x601000 has read-only permission (r--p).
+      * This region contains .init\_array, .fini\_array, .jcr, .dynamic, and .got.
+    - 0x601000 ~ 0x602000 has read-write permission (rw-p).
+      * This region contains .got.plt, .data, etc.
+      * Consequently, values in the .got.plt section can still be modified.
 
 ```sh title="Check permission for memory"
 gdb-peda$ elfheader
@@ -398,7 +398,7 @@ gdb-peda$ elfheader
 .dynsym = 0x4002c0
 .dynstr = 0x4003b0
 .gnu.version = 0x40043e
-.gnu.version\_r = 0x400458
+.gnu.version_r = 0x400458
 .rela.dyn = 0x400498
 .rela.plt = 0x4004c8
 .init = 0x400570
@@ -407,10 +407,10 @@ gdb-peda$ elfheader
 .text = 0x400620
 .fini = 0x4008b4
 .rodata = 0x4008c0
-.eh\_frame\_hdr = 0x400930
-.eh\_frame = 0x400968
-.init\_array = 0x600e10
-.fini\_array = 0x600e18
+.eh_frame_hdr = 0x400930
+.eh_frame = 0x400968
+.init_array = 0x600e10
+.fini_array = 0x600e18
 .jcr = 0x600e20
 .dynamic = 0x600e28
 .got = 0x600ff8
@@ -423,18 +423,18 @@ Start End Perm Name
 0x00600000 0x00601000 r--p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
 0x00601000 0x00602000 rw-p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
 0x00602000 0x00623000 rw-p [heap]
-0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86\_64-linux-gnu/libc-2.23.so
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86_64-linux-gnu/libc-2.23.so
 0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p mapped
-0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p mapped
 0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p mapped
 0x00007ffff7ff8000 0x00007ffff7ffa000 r--p [vvar]
 0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp [vdso]
-0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86\_64-linux-gnu/ld-2.23.so
-0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7ffe000 0x00007ffff7fff000 rw-p mapped
 0x00007ffffffde000 0x00007ffffffff000 rw-p [stack]
 0xffffffffff600000 0xffffffffff601000 r-xp [vsyscall]
@@ -443,19 +443,19 @@ gdb-peda$
 
 ### Full RELRO
 
-* **앞에서 테스트한 프로그램과 달리 GOT 영역에 값을 변경할 수 없습니다.**  
-  + 디버거에서 '\_\_isoc99\_scanf'의 심볼 정보를 찾을 수 없습니다.
-* **디스어셈블 코드에서 호출되는 함수를 분석해보겠습니다.**
-  + 0x4007fd 영역의 코드에서 0x4005f8 영역을 호출합니다.
-  + 0x4005f8 영역의 코드에서 "rip+0x2009fa" 영역에 저장된 주소로 이동합니다.
-  + "rip+0x2009fa" 영역은 0x600ff8 이며, 해당 영역에 저장된 값은 0x00007ffff7a784d0 입니다.
-  + 0x00007ffff7a784d0 영역은 \_\_isoc99\_scanf 함수의 시작 주소 입니다.
+* **Unlike the previous programs, the GOT cannot be overwritten in Full RELRO.**  
+  + In the debugger, symbol lookup via `elfsymbol` does not match as PLT/GOT stubs are resolved differently.
+* **Let's analyze the called function in disassembly:**
+  + At instruction 0x4007fd, 0x4005f8 is called.
+  + Instruction 0x4005f8 jumps to the address stored at [rip+0x2009fa] (0x600ff8).
+  + Location 0x600ff8 holds 0x00007ffff7a784d0.
+  + Address 0x00007ffff7a784d0 is the entry point of the \_\_isoc99\_scanf function.
 
 ```sh title="Check ELF symbol"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-FullRelro
 Reading symbols from ./RELRO-FullRelro...(no debugging symbols found)...done.
-gdb-peda$ elfsymbol \_\_isoc99\_scanf
-'\_\_isoc99\_scanf': no match found
+gdb-peda$ elfsymbol __isoc99_scanf
+'__isoc99_scanf': no match found
 gdb-peda$ disassemble main
 Dump of assembler code for function main:
 0x00000000004006f6 <+0>: push rbp
@@ -479,7 +479,7 @@ Dump of assembler code for function main:
 0x0000000000400743 <+77>: mov edi,0x4008b4
 0x0000000000400748 <+82>: mov eax,0x0
 0x000000000040074d <+87>: call 0x4005c8
-0x0000000000400752 <+92>: mov rdx,QWORD PTR [rip+0x2008b7] # 0x601010 <stdin@@GLIBC\_2.2.5>
+0x0000000000400752 <+92>: mov rdx,QWORD PTR [rip+0x2008b7] # 0x601010 <stdin@@GLIBC_2.2.5>
 0x0000000000400759 <+99>: lea rax,[rbp-0x20]
 0x000000000040075d <+103>: mov esi,0x10
 0x0000000000400762 <+108>: mov rdi,rax
@@ -500,7 +500,7 @@ Dump of assembler code for function main:
 0x00000000004007a1 <+171>: mov edi,0x4008e3
 0x00000000004007a6 <+176>: mov eax,0x0
 0x00000000004007ab <+181>: call 0x4005c8
-0x00000000004007b0 <+186>: mov rdx,QWORD PTR [rip+0x200859] # 0x601010 <stdin@@GLIBC\_2.2.5>
+0x00000000004007b0 <+186>: mov rdx,QWORD PTR [rip+0x200859] # 0x601010 <stdin@@GLIBC_2.2.5>
 0x00000000004007b7 <+193>: mov rax,QWORD PTR [rbp-0x28]
 0x00000000004007bb <+197>: mov esi,0x10
 0x00000000004007c0 <+202>: mov rdi,rax
@@ -536,16 +536,16 @@ gdb-peda$ x/i 0x4005f8
 gdb-peda$ x/gx 0x600ff8
 0x600ff8: 0x00007ffff7a784d0
 gdb-peda$ x/5i 0x00007ffff7a784d0
-0x7ffff7a784d0 <\_\_isoc99\_scanf>: push rbx
-0x7ffff7a784d1 <\_\_isoc99\_scanf+1>: mov r10,rdi
-0x7ffff7a784d4 <\_\_isoc99\_scanf+4>: sub rsp,0xd0
-0x7ffff7a784db <\_\_isoc99\_scanf+11>: test al,al
-0x7ffff7a784dd <\_\_isoc99\_scanf+13>: mov QWORD PTR [rsp+0x28],rsi
+0x7ffff7a784d0 <__isoc99_scanf>: push rbx
+0x7ffff7a784d1 <__isoc99_scanf+1>: mov r10,rdi
+0x7ffff7a784d4 <__isoc99_scanf+4>: sub rsp,0xd0
+0x7ffff7a784db <__isoc99_scanf+11>: test al,al
+0x7ffff7a784dd <__isoc99_scanf+13>: mov QWORD PTR [rsp+0x28],rsi
 gdb-peda$
 ```
 
-* **해당 프로그램의 헤더 구성이 No RELRO, Partial RELRO 와 다릅니다.**
-  + 해당 프로그램의 헤더 정보에 '.rela.plt', '.got.plt' 헤더가 존재하지 않습니다.
+* **The header structure of this program differs from No RELRO and Partial RELRO:**
+  + The headers '.rela.plt' and '.got.plt' do not exist in this binary.
 
 ```sh title="Check permission for memory"
 gdb-peda$ elfheader
@@ -556,7 +556,7 @@ gdb-peda$ elfheader
 .dynsym = 0x4002e0
 .dynstr = 0x4003d0
 .gnu.version = 0x40045e
-.gnu.version\_r = 0x400478
+.gnu.version_r = 0x400478
 .rela.dyn = 0x4004b8
 .init = 0x400590
 .plt = 0x4005b0
@@ -564,10 +564,10 @@ gdb-peda$ elfheader
 .text = 0x400600
 .fini = 0x400894
 .rodata = 0x4008a0
-.eh\_frame\_hdr = 0x400910
-.eh\_frame = 0x400948
-.init\_array = 0x600dd0
-.fini\_array = 0x600dd8
+.eh_frame_hdr = 0x400910
+.eh_frame = 0x400948
+.init_array = 0x600dd0
+.fini_array = 0x600dd8
 .jcr = 0x600de0
 .dynamic = 0x600de8
 .got = 0x600fa8
@@ -579,18 +579,18 @@ Start End Perm Name
 0x00600000 0x00601000 r--p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
 0x00601000 0x00602000 rw-p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
 0x00602000 0x00623000 rw-p [heap]
-0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86\_64-linux-gnu/libc-2.23.so
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86_64-linux-gnu/libc-2.23.so
 0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p mapped
-0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p mapped
 0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p mapped
 0x00007ffff7ff8000 0x00007ffff7ffa000 r--p [vvar]
 0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp [vdso]
-0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86\_64-linux-gnu/ld-2.23.so
-0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7ffe000 0x00007ffff7fff000 rw-p mapped
 0x00007ffffffde000 0x00007ffffffff000 rw-p [stack]
 0xffffffffff600000 0xffffffffff601000 r-xp [vsyscall]
@@ -601,17 +601,15 @@ gdb-peda$
 
 ### **Partial RELRO**
 
-* **다음과 같이 동적 라이브러리의 주소가 호출 됩니다.**
-  + main 함수에서 printf 함수를 사용하기 위해 메모리 주소 0x4005b0을 호출합니다.
-    - 메모리 주소 0x4005b0는 ".plt" 영역입니다.
-    - ".plt" 영역은 0x400590 ~ 0x400610 입니다.
-  + 0x4005b0 영역의 코드는 "jmp QWORD PTR [rip+0x200a6a]" 입니다.
-  - 즉, 메모리 주소 0x601020에 저장된 주소로 JUMP 합니다.
-    * 메모리 주소 0x601020은 ".got.plt" 영역입니다.
-    * ".got.plt" 영역은 0x601000 ~ 0x601050 입니다.
-  - 메모리 주소 0x601020에 저장된 값은 동적 라이브러리의 주소가 아닌 '.plt' 영역입니다.
-    * 이는 해당 프로그램에서 printf 함수가 호출되지 않았기 때문에 Stub 코드("printf@plt+6")의 주소 값이 저장되어 있습니다.
-  - 프로그램을 실행하고 printf 함수가 호출되기 시작하면 메모리 주소 0x601020(".got.plt" 영역) 영역에 동적라이브러리의 printf 함수의 시작 주소 값이 저장됩니다.+ 즉, Partial RELRO가 적용된 바이너리는 ".got.plt"영역이 Write가 가능하도록 설정되어 있기 때문에 ".got.plt" 영역에 저장된 값을 변경할 수 있습니다.
+* **Dynamic library functions are resolved and called as follows:**
+  + In `main()`, 0x4005b0 is called to invoke printf.
+    - Address 0x4005b0 is in the ".plt" section (0x400590 ~ 0x400610).
+  + The code at 0x4005b0 is "jmp QWORD PTR [rip+0x200a6a]".
+  + This jumps to the address stored at 0x601020.
+    - Memory address 0x601020 is in the ".got.plt" section (0x601000 ~ 0x601050).
+  + Before `printf` is called, 0x601020 holds the address of the stub code ("printf@plt+6") in the PLT section rather than the dynamic library entry point.
+  + When the program executes and `printf` is called for the first time, the dynamic linker resolves `printf` and stores its entry point address into 0x601020 (".got.plt").
+  + Thus, in Partial RELRO binaries, the ".got.plt" section remains writable, so values stored in ".got.plt" can be overwritten.
 
 ```sh title="function call of Partial RELRO"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-Relro
@@ -638,7 +636,7 @@ Dump of assembler code for function main:
 0x0000000000400763 <+77>: mov edi,0x4008d4
 0x0000000000400768 <+82>: mov eax,0x0
 0x000000000040076d <+87>: call 0x4005b0 <printf@plt>
-0x0000000000400772 <+92>: mov rdx,QWORD PTR [rip+0x2008e7] # 0x601060 <stdin@@GLIBC\_2.2.5>
+0x0000000000400772 <+92>: mov rdx,QWORD PTR [rip+0x2008e7] # 0x601060 <stdin@@GLIBC_2.2.5>
 0x0000000000400779 <+99>: lea rax,[rbp-0x20]
 0x000000000040077d <+103>: mov esi,0x10
 0x0000000000400782 <+108>: mov rdi,rax
@@ -659,7 +657,7 @@ Dump of assembler code for function main:
 0x00000000004007c1 <+171>: mov edi,0x400903
 0x00000000004007c6 <+176>: mov eax,0x0
 0x00000000004007cb <+181>: call 0x4005b0 <printf@plt>
-0x00000000004007d0 <+186>: mov rdx,QWORD PTR [rip+0x200889] # 0x601060 <stdin@@GLIBC\_2.2.5>
+0x00000000004007d0 <+186>: mov rdx,QWORD PTR [rip+0x200889] # 0x601060 <stdin@@GLIBC_2.2.5>
 0x00000000004007d7 <+193>: mov rax,QWORD PTR [rbp-0x28]
 0x00000000004007db <+197>: mov esi,0x10
 0x00000000004007e0 <+202>: mov rdi,rax
@@ -676,12 +674,12 @@ Dump of assembler code for function main:
 0x0000000000400810 <+250>: mov rsi,rax
 0x0000000000400813 <+253>: mov edi,0x40092c
 0x0000000000400818 <+258>: mov eax,0x0
-0x000000000040081d <+263>: call 0x400600 <\_\_isoc99\_scanf@plt>
+0x000000000040081d <+263>: call 0x400600 <__isoc99_scanf@plt>
 0x0000000000400822 <+268>: nop
 0x0000000000400823 <+269>: mov rax,QWORD PTR [rbp-0x8]
 0x0000000000400827 <+273>: xor rax,QWORD PTR fs:0x28
 0x0000000000400830 <+282>: je 0x400837 <main+289>
-0x0000000000400832 <+284>: call 0x4005a0 <\_\_stack\_chk\_fail@plt>
+0x0000000000400832 <+284>: call 0x4005a0 <__stack_chk_fail@plt>
 0x0000000000400837 <+289>: leave
 0x0000000000400838 <+290>: ret
 End of assembler dump.
@@ -694,7 +692,7 @@ gdb-peda$ elfheader
 .dynsym = 0x4002c0
 .dynstr = 0x4003b0
 .gnu.version = 0x40043e
-.gnu.version\_r = 0x400458
+.gnu.version_r = 0x400458
 .rela.dyn = 0x400498
 .rela.plt = 0x4004c8
 .init = 0x400570
@@ -703,10 +701,10 @@ gdb-peda$ elfheader
 .text = 0x400620
 .fini = 0x4008b4
 .rodata = 0x4008c0
-.eh\_frame\_hdr = 0x400930
-.eh\_frame = 0x400968
-.init\_array = 0x600e10
-.fini\_array = 0x600e18
+.eh_frame_hdr = 0x400930
+.eh_frame = 0x400968
+.init_array = 0x600e10
+.fini_array = 0x600e18
 .jcr = 0x600e20
 .dynamic = 0x600e28
 .got = 0x600ff8
@@ -727,67 +725,64 @@ Program received signal SIGINT, Interrupt.
 gdb-peda$ x/gx 0x601020
 0x601020: 0x00007ffff7a62800
 gdb-peda$ x/5i 0x00007ffff7a62800
-0x7ffff7a62800 <\_\_printf>: sub rsp,0xd8
-0x7ffff7a62807 <\_\_printf+7>: test al,al
-0x7ffff7a62809 <\_\_printf+9>: mov QWORD PTR [rsp+0x28],rsi
-0x7ffff7a6280e <\_\_printf+14>: mov QWORD PTR [rsp+0x30],rdx
-0x7ffff7a62813 <\_\_printf+19>: mov QWORD PTR [rsp+0x38],rcx
+0x7ffff7a62800 <__printf>: sub rsp,0xd8
+0x7ffff7a62807 <__printf+7>: test al,al
+0x7ffff7a62809 <__printf+9>: mov QWORD PTR [rsp+0x28],rsi
+0x7ffff7a6280e <__printf+14>: mov QWORD PTR [rsp+0x30],rdx
+0x7ffff7a62813 <__printf+19>: mov QWORD PTR [rsp+0x38],rcx
 gdb-peda$ vmmap
 Start End Perm Name
 0x00400000 0x00401000 r-xp /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
 0x00600000 0x00601000 r--p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
 0x00601000 0x00602000 rw-p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-Relro
 0x00602000 0x00623000 rw-p [heap]
-0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86\_64-linux-gnu/libc-2.23.so
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86_64-linux-gnu/libc-2.23.so
 0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p mapped
-0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p mapped
 0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p mapped
 0x00007ffff7ff8000 0x00007ffff7ffa000 r--p [vvar]
 0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp [vdso]
-0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86\_64-linux-gnu/ld-2.23.so
-0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7ffe000 0x00007ffff7fff000 rw-p mapped
 0x00007ffffffde000 0x00007ffffffff000 rw-p [stack]
 0xffffffffff600000 0xffffffffff601000 r-xp [vsyscall]
 gdb-peda$
 ```
 
-* **다음과 같이 아직 호출되지 않은 함수들의 GOT 값은 어떤지 확인해보겠습니다.**
-  + main 함수에서 scanf 함수를 사용하기 위해 메모리 주소 0x400600(".plt")을 호출합니다.
-  + 0x400600 영역의 코드는 "jmp QWORD PTR [rip+0x200a42]" 이며, 0x601048 영역에 저장된 주소로 이동합니다.
-  + 0x601048 영역에 저장된 값은 0x400606 이며, 해당 영역은 Stub 코드가 저장되어 있습니다.
-  + scanf 함수가 아직 호출된 적이 없기 때문에 0x601048(".got.plt") 영역에 동적라이브러리의 scanf 함수의 시작 주소 값이 저장되어 있지 않습니다.
-  + Partial RELRO에 Lazy binding을 사용하기 때문에 함수를 호출하지 않으면 동적라이브러리의 주소 값을 ".got.plt" 영역에 저장되지 않습니다.
+* **Let's check the GOT entry for a function that has not yet been called:**
+  + In `main()`, 0x400600 (".plt") is called to invoke `scanf`.
+  + The code at 0x400600 is "jmp QWORD PTR [rip+0x200a42]", jumping to the address stored at 0x601048.
+  + Location 0x601048 holds 0x400606, which points to the resolver stub.
+  + Because `scanf` has not yet been called, the actual libc `scanf` entry point is not yet stored at 0x601048 (".got.plt").
+  + Because Partial RELRO uses lazy binding, dynamic library addresses are not written to ".got.plt" until the function is first executed.
 
 ```sh title="GOT area of uncalled function"
 gdb-peda$ x/i 0x400600
-0x400600 <\_\_isoc99\_scanf@plt>: jmp QWORD PTR [rip+0x200a42] # 0x601048
+0x400600 <__isoc99_scanf@plt>: jmp QWORD PTR [rip+0x200a42] # 0x601048
 gdb-peda$ x/gx 0x601048
 0x601048: 0x0000000000400606
 gdb-peda$ x/2i 0x0000000000400606
-0x400606 <\_\_isoc99\_scanf@plt+6>: push 0x6
-0x40060b <\_\_isoc99\_scanf@plt+11>: jmp 0x400590
+0x400606 <__isoc99_scanf@plt+6>: push 0x6
+0x40060b <__isoc99_scanf@plt+11>: jmp 0x400590
 gdb-peda$
 ```
 
 ### **Full RELRO**
 
-* **다음과 같이 동적 라이브러리의 주소를 호출하게 됩니다.**
-  + main 함수에서 printf 함수를 사용하기 위해 메모리 주소 0x4005c8을 호출합니다.
-    - 메모리 주소 0x4005c8는 ".plt.got" 영역입니다.
-    - ".plt.got" 영역은 0x4005c0 ~ 0x400600 입니다.
-  + 0x4005c8 영역의 코드는 "jmp QWORD PTR [rip+0x2009fa]" 입니다.
-  + - 즉, 메모리 주소 0x600fc8에 저장된 주소로 JUMP 합니다.
-      * 메모리 주소 0x600fc8은 ".got" 영역입니다.
-      * ".got.plt" 영역은 0x600fa8 ~ 0x601000입니다.
-    - 메모리 주소 0x600fc8에 아무런 값도 저장되어 있지 않습니다.
-      * 이는 해당 프로그램에서 printf 함수가 호출되지 않았기 때문입니다.
-    - 프로그램을 실행하고 printf 함수가 호출되기 시작하면 메모리 주소 0x600fc8(".got" 영역) 영역에 동적라이브러리의 printf 함수의 시작 주소 값이 저장됩니다.
-  + 즉, Full RELRO가 적용된 바이너리는 ".got"영역이 Read-only로 설정되지 때문에 ".got" 영역에 저장된 값을 변경할 수 없습니다.
+* **In Full RELRO, dynamic library functions are resolved and called as follows:**
+  + In `main()`, 0x4005c8 is called to invoke `printf`.
+    - Memory address 0x4005c8 is in the ".plt.got" section (0x4005c0 ~ 0x400600).
+  + The code at 0x4005c8 is "jmp QWORD PTR [rip+0x2009fa]".
+  + This jumps to the address stored at 0x600fc8.
+    - Memory address 0x600fc8 is in the ".got" section (0x600fa8 ~ 0x601000).
+  + Prior to runtime execution, 0x600fc8 is already initialized or bound at load time.
+  + When the program is loaded, the dynamic linker resolves all imported symbols and stores their libc addresses in the ".got" section before marking it read-only.
+  + Thus, in Full RELRO binaries, the ".got" section is read-only, preventing any GOT overwrite attacks.
 
 ```sh title="function call of Full RELRO"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-FullRelro
@@ -815,7 +810,7 @@ Dump of assembler code for function main:
 0x0000000000400743 <+77>: mov edi,0x4008b4
 0x0000000000400748 <+82>: mov eax,0x0
 0x000000000040074d <+87>: call 0x4005c8
-0x0000000000400752 <+92>: mov rdx,QWORD PTR [rip+0x2008b7] # 0x601010 <stdin@@GLIBC\_2.2.5>
+0x0000000000400752 <+92>: mov rdx,QWORD PTR [rip+0x2008b7] # 0x601010 <stdin@@GLIBC_2.2.5>
 0x0000000000400759 <+99>: lea rax,[rbp-0x20]
 0x000000000040075d <+103>: mov esi,0x10
 0x0000000000400762 <+108>: mov rdi,rax
@@ -836,7 +831,7 @@ Dump of assembler code for function main:
 0x00000000004007a1 <+171>: mov edi,0x4008e3
 0x00000000004007a6 <+176>: mov eax,0x0
 0x00000000004007ab <+181>: call 0x4005c8
-0x00000000004007b0 <+186>: mov rdx,QWORD PTR [rip+0x200859] # 0x601010 <stdin@@GLIBC\_2.2.5>
+0x00000000004007b0 <+186>: mov rdx,QWORD PTR [rip+0x200859] # 0x601010 <stdin@@GLIBC_2.2.5>
 0x00000000004007b7 <+193>: mov rax,QWORD PTR [rbp-0x28]
 0x00000000004007bb <+197>: mov esi,0x10
 0x00000000004007c0 <+202>: mov rdi,rax
@@ -870,7 +865,7 @@ gdb-peda$ elfheader
 .dynsym = 0x4002e0
 .dynstr = 0x4003d0
 .gnu.version = 0x40045e
-.gnu.version\_r = 0x400478
+.gnu.version_r = 0x400478
 .rela.dyn = 0x4004b8
 .init = 0x400590
 .plt = 0x4005b0
@@ -878,10 +873,10 @@ gdb-peda$ elfheader
 .text = 0x400600
 .fini = 0x400894
 .rodata = 0x4008a0
-.eh\_frame\_hdr = 0x400910
-.eh\_frame = 0x400948
-.init\_array = 0x600dd0
-.fini\_array = 0x600dd8
+.eh_frame_hdr = 0x400910
+.eh_frame = 0x400948
+.init_array = 0x600dd0
+.fini_array = 0x600dd8
 .jcr = 0x600de0
 .dynamic = 0x600de8
 .got = 0x600fa8
@@ -899,40 +894,40 @@ Program received signal SIGINT, Interrupt.
 gdb-peda$ x/gx 0x600fc8
 0x600fc8: 0x00007ffff7a62800
 gdb-peda$ x/5i 0x00007ffff7a62800
-0x7ffff7a62800 <\_\_printf>: sub rsp,0xd8
-0x7ffff7a62807 <\_\_printf+7>: test al,al
-0x7ffff7a62809 <\_\_printf+9>: mov QWORD PTR [rsp+0x28],rsi
-0x7ffff7a6280e <\_\_printf+14>: mov QWORD PTR [rsp+0x30],rdx
-0x7ffff7a62813 <\_\_printf+19>: mov QWORD PTR [rsp+0x38],rcx
+0x7ffff7a62800 <__printf>: sub rsp,0xd8
+0x7ffff7a62807 <__printf+7>: test al,al
+0x7ffff7a62809 <__printf+9>: mov QWORD PTR [rsp+0x28],rsi
+0x7ffff7a6280e <__printf+14>: mov QWORD PTR [rsp+0x30],rdx
+0x7ffff7a62813 <__printf+19>: mov QWORD PTR [rsp+0x38],rcx
 gdb-peda$ vmmap
 Start End Perm Name
 0x00400000 0x00401000 r-xp /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
 0x00600000 0x00601000 r--p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
 0x00601000 0x00602000 rw-p /home/lazenca0x0/Documents/Definition/protection/RELRO/RELRO-FullRelro
 0x00602000 0x00623000 rw-p [heap]
-0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86\_64-linux-gnu/libc-2.23.so
-0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86\_64-linux-gnu/libc-2.23.so
+0x00007ffff7a0d000 0x00007ffff7bcd000 r-xp /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7bcd000 0x00007ffff7dcd000 ---p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dcd000 0x00007ffff7dd1000 r--p /lib/x86_64-linux-gnu/libc-2.23.so
+0x00007ffff7dd1000 0x00007ffff7dd3000 rw-p /lib/x86_64-linux-gnu/libc-2.23.so
 0x00007ffff7dd3000 0x00007ffff7dd7000 rw-p mapped
-0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7dd7000 0x00007ffff7dfd000 r-xp /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7fd9000 0x00007ffff7fdc000 rw-p mapped
 0x00007ffff7ff6000 0x00007ffff7ff8000 rw-p mapped
 0x00007ffff7ff8000 0x00007ffff7ffa000 r--p [vvar]
 0x00007ffff7ffa000 0x00007ffff7ffc000 r-xp [vdso]
-0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86\_64-linux-gnu/ld-2.23.so
-0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86\_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffc000 0x00007ffff7ffd000 r--p /lib/x86_64-linux-gnu/ld-2.23.so
+0x00007ffff7ffd000 0x00007ffff7ffe000 rw-p /lib/x86_64-linux-gnu/ld-2.23.so
 0x00007ffff7ffe000 0x00007ffff7fff000 rw-p mapped
 0x00007ffffffde000 0x00007ffffffff000 rw-p [stack]
 0xffffffffff600000 0xffffffffff601000 r-xp [vsyscall]
 gdb-peda$
 ```
 
-* **다음과 같이 아직 호출되지 않은 함수들의 GOT 값은 어떤지 확인해보겠습니다.**
-  + main 함수에서 scanf 함수를 사용하기 위해 메모리 주소 0x4005f8(".plt.got")을 호출합니다.
-  + 0x4005f8 영역의 코드는 "jmp QWORD PTR [rip+0x2009fa]" 이며, 0x600ff8 영역에 저장된 주소로 이동합니다.
-  + 0x600ff8 영역에 저장된 값은 0x00007ffff7a784d0 이며, 해당 영역은 동적라이브러리의 scanf 함수의 시작 주소 값 입니다.
-  + Full RELRO에서는 Now binding을 사용하기 때문에 프로그래임 메모리에 로드 될때 해당 프로그램에서 사용되는 모든 동적 함수의 주소를 ".got" 영역에 저장됩니다.
+* **Let's check the GOT entry for a function that has not yet been called:**
+  + In `main()`, 0x4005f8 (".plt.got") is called to invoke `scanf`.
+  + The instruction at 0x4005f8 is "jmp QWORD PTR [rip+0x2009fa]", jumping to the address stored at 0x600ff8.
+  + Location 0x600ff8 holds 0x00007ffff7a784d0, which is the start address of `__isoc99_scanf` in the dynamic library.
+  + Because Full RELRO uses Now binding (BIND_NOW), all dynamic function addresses used in the program are resolved and stored in the ".got" section upon loading into memory.
 
 ```sh title="GOT area of uncalled function"
 gdb-peda$ x/i 0x4005f8
@@ -943,29 +938,29 @@ gdb-peda$
 ```
 
 :::note[Calling the printf function]
-다음과 같이 printf 함수가 호출됩니다.
+The printf function is called as follows:
 
 ||Partial RELRO||Full RELRO|
-|---|---|---|
+|---|---|---|---|
 |main()|call 0x4005b0 <printf@plt>|main()|call 0x4005c8|
 |.plt(printf@plt)|jmp QWORD PTR [rip+0x200a6a] # 0x601020|.plt.got(0x4005c8)|jmp QWORD PTR [rip+0x2009fa]|
 |.got.plt(0x601020)|0x7ffff7a62800|.got(0x600fc8)|0x7ffff7a62800|
 :::
 
-## **How to detect NX in the "Checksec.sh" file**
+## **How to detect RELRO in the "Checksec.sh" file**
 
 ### Binary
 
-* **다음과 같은 방법으로 바이너리의 RELRO 설정여부를 확인합니다.**  
-  + 'readelf' 명령어를 이용해 해당 파일의 프로그래 헤더와 Dynamic section 정보를 가져와 RELRO를 설졍여부를 확인합니다.
-  + 파일의 프로그래 헤더에 'GNU\_RELRO'가 있으면 RELRO가 적용되었다고 판단합니다.  
-    - 그리고 Dynamic section에 BIND\_NOW가 있으면 Full RELRO가 적용되었다고 판단합니다.
-    - Dynamic section에 BIND\_NOW가 없으면 Partial RELRO가 적용되었다고 판단합니다.
+* **Verify whether RELRO is enabled in a binary using the following method:**  
+  + Inspect Program Headers and Dynamic Section info using readelf to determine the RELRO setting.
+  + If 'GNU_RELRO' is present in Program Headers, RELRO is applied.
+    - If BIND_NOW is present in the Dynamic section, Full RELRO is enabled.
+    - If BIND_NOW is not present in the Dynamic section, Partial RELRO is enabled.
 
 ```sh title="Checksec.sh - line 145"
 # check for RELRO support
-if readelf -l $1 2>/dev/null | grep -q 'GNU\_RELRO'; then
-if readelf -d $1 2>/dev/null | grep -q 'BIND\_NOW'; then
+if readelf -l $1 2>/dev/null | grep -q 'GNU_RELRO'; then
+if readelf -d $1 2>/dev/null | grep -q 'BIND_NOW'; then
 echo -n -e '\033[32mFull RELRO \033[m '
 else
 echo -n -e '\033[33mPartial RELRO\033[m '
@@ -976,37 +971,37 @@ fi
 ```
 
 ```sh title="No RELRO"
-lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-NoRelro |grep 'GNU\_RELRO'
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-NoRelro |grep 'GNU_RELRO'
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$
 ```
 
 ```sh title="Partial RELRO"
-lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-Relro |grep 'GNU\_RELRO'
-GNU\_RELRO 0x0000000000000e10 0x0000000000600e10 0x0000000000600e10
-lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -d RELRO-Relro |grep 'BIND\_NOW'
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-Relro |grep 'GNU_RELRO'
+GNU_RELRO 0x0000000000000e10 0x0000000000600e10 0x0000000000600e10
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -d RELRO-Relro |grep 'BIND_NOW'
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$
 ```
 
 ```c title="Full RELRO"
-lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-FullRelro |grep 'GNU\_RELRO'
-GNU\_RELRO 0x0000000000000dd0 0x0000000000600dd0 0x0000000000600dd0
-lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -d RELRO-FullRelro |grep 'BIND\_NOW'
-0x0000000000000018 (BIND\_NOW)
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -l RELRO-FullRelro |grep 'GNU_RELRO'
+GNU_RELRO 0x0000000000000dd0 0x0000000000600dd0 0x0000000000600dd0
+lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ readelf -d RELRO-FullRelro |grep 'BIND_NOW'
+0x0000000000000018 (BIND_NOW)
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$
 ```
 
 ### Process
 
-* **다음과 같은 방법으로 프로세서의 RELRO 설정여부를 확인합니다.**
-  + Binary의 확인 방식과 비슷하며, 전달되는 파일의 경로가 다음과 같이 다릅니다.
-    - Ex) /proc/<PID>/exe
-  + 추가된 동작은 '/proc/<PID>/exe' 파일에 'Program Headers' 정보가 있는지 확인합니다.
+* **Verify whether RELRO is enabled for a running process using the following method:**
+  + Similar to binary inspection, with the file path specified as:
+    - Ex) /proc/<PID>/exe
+  + It additionally checks if 'Program Headers' exists in '/proc/<PID>/exe'.
 
 ```sh title="Checksec.sh - line 199"
 # check for RELRO support
 if readelf -l $1/exe 2>/dev/null | grep -q 'Program Headers'; then
-if readelf -l $1/exe 2>/dev/null | grep -q 'GNU\_RELRO'; then
-if readelf -d $1/exe 2>/dev/null | grep -q 'BIND\_NOW'; then
+if readelf -l $1/exe 2>/dev/null | grep -q 'GNU_RELRO'; then
+if readelf -d $1/exe 2>/dev/null | grep -q 'BIND_NOW'; then
 echo -n -e '\033[32mFull RELRO \033[m '
 else
 echo -n -e '\033[33mPartial RELRO \033[m '

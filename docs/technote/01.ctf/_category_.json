@@ -3,6 +3,9 @@
   "position": 1,
   "key": "technote_01.ctf",
   "link": {
-    "type": "generated-index"
+    "type": "generated-index",
+    "slug": "/category/01ctf",
+    "title": "01.CTF",
+    "description": "Vulnerability Research & CTF writeups and challenges"
   }
 }

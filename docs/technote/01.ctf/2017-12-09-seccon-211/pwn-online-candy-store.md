@@ -37,16 +37,16 @@ lazenca0x0@ubuntu:~/Documents/CTF/SECCON2017$
 
 #### **Main**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당는 함수는 setCandy() 함수를 호출하여 Candy 정보를 설정합니다.
-  + 해당는 함수는 login() 함수를 호출하여 사용하여 계정정보를 확인합니다.
-  + 해당는 함수는 사용자가 login에 실패 할 경우 다음과 같이 동작합니다.  
-    - 해당 함수는 login이 실패시 사용자에게 계정을 생성 할 것인지 묻습니다.
-      * 해당 함수는 addAccount() 함수를 이용해 새로운 계정을 생성합니다.
-    - 그리고 해당 함수는 login을 3번 실패하면 프로그램은 종료됩니다.
-  + 해당는 함수는 사용자가 login에 성공하면 아래 기능들을 이용할 수 있습니다.  
-    - 제고 출력, 주문, 충전, 로그아웃
-    - gLoginAccount→state 의 값이 1인 경우 "orderMenu", "Account" 기능을 이용 할 수 있습니다.
+* **The function has the following functions.**
+  + This function sets Candy information by calling the setCandy() function.
+  + This function calls the login() function to check account information.
+  + The function operates as follows if the user fails to log in.  
+    - That function asks the user if they want to create an account if login fails.
+      * This function creates a new account using the addAccount() function.
+    - And if the function fails to log in three times, the program ends.
+  + This function can use the functions below when the user successfully logs in.  
+    - Inventory output, ordering, charging, logout
+    - If the value of gLoginAccount→state is 1, you can use the “orderMenu” and “Account” functions.
 
 ```c title="main"
 __int64 __fastcall main(__int64 a1, char **a2, char **a3)
@@ -117,10 +117,10 @@ LABEL_14:
 
 #### **login()**
 
-* ****해당 함수는 다음과 같은 기능을 합니다.****
-  + 해당 함수는 사용자로 부터 ID,Password를 입력 받습니다.
-  + 해당 함수는 입력 받은 값을 전역 변수 gAccount[]에 존재하는지 확인합니다.
-  + 해당 함수는 인증에 성공하면, 해당 계정 정보가 저장된 gAccount[]의 주소를 전역변수 "gLoginAccount" 에 저장합니다.
+* ****The function has the following functions.****
+  + This function receives ID and password input from the user.
+  + This function checks whether the input value exists in the global variable gAccount[].
+  + If authentication is successful, this function stores the address of gAccount[] where the account information is stored in the global variable "gLoginAccount".
 
 ```c title="login"
 signed __int64 login()
@@ -170,7 +170,7 @@ signed __int64 login()
 }
 ```
 
-* **해당 함수는 다음과 같은 구조체를 사용합니다.**
+* **The function uses the following structure.**
 
 ```c title="struct IDPW and struct ACCOUNT"
 struct IDPW{
@@ -191,11 +191,11 @@ struct ACCOUNT{
 
 #### **addAccount()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 전역 변수 gAccount[].state 의 값이 '0' 인 경우 다음과 같이 동작합니다.
-    - 해당 함수는 malloc()을 사용하여 128 byte의 heap 영역을 할당받습니다.
-      * 해당 함수는 해당 영역의 주소를 gAccount[i].fd에 저장합니다.
-      * 해당 함수는 해당 영역에 ID, Password, profile 정보를 저장합니다.
+* **The function has the following functions.**
+  + The function operates as follows when the value of the global variable gAccount[].state is '0'.
+    - The function uses malloc() to allocate 128 bytes of heap space.
+      * The function stores the address of the area in gAccount[i].fd.
+      * The function stores ID, password, and profile information in the corresponding area.
 
 ```c title="addAccount"
 unsigned __int64 __fastcall addAccount(unsigned int a1)
@@ -232,12 +232,12 @@ unsigned __int64 __fastcall addAccount(unsigned int a1)
 
 #### **purchase**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 전역 변수 gStockCnt의 값이 0일 경우 메시지 출력 해당 기능을 종료합니다.
-  + 해당 함수는 전역 변수 gStockCnt의 값이 0이 아닐 경우 다음과 같은 기능을 합니다.
-    - 해당 함수는 사용자로 부터 구매 할 캔디의 코드 번호(candyInfo[0]), 캔디의 수(candyInfo[1])를 입력받습니다.
-      * 해당 함수는 구매 가능한 캔디 코드 번호, 캔디의 개수인지 확인합니다.
-    - 해당 함수는 정상적인 구매가 진행 되며, 캔디의 재고가 없을 경우 아래 함수가 호출됩니다.  
+* **The function has the following functions.**
+  + If the value of the global variable gStockCnt is 0, the function outputs a message and ends the function.
+  + This function performs the following functions if the value of the global variable gStockCnt is not 0.
+    - This function receives the code number of the candy to be purchased (candyInfo[0]) and the number of candies (candyInfo[1]) from the user.
+      * This function checks whether the candy code number and number of candies can be purchased.
+    - This function will proceed with the normal purchase, and if the candy is out of stock, the function below will be called.  
       * reSortStock()
       * setBoard()
 
@@ -292,7 +292,7 @@ unsigned __int64 purchase()
 }
 ```
 
-* **다음과 같은 구조체를 사용합니다.**
+* **Use the following structure.**
 
 ```c title="struct STOCK"
 struct STOCK{
@@ -305,9 +305,9 @@ struct STOCK{
 
 #### **setBoard()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 malloc() 함수를 이용해 1200 byte의 Heap 영역을 할당 받습니다.
-  + 해당 함수는 해당 영역에 사용자로 부터 값을 입력 받아 저장합니다.
+* **The function has the following functions.**
+  + This function allocates 1200 bytes of heap space using the malloc() function.
+  + This function receives the value input from the user and stores it in the corresponding area.
 
 ```c title="setBoard"
 unsigned __int64 setBoard()
@@ -323,9 +323,9 @@ unsigned __int64 setBoard()
 ```
 
 #### **charge**
-* ****해당 함수는 다음과 같은 기능을 합니다.****
-  + 해당 함수는 사용자로 부터 충전 할 금액의 번호는 입력 받습니다.
-  + 해당 함수는 해당 금액을 "gLoginAccount→bk" 영역에 더합니다.
+* ****The function has the following functions.****
+  + This function receives the number of the amount to be charged from the user.
+  + The function adds the amount to the “gLoginAccount→bk” area.
 
 ```c title="charge"
 unsigned __int64 charge()
@@ -374,11 +374,11 @@ unsigned __int64 charge()
 
 #### **Account()**
 
-* **해당 함수는 gLoginAccount->state의 값이 1인 경우 사용가능합니다.**
-* ****해당 함수는 다음과 같은 기능을 합니다.****
-  + 해당 함수는 사용 가능한 기능 목록을 출력합니다.
-    - 계정 삭제, 비밀번호 변경
-  + 해당 함수는 사용자로 부터 사용할 기능의 번호를 입력 받아 해당 기능을 호출합니다.
+* **This function is available when the value of gLoginAccount->state is 1.**
+* ****The function has the following functions.****
+  + The function prints a list of available features.
+    - Delete account, change password
+  + This function receives the number of the function to be used from the user and calls the function.
 
 ```c title="Account"
 unsigned __int64 Account()
@@ -426,17 +426,17 @@ unsigned __int64 Account()
 
 #### **delAccount()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 전역 변수 gAccount[]를 이용해 삭제 가능한 계정들을 출력합니다.
-  + 해당 함수는 사용자로 부터 삭제 할 계정의 번호를 입력 받습니다.
-  + 해당 함수는 사용자가 선택한 계정의 state 정보가 '3' 일 경우 삭제를 진행합니다.
-  - 해당 함수는 해당 계정(gAccount[num])의 정보를 초기화 합니다.
+* **The function has the following functions.**
+  + This function uses the global variable gAccount[] to output accounts that can be deleted.
+  + This function receives the number of the account to be deleted from the user.
+  + This function deletes the account selected by the user if the state information is '3'.
+  - This function initializes the information of the account (gAccount[num]).
     * state = 0
     * fd→state = 0
     * memset(gAccount[num].fd, 0, 0x80uLL);
-  - 해당 함수는 해당 계정(gAccount[num])의 fd 영역(heap)을 해제 합니다.+ 해당 함수는 gAccount[num].fd 영역에 "gAccount[num].fd - 16" 연산 한 값을 저장합니다.
-    - 저장되는 값은 Free chunk의 Head 주소입니다.
-    - **이것으로 인해 The House of Lore, UAF 취약성이 발생하게 됩니다.**
+  - This function releases the fd area (heap) of the account (gAccount[num]). + The function stores the value calculated by calculating "gAccount[num].fd - 16" in the gAccount[num].fd area.
+    - The saved value is the head address of the free chunk.
+    - **This creates The House of Lore, UAF vulnerability.**
 
 ```c title="delAccount"
 unsigned __int64 delAccount()
@@ -476,10 +476,10 @@ unsigned __int64 delAccount()
 
 #### **changePW**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 전역 변수 "gAccount[i].state"를 이용해 비밀번호 변경이 가능한 계정을 출력합니다.
-  + 해당 함수는 사용자로 부터 비밀번호를 변경할 계정의 번호를 입력 받습니다.
-  + 해당 함수는 해당 계정의 'gAccount[].fd.state' 영역에 저장된 값이 '0'이 아닐 경우 비밀번호를 변경할 수 있습니다.
+* **The function has the following functions.**
+  + This function uses the global variable “gAccount[i].state” to output accounts whose passwords can be changed.
+  + This function receives the account number for which the password will be changed from the user.
+  + This function can change the password if the value stored in the 'gAccount[].fd.state' area of ​​the account is not '0'.
 
 ```c title="changePW"
 unsigned __int64 changePW()
@@ -517,11 +517,11 @@ unsigned __int64 changePW()
 
 #### **orderMenu()**
 
-* **해당 함수는 gLoginAccount->state의 값이 1인 경우 사용가능합니다.**
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 사용 가능한 기능 목록을 출력합니다.
-    - 주문 목록, 주문 목록 추가, 주문 목록 취소, 캔디 주문
-  + 해당 함수는 사용자로 부터 사용할 기능의 번호를 입력 받아 해당 기능을 호출합니다.
+* **This function is available when the value of gLoginAccount->state is 1.**
+* **The function has the following functions.**
+  + The function prints a list of available features.
+    - Order list, add to order list, cancel order list, order candy
+  + This function receives the number of the function to be used from the user and calls the function.
 
 ```c title="orderMenu"
 unsigned __int64 orderMenu()
@@ -582,10 +582,10 @@ LABEL_11:
 
 #### **addToOrderList**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 choiceCandy() 함수를 사용해 주문할 사탕의 번호를 입력받습니다.
-  + 해당 함수는 malloc() 함수를 사용해 24 byte의 heap 영역을 할당받습니다.
-    - 해당 함수는 해당 영역에 주문할 사탕의 정보를 저장합니다.
+* **The function has the following functions.**
+  + This function uses the choiceCandy() function to input the number of the candy to order.
+  + This function allocates 24 bytes of heap space using the malloc() function.
+    - This function stores information about the candy to be ordered in that area.
 
 ```c title="addToOrderList"
 unsigned __int64 addToOrderList()
@@ -625,7 +625,7 @@ unsigned __int64 addToOrderList()
 }
 ```
 
-* **다음과 같은 구조체를 사용합니다.**
+* **Use the following structure.**
 
 ```c title="struct ORDER and struct CANDIES"
 typedef struct ORDER{
@@ -644,10 +644,10 @@ typedef struct CANDIES {
 
 #### **orderCancel**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 checkCancel(i) 함수를 취소 가능한 주문을 확인하고, 주문 취소 가능한 목록을 출력합니다.
-  + 해당 함수는 취소 가능한 주문이 있으며, 사용자로 부터 주문 번호을 입력받습니다.
-  + 해당 함수는 입력 값을 검증한 후 reSort() 함수를 호출 해 주문을 취소합니다.
+* **The function has the following functions.**
+  + This function uses the checkCancel(i) function to check orders that can be canceled and outputs a list of orders that can be cancelled.
+  + This function has a cancelable order and receives the order number from the user.
+  + The function verifies the input value and then calls the reSort() function to cancel the order.
 
 ```c title="orderCancel"
 unsigned __int64 orderCancel()
@@ -695,8 +695,8 @@ unsigned __int64 orderCancel()
 
 #### **reSort**
 
-* ****해당 함수는 다음과 같은 기능을 합니다.****
-  + 해당 함수는 free() 함수를 이용해 gOrderList[a1] 영역을 해제합니다.
+* ****The function has the following functions.****
+  + This function releases the gOrderList[a1] area using the free() function.
 
 ```c title="reSort"
 unsigned __int64 __fastcall reSort(unsigned int a1)
@@ -718,17 +718,17 @@ unsigned __int64 __fastcall reSort(unsigned int a1)
 
 #### **orderCandy()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 해당 함수는 사용자로 부터 캔디 주문의 진행 여부를 확인합니다.
-  + 해당 함수는 getStockNum() 함수를 사용해 gOrderList[]에 저장된 값이 gStock[]에 존재하는지 확인합니다.
-    - 해당 함수는 gOrderList[]에 저장된 값 gStock[]에 존재 할 경우 다음과 같이 처리됩니다.
-      * "gStock[]->candyNumber" 에 "gOrderList[]->orderNumber"의 값을 더하게 됩니다.
-    - 해당 함수는 gOrderList[]에 저장된 값 gStock[]에 존재하지 않을 경우 다음과 같이 처리됩니다.
-      * 해당 함수는 malloc() 함수를 사용하여 24 byte의 heap 영역을 할당합니다.
-      * 해당 함수는 해당 영역에 캔디에 대한 정보를 저장합니다.
-        + 사탕 이름, 가격, 캔디 정보가 저장되어 있는 주소 값
-      * 그리고 해당 함수는 124 byte의 heap 영역을 할당해서, 해당 영역에 사용자로 부터 입력받은 캔디 정보를 저장합니다.
-  + 해당 함수는 gOrderList[]에 저장된 값 gStock[]에 모두 저장한 후, gOrderList[] 영역을 모두 해제 합니다.
+* **The function has the following functions.**
+  + This function checks whether the candy order from the user has been processed.
+  + This function uses the getStockNum() function to check whether the value stored in gOrderList[] exists in gStock[].
+    - If the function exists in the value stored in gOrderList[] and gStock[], it is processed as follows.
+      * The value of “gOrderList[]->orderNumber” is added to “gStock[]->candyNumber”.
+    - If the function does not exist in the value stored in gOrderList[] and gStock[], it is processed as follows.
+      * This function allocates 24 bytes of heap space using the malloc() function.
+      * The function stores information about the candy in that area.
+        + Address value where candy name, price, and candy information are stored
+      * And the function allocates a heap area of ​​124 bytes and stores the candy information entered by the user in that area.
+  + The function stores all the values ​​stored in gOrderList[] in gStock[] and then releases all gOrderList[] areas.
 
 ```c title="orderCandy"
 unsigned __int64 orderCandy()
@@ -788,16 +788,16 @@ unsigned __int64 orderCandy()
 
 ### **Proof of concept**
 
-* 설명은 진행하기 전에 출제자는 플레이어들이 "House of lore" 취약성을 이용해서 풀기를 원했습니다.
-  + 하지만 해당 취약성들 외에도 여러 형태로 공격이 가능합니다.
+* Before proceeding with the explanation, the tester wanted players to use the "House of lore" vulnerability to solve it.
+  + However, in addition to these vulnerabilities, attacks are possible in many other forms.
 
 #### **Fake chunk**
 
-* **해당 프로그램에서 취약성을 이해하기 위해 ACCOUNT 구조체에 대한 이해가 필요합니다.**
-  + 해당 구조체는 전역 변수로 선언되어 있습니다.
-  + 해당 프로그램은 3개의 ACCOUNT 구조체를 사용합니다.
-    - 첫번째 구조체에는 'Admin' 계정 정보가 저장되어 있습니다.
-    - 2,3번째 구조체는 사용자가 생성한 계정의 정보가 저장됩니다.
+* **An understanding of the ACCOUNT structure is required to understand vulnerabilities in the program.**
+  + The structure is declared as a global variable.
+  + The program uses three ACCOUNT structures.
+    - The first structure stores 'Admin' account information.
+    - The 2nd and 3rd structures store information about the account created by the user.
 
 :::note[struct ACCOUNT gAccount]
 |  |  |  |
@@ -810,9 +810,9 @@ unsigned __int64 orderCandy()
 | 0x604270 | gAccount[2].fd | gAccount[2].bk |
 :::
 
-* **House of lore 취약성은 다음과 같은 Fake chunk가 필요합니다.**
-  + delAccount() 함수를 이용해 gAccount[1].fd 영역에 Free chunk의 Head 주소를 저장 할 수 있습니다.
-  + charge() 함수를 이용해 gAccount[1].bk, gAccount[2].bk 영역의 값을 변경 할 수 있습니다.
+* **House of lore vulnerability requires the following Fake chunk.**
+  + You can use the delAccount() function to store the head address of the free chunk in the gAccount[1].fd area.
+  + You can change the values ​​of the gAccount[1].bk and gAccount[2].bk areas using the charge() function.
 
 :::note[Fake chunk]
 |  |  |  |
@@ -827,12 +827,12 @@ unsigned __int64 orderCandy()
 
 #### **Overwrite Fd of Fack chunk**
 
-* **House of lore 취약성은 다음과 같은 Free chunk의 fd영역을 변경할 수 있어야 합니다.**  
-  + delAccount() 함수에 의해 gAccount[1].fd 영역의 값이 변경됩니다.  
-    - gAccount[1].fd→id : fd 영역
-    - gAccount[1].fd→pw : bk 영역
-  + 해당 계정의 비밀번호 변경을 할 수 있으면 Free chunk의 bk영역에 값을 덮어 쓸수 있습니다.
-* **하지만 패스워드를 변경하기 위해서는 "gAccount[1].fd→state"의 값이 '0'이 아니어야 합니다.**
+* **House of lore vulnerability must be able to change the fd area of ​​the following free chunk.**  
+  + The value of the gAccount[1].fd area is changed by the delAccount() function.  
+    - gAccount[1].fd→id: fd area
+    - gAccount[1].fd→pw: bk area
+  + If you can change the password for the account, you can overwrite the value in the bk area of ​​the free chunk.
+* **However, in order to change the password, the value of "gAccount[1].fd→state" must not be '0'.**
 
 :::note[gAccount[1].fd]
 |  | Create an account | | Delete account | |
@@ -846,18 +846,18 @@ unsigned __int64 orderCandy()
 
 #### **UAF**
 
-* **다음과 같이 UAF 취약성을 사용해 "gAccount[1].fd→state" 값을 변경할 수 있습니다.**
-  + ACCOUNT 구조체의 크기는 128 byte 입니다.
-  + orderCandy() 함수에 dest->candyDescription(사탕의 정보를 입력하는 영역)에 할당되는 크기는 124 byte입니다.
-  + 해제된 "gAccount[1].fd"영역을 "dest→candyDescription" 에 할당받아야 합니다.
-    - 해당 영역("dest→candyDescription")에  문자 16개 이상을 저장하면 "gAccount[1].fd→state" 영역을 덮어 쓸 수 있습니다.
-* **주의 할 내용은 다음과 같습니다.**
-  + **UAF 공격시 제일 중요한 부분은 House of lore 공격을 위해 ACCOUNT 구조체와 같은 크기의 공간을 할당받고 해제 할 수 있어야 합니다.**
-    - 즉, 해제된 "gAccount[1].fd" 영역에 반드시 "dest->candyDescription"에 할당되는 영역이 할당되어야 합니다.
-  + ****그리고 아래와 같은 영역이 "gAccount[1].fd" 영역에 할당되지 않도록 주의 해야 합니다.****
-    - 해당 프로그램은 사탕을 주문하기 위해서는 Order list에 구매할 사탕을 추가해야 합니다.
-      * Order list에 구매할 사탕을 추가 때 마다 Heap 영역(24 byte)을 할당 받습니다.
-    - 해당 프로그램은 주문한 사탕이 가게에 없는 제품이면 Heap 영역(24 byte)을 할당 받습니다.
+* **You can change the value of "gAccount[1].fd→state" using a UAF vulnerability as follows:**
+  + The size of the ACCOUNT structure is 128 bytes.
+  + The size allocated to dest->candyDescription (area where you enter candy information) in the orderCandy() function is 124 bytes.
+  + The released "gAccount[1].fd" area must be allocated to "dest→candyDescription".
+    - If you save more than 16 characters in the area ("dest→candyDescription"), the "gAccount[1].fd→state" area can be overwritten.
+* **Something to note:**
+  + **The most important part of a UAF attack is to be able to allocate and deallocate a space of the same size as the ACCOUNT structure for a house of lore attack.**
+    - In other words, the area allocated to "dest->candyDescription" must be assigned to the freed "gAccount[1].fd" area.
+  + ****And be careful not to assign the following areas to the “gAccount[1].fd” area.****
+    - In order to order candy, you must add the candy to be purchased to the order list.
+      * Heap area (24 bytes) is allocated each time a candy to be purchased is added to the order list.
+    - The program is allocated a heap area (24 bytes) if the ordered candy is not available in the store.
 
 ### Structure of Exploit code
 :::note
@@ -888,9 +888,9 @@ unsigned __int64 orderCandy()
 
 #### **Leak Libc Addresss**
 
-* **다음과 같은 Heap 구조 설계가 필요합니다.**
-  + 유저는 1개의 사탕을 Order list에 추가 하고, 주문을 완료 합니다.
-  + 유저는 2개의 사탕을 Order list에 추가 합니다.
+* **The following heap structure design is required.**
+  + The user adds one candy to the order list and completes the order.
+  + The user adds 2 candies to the order list.
 
 ```bash title="Heap Layout"
 gdb-peda$ parseheap 
@@ -914,24 +914,24 @@ addr                prev                size                 status             
 gdb-peda$
 ```
 
-* **다음과 같은 Heap 구조입니다.**
+* **Heap structure is as follows.**
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
 | Order list[0] | 0xa175e0 | A | 0x20 | None | None |
-| 창고에 저장된 사탕 정보 | 0xa17600 | A | 0x20 | None | None |
-| 창고에 저장된 사탕 설명 | 0xa17620 | A | 0x90 | None | None |
+| Candy information stored in warehouse | 0xa17600 | A | 0x20 | None | None |
+| Description of candy stored in warehouse | 0xa17620 | A | 0x90 | None | None |
 | Order list[1] | 0xa176b0 | A | 0x20 | None | None |
 
-* **다음과 같은 방법으로 해제된 Heap 영역을 Small bin에 등록합니다.**
-  + 유저는 처음에 등록한 사탕을 모두 구매 합니다.
-  - 해당 프로그램은 사탕을 모두 소진을 하면 사용하고 있던 Heap 영역을 모두 해제 합니다.
-    * 사탕 설명(0x90) 영역은 Unsortedbin에 등록됩니다.
-      + 이때 fd, bk에 main arena의 주소 값이 저장됩니다.
-  - 그리고 해당 프로그램은 모두 소진된 사탕에 대한 평가 내용을 저장하기 위해 Heap 영역을 할당합니다.
-  * malloc()는 이때 해제된 사탕 정보(0x20) 영역, 사탕 설명(0x90) 영역을 하나의 영역(0xb0)으로 변경합니다.
-  * malloc()는 Heap 영역(1200 byte)을 할당으로 인해 해당 영역을 Small bin에 저장합니다.
-  + 해당 Free chunk의 fd,bk 영역에 Small bin의 주소가 저장됩니다.
+* **Register the freed heap area to small bin in the following way.**
+  + The user purchases all the candy initially registered.
+  - When the program uses up all the candy, it releases all the heap area it was using.
+    * The candy description (0x90) area is registered in Unsortedbin.
+      + At this time, the address value of the main arena is stored in fd and bk.
+  - And the program allocates a heap area to store evaluations of all candies that have been used up.
+  * malloc() changes the released candy information (0x20) area and candy description (0x90) area into one area (0xb0).
+  * malloc() allocates a heap area (1200 bytes) and stores that area in the small bin.
+  + The address of the small bin is stored in the fd,bk area of ​​the corresponding free chunk.
 
 ```bash title="debugging"
 gdb-peda$ parseheap 
@@ -959,19 +959,19 @@ $7 = (mchunkptr) 0xa17600
 gdb-peda$
 ```
 
-* **다음과 같은 Heap 구조입니다.**
+* **Heap structure is as follows.**
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
 | Order list[0] | 0xa175e0 | A | 0x20 | None | None |
-| 창고에 저장된 사탕 & 사탕 설명 | 0xa17600 | F | 0xb0 | 0x7ff5052a2c18 | 0x7ff5052a2c18 |
+| Description of candies & candies stored in the warehouse | 0xa17600 | F | 0xb0 | 0x7ff5052a2c18 | 0x7ff5052a2c18 |
 | Order list[1] | 0xa176b0 | A | 0x20 | None | None |
-| 구매한 사탕 평가 | 0xa176d0 | A | 0x4c0 | None | None |
+| Evaluate purchased candy | 0xa176d0 | A | 0x4c0 | None | None |
 
-* **다음과 같은 방법으로 Libc addresss를 추출 할 수 있습니다.**
-  + 유저는 1개의 사탕을 Order list에 추가 합니다.  
-    - Order list에 추가 된 사탕의 정보는 하나의 영역(0xb0)으로 변경 영역에 할당됩니다.
-  + 유저는 Order list의 내용을 출력해 Libc addresss를 추출 할 수 있습니다.
+* **You can extract Libc addresses in the following way.**
+  + The user adds one candy to the order list.  
+    - Information on candy added to the order list is allocated to the change area as one area (0xb0).
+  + Users can print the contents of the Order list and extract Libc addresses.
 
 ```bash title="Leak Libc address"
 Please pick up the candies to order.
@@ -1028,17 +1028,17 @@ gdb-peda$ x/4gx 0xa17600
 gdb-peda$
 ```
 
-* **다음과 같은 Heap 구조입니다.**
+* **Heap structure is as follows.**
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
 | Order list[0] | 0xa175e0 | A | 0x20 | None | None |
 | Order list[2] | 0xa17600 | A | 0x20 | None | None |
-| 창고에 저장된 사탕 & 사탕 설명(Unsorted bin) | 0xa17620 | F | 0x90 | 0x7ff5052a2c18 | 0x7ff5052a2c18 |
+| Description of candies & candies stored in the warehouse (Unsorted bin) | 0xa17620 | F | 0x90 | 0x7ff5052a2c18 | 0x7ff5052a2c18 |
 | Order list[1] | 0xa176b0 | A | 0x20 | None | None |
-| 구매한 사탕 평가 | 0xa176d0 | A | 0x4c0 | None | None |
+| Evaluate purchased candy | 0xa176d0 | A | 0x4c0 | None | None |
 
-* **다음과 같은 스크립트를 이용해 Libc addresss를 추출 할 수 있습니다.**
+* **You can extract Libc addresses using the following script.**
 
 ```python title="LeakLibcAddress.py"
 from pwn import *
@@ -1127,29 +1127,29 @@ p.send('5')
 
 #### **House of lore(Fake chunk)**
 
-* **다음과 같이 **"gAccount[1].fd" 영역에 할당되었던 공간을 "dest->candyDescription"영역에 재할당 받아야 합니다.****
-  + 동일한 영역을 할당받기 위해 미리 Heap 구조를 설계해야 합니다.
-    - Order list의 0번째 사탕 취소
-    - 사탕 주문 완료
-  + 2개의 새로운 계정을 생성합니다.
+* **The space allocated to the **"gAccount[1].fd" area must be reallocated to the "dest->candyDescription" area.****
+  + The heap structure must be designed in advance to allocate the same area.
+    - Cancel the 0th candy in the order list
+    - Candy order completed
+  + Create two new accounts.
 * **Heap area structure**
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
-| 창고에 저장된 0번 사탕 정보 | 0xa175e0 | A | 0x20 | 0x0 | None |
+| Candy number 0 stored in the warehouse | 0xa175e0 | A | 0x20 | 0x0 | None |
 | Order list[2] | 0xa17600 | F | 0x20 | None | None |
-| 창고에 저장된 0번 사탕 설명 | 0xa17620 | A | 0x90 | 0xa17600 | None |
+| Description of candy number 0 stored in warehouse | 0xa17620 | A | 0x90 | 0xa17600 | None |
 | Order list[1] | 0xa176b0 | F | 0x20 | None | None |
-| 구매한 사탕 평가 | 0xa176d0 | A | 0x4c0 | None | None |
+| Evaluate purchased candy | 0xa176d0 | A | 0x4c0 | None | None |
 | gAccount[1].fd | 0xA17B90 | A | 0x90 | None | None |
 | gAccount[2].fd | 0xA17c20 | A | 0x90 | None | None |
 
-* **다음과 같이 House of lore에 필요한 Fake chunk를 생성할 수 있습니다.**  
-  + 생성한 계정을 이용해 다음과 같이 충전이 필요합니다.
-    - 2번째 계정 : 6308456(0x604268)
-    - 3번째 계정 : 6308416(0x604240)
-  + 2번째 계정을 삭제 합니다.
-* **다음과 같은 gAccount[] 구조를 가지게 됩니다.**
+* **You can create the Fake chunks needed for House of lore as follows:**  
+  + You need to recharge using the account you created as follows.
+    - 2nd account: 6308456 (0x604268)
+    - 3rd account: 6308416 (0x604240)
+  + Delete the second account.
+* **You will have the following gAccount[] structure.**
 
 ```bash title="Heap Structure" 
 gdb-peda$ x/8gx 0x604240
@@ -1169,7 +1169,7 @@ gdb-peda$
 | 0x604260 | gAccount[2].state | gAccount[2].number |
 | 0x604270 | gAccount[2].fd | gAccount[2].bk = 0x604240 |
 
-* **다음과 같은 Heap 구조를 가지게 됩니다.**
+* **It will have the following heap structure.**
 
 ```bash title="Heap Structure - debugging" 
 gdb-peda$ parseheap 
@@ -1200,22 +1200,22 @@ gdb-peda$
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
-| 창고에 저장된 0번 사탕 정보 | 0xa175e0 | A | 0x20 | None | None |
+| Candy number 0 stored in the warehouse | 0xa175e0 | A | 0x20 | None | None |
 | Order list[2] | 0xa17600 | F | 0x20 | 0x0 | None |
-| 창고에 저장된 0번 사탕 설명 | 0xa17620 | A | 0x90 | None | None |
+| Description of candy number 0 stored in warehouse | 0xa17620 | A | 0x90 | None | None |
 | Order list[1] | 0xa176b0 | F | 0x20 | 0xa17600 | None |
-| 구매한 사탕 평가 | 0xa176d0 | A | 0x4c0 | None | None |
+| Evaluate purchased candy | 0xa176d0 | A | 0x4c0 | None | None |
 | gAccount[1].fd(Unsortbin) | 0xA17B90 | F | 0x90 | 0x7ff5052a2b78 | 0x7ff5052a2b78 |
 | gAccount[2].fd | 0xA17c20 | A | 0x90 | None | None |
 
 #### **House of lore(Overwrite Smallbin bk)**
 
-* **우선 공격자는 bk 영역을 덮어 쓰기 위해서 다음과 같이 "gAccount[1].fd→state"의 값을 조작해야 합니다.**
-* **공격자는 다음과 같이 UAF 취약성을 사용할 수 있습니다.**  
-  + Order list에 새로운 사탕을 추가하고, 주문을 완료합니다.  
-    - 이때 "dest→candyDescription" 영역에 "gAccount[1].fd + 0x10" 영역의 주소가 저장됩니다.
-      * 해당 영역에 16이상의 문자를 저장합니다.
-  + 다음과 같이 "gAccount[1].fd→state" 값을 변경됩니다.
+* **First, the attacker must manipulate the value of "gAccount[1].fd→state" as follows to overwrite the bk area.**
+* **An attacker could use the UAF vulnerability as follows:**  
+  + Add new candies to the order list and complete the order.  
+    - At this time, the address of the “gAccount[1].fd + 0x10” area is saved in the “dest→candyDescription” area.
+      * Save 16 or more characters in the area.
+  + The value of "gAccount[1].fd→state" is changed as follows.
 
 ```
 gdb-peda$ x/6gx 0x0000000002593b90
@@ -1229,16 +1229,16 @@ gdb-peda$
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
-| 창고에 저장된 0번 사탕 정보 | 0xa175e0 | A | 0x20 | None | None |
+| Candy number 0 stored in the warehouse | 0xa175e0 | A | 0x20 | None | None |
 | Order list[0] | 0xa17600 | A | 0x20 | None | None |
-| 창고에 저장된 0번 사탕 설명 | 0xa17620 | A | 0x90 | None | None |
-| 창고에 저장된 1번 사탕 정보 | 0xa176b0 | F | 0x20 | 0x0 | None |
-| 구매한 사탕 평가 | 0xa176d0 | A | 0x4c0 | None | None |
-| 창고에 저장된 1번 사탕 설명 | 0xA17B90 | A | 0x90 | None | None |
+| Description of candy number 0 stored in warehouse | 0xa17620 | A | 0x90 | None | None |
+| Information on candy number 1 stored in warehouse | 0xa176b0 | F | 0x20 | 0x0 | None |
+| Evaluate purchased candy | 0xa176d0 | A | 0x4c0 | None | None |
+| Description of candy number 1 stored in warehouse | 0xA17B90 | A | 0x90 | None | None |
 | gAccount[2].fd | 0xA17c20 | A | 0x90 | None | None |
 
-* **다음과 같이 1번 사탕을 구매하여 0xA17B90 영역이 Smallbin에 등록되도록 합니다.**
-  + 0xA17B90 영역이 Smallbin[16], [17]에 등록되었습니다.
+* **Purchase candy number 1 as follows so that area 0xA17B90 is registered in Smallbin.**
+  + Area 0xA17B90 has been registered in Smallbin[16], [17].
 
 ```bash title="Heap Structure - debugging" 
 gdb-peda$ parseheap 
@@ -1274,17 +1274,17 @@ gdb-peda$
 
 |  | Addresss | State | Heap size | fd | bk |
 | --- | --- | --- | --- | --- | --- |
-| 창고에 저장된 0번 사탕 정보 | 0xa175e0 | A | 0x20 | None | None |
+| Candy number 0 stored in the warehouse | 0xa175e0 | A | 0x20 | None | None |
 | Order list[0] | 0xa17600 | A | 0x20 | 0x7ff5052a2b88 | 0xa176b0 |
-| 창고에 저장된 0번 사탕 설명 | 0xa17620 | A | 0x90 | None | None |
-| 창고에 저장된 1번 사탕 정보 | 0xa176b0 | F | 0x20 | 0xa176b0 | 0x7ff5052a2b88 |
-| 구매한 사탕 평가 | 0xa176d0 | A | 0x4c0 | None | None |
-| 창고에 저장된 1번 사탕 설명 | 0xA17B90 | A | 0x90 | 0x7ff5052a2bf8 | 0x7ff5052a2bf8 |
+| Description of candy number 0 stored in warehouse | 0xa17620 | A | 0x90 | None | None |
+| Information on candy number 1 stored in warehouse | 0xa176b0 | F | 0x20 | 0xa176b0 | 0x7ff5052a2b88 |
+| Evaluate purchased candy | 0xa176d0 | A | 0x4c0 | None | None |
+| Description of candy number 1 stored in warehouse | 0xA17B90 | A | 0x90 | 0x7ff5052a2bf8 | 0x7ff5052a2bf8 |
 | gAccount[2].fd | 0xA17c20 | A | 0x90 | None | None |
-| 구매한 사탕 평가 | 0xa17cb0 | A | 0x4c0 | None | None |
+| Evaluate purchased candy | 0xa17cb0 | A | 0x4c0 | None | None |
 
-* **다음과 같이 2번 계정의 비밀번호 변경을 통해 bk영역의 값을 계속 변경 할 수있습니다.**
-  + bk 영역에 첫번째 Fake chunk 의 시작 주소를 저장하였습니다.
+* **You can continue to change the value of the bk area by changing the password of account 2 as follows.**
+  + The starting address of the first fake chunk is stored in the bk area.
 
 ```bash title="Heap Structure - debugging" 
 gdb-peda$ x/6gx 0x9d4b90
@@ -1294,8 +1294,8 @@ gdb-peda$ x/6gx 0x9d4b90
 gdb-peda$
 ```
 
-* **다음과 같은 방법으로 main\_arena.bins[17] 영역에 gAccount[1]의 주소 값을 저장 할 수 있습니다.**
-  + 공격자는 Order list에 사탕을 추가하고, 주문을 완료합니다.
+* **You can save the address value of gAccount[1] in the main\_arena.bins[17] area in the following way.**
+  + The attacker adds candy to the order list and completes the order.
 
 ```bash title="Overwrite Smallbin bk" 
 gdb-peda$ p main_arena.bins[16]
@@ -1305,13 +1305,13 @@ $4 = (mchunkptr) 0x604240
 gdb-peda$
 ```
 
-* **다음과 같이 gAccount[] 영역을 할당 받을 수 있습니다.**
-  + 조금 전에 추가한 사탕을 모두 구매합니다.
-  + 공격자는 Order list에 사탕을 추가하고, 주문을 완료합니다.
-    - 이때 캔디 설명을 입력 받는 영역으로 gAccount[1].fd영역이 할당됩니다.
-    - 다음과 같은 방법으로 원하는 영역의 값을 변경 할 수 있습니다.
-      * gAccount[1].fd = "접근을 원하는 영역의 주소" - 0x18
-      * 2번째 계정의 비밀번호 변경을 사용해 "접근을 원하는 영역"에 사용자 입력값을 저장할 수 있습니다.
+* **The gAccount[] area can be assigned as follows.**
+  + Buy all the candy you added earlier.
+  + The attacker adds candy to the order list and completes the order.
+    - At this time, the gAccount[1].fd area is allocated as the area where the candy description is entered.
+    - You can change the value of the desired area in the following way.
+      * gAccount[1].fd = "Address of the area you wish to access" - 0x18
+      * You can use the second account's password change to save user input in the "area you want access to."
 
 ```bash title="Overwrite gAccount1.fd - debugging" 
 Breakpoint 1, 0x000000000040123a in ?? ()
@@ -1331,8 +1331,8 @@ gdb-peda$
 
 #### **One Gadget**
 
-* **다음과 같은 One Gadget을 사용할 수 있습니다.**
-  + 해당 Gadget을 fflush.got영역에 덮어쓰면 Shell을 획득 할 수 있습니다.
+* **You can use the following One Gadget:**
+  + You can obtain the shell by overwriting the gadget in the fflush.got area.
 
 ```asm title="One Gadget" 
 .text:00000000000F0274                 mov     rax, cs:environ_ptr_0

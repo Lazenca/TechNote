@@ -40,25 +40,25 @@ lazenca0x0@ubuntu:~/CTF/DEFCON2017/leo$
 
 #### **Setting**
 
-* 해당 문제를 풀기 위해 사전에 다음과 같은 설정이 필요합니다.
-* **apache 서버 실행**
-  + Kali linux에는 apache가 기본적으로 설치되어 있습니다.
+* To solve this problem, the following settings are required in advance.
+* **Run apache server**
+  + Kali Linux has apache installed by default.
 
 ```bash title="Run apache server"
 root@kali:~# service apache2 start
 ```
 
-* **"23fsf251l10o121415" 파일 업로드**
-  + 해당 문제를 풀기 위해 해당 파일을 다음과 같은 경로에 업로드 합니다.
-  + VMware를 이용할 경우 Drag&Drop으로 업로드하면 됩니다.
-  + Drag & Drop 기능을 사용할 수 없을 때 다음과 같이 명령어를 실행합니다.
+* **Upload file "23fsf251l10o121415"**
+  + To solve the problem, upload the file to the following path.
+  + If you use VMware, you can upload with Drag&Drop.
+  + When the Drag & Drop function cannot be used, execute the command as follows.
 
 ```bash title="Upload file"
 lazenca0x0@ubuntu:~# scp 23fsf251l10o121415 root@192.168.239.156:/var/www/html/
 ```
 
-* **호스트명 변경**
-  + 해당 문제를 풀기 위해서는 반드시 다음과 같이 Host 파일의 내용 변경이 필요합니다.
+* **Change host name**
+  + To solve this problem, you must change the contents of the Host file as follows.
 
 ```bash title="Modify Host File"
 lazenca0x0@ubuntu:~/CTF/DEFCON/Leo$ sudo -i
@@ -84,8 +84,8 @@ lazenca0x0@ubuntu:~/CTF/DEFCON/Leo$
 
 #### **.init\_array**
 
-* 해당 함수는 main() 함수가 호출되기 전에 .init\_array영역에서 호출됩니다.
-  + 아래 init()함수에서 off\_603DF8[] 에 의해 "0x4013CF" 영역의 함수가 호출됩니다.
+* This function is called in the .init\_array area before the main() function is called.
+  + In the init() function below, the function in the "0x4013CF" area is called by off\_603DF8[].
 
 ```c title="init()"
 void __fastcall init(unsigned int a1, __int64 a2, __int64 a3)
@@ -107,16 +107,16 @@ void __fastcall init(unsigned int a1, __int64 a2, __int64 a3)
 }
 ```
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + curl\_easy\_setopt() 함수를 아래 URL의 내용을 가져오기 위한 설정을 진행합니다.
+* This function has the following functions:
+  + Set up the curl\_easy\_setopt() function to retrieve the contents of the URL below.
     - "<http://leo_33e299c29ed3f0113f3955a4c6b08500.quals.shallweplayaga.me/23fsf251l10o121415>"
     - CURLOPT\_URL : 10002
     - CURLOPT\_WRITEFUNCTION : 20011
     - CURLOPT\_WRITEDATA : 10001
     - CURLOPT\_USERAGENT : 10018
-  + curl\_easy\_perform() 함수를 이용해 해당 페이지(파일)의 내용을 addr 영역에 저장합니다.
-  + mprotect() 함수를 이용해 addr 영역에 읽기, 쓰기, 실행 권한을 할당합니다.
-  + addr영역에 저장된 값은 xor 연산을 이용해 복호화 됩니다.(Key : 0xAA)
+  + Use the curl\_easy\_perform() function to save the contents of the page (file) in the addr area.
+  + Assign read, write, and execution permissions to the addr area using the mprotect() function.
+  + The value stored in the addr area is decrypted using the xor operation. (Key: 0xAA)
 
 ```c title="sub_4013CF()"
 __int64 __fastcall sub_4013CF(__int64 a1, char **a2)
@@ -247,13 +247,13 @@ __int64 __fastcall sub_4013CF(__int64 a1, char **a2)
 
 #### **Main()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + read()함수를 이용해 16000개의 문자를 입력 받습니다.
-  + checkZero(), checkDataSize()함수를 이용해 buffer에 저장된 data의 크기를 확인합니다.
-  + getData() 함수를 호출하면 값을 리턴하며, 리턴된 값은 if()를 이용해 조건에 만족하는지 확인합니다.
-  + 중요한 부분은 다음과 같습니다.
-    - if()에서 같은 값을 찾는 조건 값 : 49, 50, 100, 2, 25
-    - 앞에서 언급한 조건 값이 아닐 경우 ".init\_array" 영역에서 할당된 addr 함수가 호출됩니다.
+* This function has the following functions:
+  + Use the read() function to input 16000 characters.
+  + Check the size of data stored in the buffer using the checkZero() and checkDataSize() functions.
+  + When you call the getData() function, it returns a value, and the returned value is checked to see if it satisfies the condition using if().
+  + The important part is:
+    - Condition values ​​for finding the same value in if(): 49, 50, 100, 2, 25
+    - If the condition value mentioned above is not met, the addr function assigned in the ".init\_array" area is called.
 
 ```c title="main()"
 unsigned int __fastcall main(signed int argc, char **option, char **a3)
@@ -397,20 +397,20 @@ LABEL_47:
 
 #### **getData()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + for()를 이용해 tmp[][] 의 값을 초기화 합니다.
-  + for()를 이용해 buffer[i]의 값을 추출해서 tmp[][1]의 첫번째 배열에 전달합니다.
-    - tmp[buffer[i]][1] 영역의 값을 1 증가 시킵니다.
-    - Ex) buffer[1] 에 저장된 값이 3이라면 "++tmp[1][1]" 영역에 값을 1증가 시킵니다.
-  + for()를 이용해 tmp[i][1] 영역에서 제일 큰 값과 제일 작은 값을 maxValOne, minValOne에 저장합니다.
-    - sumVal에 tmp[i][1]에 저장된 모든 값을 더한 후 ">> 8" 연산한 값을 저장합니다.
-  + reSort() 함수를 호출합니다.
-  + for()를 이용해 tmp[i][1] 영역에서 '0'을 제외한 값중에서 제일 큰 값과 제일 작은 값을  minValZero, maxValZero에 저장합니다.  
-    - zeroCount에 tmp[i][1] 영역에 저장된 '0' 갯수를 저장합니다.
-  + 이렇게 연산된 값들은 if()에 의해 각 조건을 만족하면 특정 값들을 리턴합니다.
-    - 리턴되는 값 : 2, 100, 22, 25, 49, 50
-  + 여기서 중요한 부분은 main() 함수에서 사용하는 조건 값에 22는 포함되어 있지 않습니다.
-  + 즉, 해당 값으로 addr 을 호출할 수 있습니다.
+* This function has the following functions:
+  + Initialize the value of tmp[][] using for().
+  + Use for() to extract the value of buffer[i] and pass it to the first array of tmp[][1].
+    - Increases the value of the tmp[buffer[i]][1] area by 1.
+    - Ex) If the value stored in buffer[1] is 3, increase the value in the “++tmp[1][1]” area by 1.
+  + Use for() to store the largest and smallest values ​​in the tmp[i][1] area in maxValOne and minValOne.
+    - Add all the values ​​stored in tmp[i][1] to sumVal and store the calculated value as ">> 8".
+  + Call the reSort() function.
+  + Using for(), store the largest and smallest values ​​among the values ​​excluding '0' in the tmp[i][1] area in minValZero and maxValZero.  
+    - The number of '0's stored in the tmp[i][1] area is stored in zeroCount.
+  + The values ​​calculated in this way return specific values ​​if each condition is satisfied by if().
+    - Returned values: 2, 100, 22, 25, 49, 50
+  + The important part here is that the condition value used in the main() function does not include 22.
+  + That means you can call addr with that value.
 
 ```c title="getData()"
 signed __int64 __fastcall getData(char *buffer, int size)
@@ -493,8 +493,8 @@ signed __int64 __fastcall getData(char *buffer, int size)
 
 #### **reSort()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + for()를 이용해 'tmps[j][1]' 의 값이 'tmps[j + 1][1]' 의 값 보다 크다면,  'tmps[j][0,1]' 영역의 값과 'tmps[j + 1][0,1]' 영역의 값을 교환합니다.
+* This function has the following functions:
+  + If the value of 'tmps[j][1]' is greater than the value of 'tmps[j + 1][1]' using for(), the value of the 'tmps[j][0,1]' area is exchanged with the value of the 'tmps[j + 1][0,1]' area.
 
 ```c title="reSort()"
 __int64 __fastcall reSort(bins *tmp, int size256)
@@ -529,8 +529,8 @@ __int64 __fastcall reSort(bins *tmp, int size256)
 
 #### **addr()**
 
-* 다음과 같은 방법으로 addr 영역을 호출합니다.
-  + 우선 getData() 함수로 부터 22를 리턴 받지 못하고 있기 때문에 디버깅을 통해 해당 값을 다음과 같은 방법으로 변경합니다.
+* The addr area is called in the following way.
+  + First, since 22 is not being returned from the getData() function, change the value through debugging in the following way.
 
 ```bash title="Modify EAX Value"
 gdb-peda$ b *0x402079
@@ -551,7 +551,7 @@ $2 = 22
 gdb-peda$
 ```
 
-* 다음과 같이 GDB를 이용해 Heap 영역에 저장된 코드를 확인할 수 있습니다.
+* You can check the code stored in the heap area using GDB as follows.
 
 ```bash title="Check Code in Heap"
 gdb-peda$ b *0x4021FE
@@ -607,15 +607,15 @@ gdb-peda$ x/40i 0x971000
 gdb-peda$
 ```
 
-* 해당 코드를 디컴파일하면 다음과 같은 코드를 얻을 수 있습니다.
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + for()를 이용해 'stackOverFlow[]' 영역에 '\*buffer'에 저장된 데이터를 저장합니다.
-  + 취약성은 여기서 발생합니다.
-    - stackOverFlow의 크기는 24byte 입니다.
-    - 이로 인해 사용자가 입력한 값이 해당 함수의 Return addresss영역을 덮어쓸수 있습니다.
-  + 여기서 주의 할 점은 다음과 같습니다.
-    - i, half 영역도 buffer의 데이터로 덮어써집니다.
-    - 이로 인해 if()에서 요구하는 조건을 만족하지 못해 프로그램이 종료됩니다.
+* If you decompile that code, you will get code like this:
+* This function has the following functions:
+  + Save the data stored in ‘\*buffer’ in the ‘stackOverFlow[]’ area using for().
+  + This is where vulnerability arises.
+    - The size of stackOverFlow is 24 bytes.
+    - Because of this, the value entered by the user may overwrite the Return addresses area of ​​the function.
+  + Things to note here are as follows:
+    - The i and half areas are also overwritten with data from the buffer.
+    - This causes the program to terminate because the condition required by if() is not satisfied.
 
 ```c title="addr()"
 __int64 __fastcall sub_15F6000(char *buffer, signed int readSize)
@@ -640,8 +640,8 @@ __int64 __fastcall sub_15F6000(char *buffer, signed int readSize)
 }
 ```
 
-* 다음과 같은 코드를 이용해 Stack Overflow를 확인할 수 있습니다.  
-  + i, half 는 int형 이기 때문에 4byte로 데이터를 전달 합니다.
+* You can check Stack Overflow using the following code.  
+  + Since i and half are of int type, data is transmitted in 4 bytes.
     - half(0x1f41) = 16000 / 2 + 1
     - i(0x1d) = 24(stackOverFlow size) + 4(half size) + 1
 
@@ -664,7 +664,7 @@ p.interactive()
 
 #### **Stack overflow**
 
-* 다음과 같이 Segmentation fault을 확인 할 수 있습니다.
+* You can check the segmentation fault as follows.
 
 ```bash title="Segmentation fault"
 Breakpoint 2, 0x00000000004021fe in ?? ()
@@ -699,8 +699,8 @@ Program received signal SIGSEGV, Segmentation fault.
 
 ### Structure of Exploit code
 :::note
-* getData() 함수로 부터 22 를 리턴받아 addr() 함수를 호출
-* addr() 함수의 Return addresss 영역을 ROP 로 덮어씀
+* Returns 22 from the getData() function and calls the addr() function.
+* Return addresses area of ​​addr() function is overwritten with ROP
   + read(0, bss, size)
   + system(bss)
 :::
@@ -708,7 +708,7 @@ Program received signal SIGSEGV, Segmentation fault.
 * The following information is required for an attack:
 
 :::note
-* getData() 함수로 부터 '22' 를 리턴 받을 수 있는 Data 구성
+* Data configuration that can return '22' from the getData() function
 * ROP Gadget
 :::
 
@@ -716,7 +716,7 @@ Program received signal SIGSEGV, Segmentation fault.
 
 #### **ROP Gadget**
 
-* 다음과 같은 방법으로 필요한 Gadget을 얻을 수 있습니다.
+* You can get the Gadget you need in the following ways:
 
 ```bash title="pop rdi"
 gdb-peda$ ropsearch 'pop rdi'
@@ -725,7 +725,7 @@ Searching for ROP gadget: 'pop rdi' in: binary ranges
 gdb-peda$
 ```
 
-* 해당 바이너리에 찾은 'pop rsi' Gadget에 'pop r15' 포함되어 있지만 문제가 되지 않습니다.
+* The 'pop rsi' Gadget found in the binary includes 'pop r15', but it is not a problem.
 
 ```bash title="pop rsi"
 gdb-peda$ ropsearch 'pop rsi'
@@ -734,7 +734,7 @@ Searching for ROP gadget: 'pop rsi' in: binary ranges
 gdb-peda$
 ```
 
-* 해당 바이너리에 'pop rdx' Gadget이 존재하지 않습니다.
+* Gadget 'pop rdx' does not exist in the binary.
 
 ```bash title="pop rdx"
 gdb-peda$ ropsearch 'pop rdx'
@@ -743,10 +743,10 @@ Not found
 gdb-peda$
 ```
 
-* 'pop rdx' Gadget이 필요한지 확인해보겠습니다.
-  + 'ret' 명령어가 호출될 때 'rdx' 레지스터에는 buffer 영역의 마지막에 저장된 'D(0x44)'가 저장되어 있습니다.
-  + 즉, 'pop rdx' Gadget 은 필요하지 않습니다.
-    - buffer 마지막 영역에 저장되는 값이 0x7 이상의 값을 저장하면 됩니다..
+* Let's check if you need the 'pop rdx' Gadget.
+  + When the 'ret' instruction is called, 'D(0x44)', which is stored at the end of the buffer area, is stored in the 'rdx' register.
+  + In other words, the 'pop rdx' Gadget is not needed.
+    - The value stored in the last area of ​​the buffer should be 0x7 or higher.
 
 ```bash title="rdx check"
 Breakpoint 2, 0x00000000004021fe in ?? ()
@@ -779,7 +779,7 @@ gdb-peda$
 
 #### **Get 22 from getData() function**
 
-* 우선 다음과 같은 POC 코드를 작성할 수 있습니다.
+* First of all, you can write POC code like this:
 
 ```python title="POC"
 from pwn import *
@@ -818,12 +818,12 @@ p.send('/bin/sh')
 p.interactive()
 ```
 
-* 우선 첫번째 if() 조건은 zeroCount의 값을 4 이상 값으로 저장해서 통과 할 수 있습니다.
-* 두번째, 세번째 if() 조건은 'minValOne', 'minValZero'의 값이 zeroCount에 의해 0이 되기 때문에 통과 할 수 있습니다.
-* 마지막 if() 조건을 만족시키기 위해서 "2 \* sumVal >= maxValOne" 조건의 결과로 참(True)을 얻어야 합니다.
-  + 조건에서 참(True)을 얻기위해 알아야 할 정보는 다음과 같습니다.
-    - sumVal는 0x3e(62)을 넘을 수 없습니다.
-    - 즉, maxValOne의 값이 127 보다 작으면 해당 조건에서 참(True)을 얻을 수 있습니다.
+* First of all, the first if() condition can be passed by storing the value of zeroCount as 4 or more.
+* The second and third if() conditions can be passed because the values ​​of 'minValOne' and 'minValZero' become 0 by zeroCount.
+* In order to satisfy the last if() condition, True must be obtained as a result of the condition "2 \* sumVal >= maxValOne".
+  + The information you need to know to get True in the condition is as follows.
+    - sumVal cannot exceed 0x3e(62).
+    - That is, if the value of maxValOne is less than 127, the condition returns True.
       * (16000(buffer size) >> 8) \* 2= 0x7c(124)
 
 ```c title="Return value calculation"
@@ -845,7 +845,7 @@ p.interactive()
 ...
 ```
 
-* 다음과 같은 코드를 이용해 해당 조건을 만족하는 Data를 만들수 있습니다.
+* You can create data that satisfies the conditions using the following code.
 
 ```python title="Make Data"
 for i in range(0,255):

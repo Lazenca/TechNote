@@ -34,8 +34,8 @@ No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RU
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/Pwnable/banker$
 ```
 
-* 해당 프로그램을 실행하면 다음과 같이 출력됩니다.
-  + "/tmp/users.txt"파일이 존재하지 않는다고 출력합니다.
+* When you run the program, the output is as follows:
+  + It outputs that the file "/tmp/users.txt" does not exist.
 
 ```sh title="Output"
 lazeca0x0@ubuntu:~/Documents/DEFCON2016/Pwnable/banker$ ./banker 
@@ -45,7 +45,7 @@ Current UTC time is: Tue Sep 13 01:17:11 2016
 Unable to open users file: /tmp/users.txt
 ```
 
-* 해당 문제를 해결하기 위해 "/tmp/"에 "users.txt" 파일을 생성합니다.
+* To solve this problem, create a "users.txt" file in "/tmp/".
 
 ```sh title="File edit"
 lazeca0x0@ubuntu:~/Documents/DEFCON2016/Pwnable/banker$ vi /tmp/users.txt
@@ -55,12 +55,12 @@ lazeca0x0@ubuntu:~/Documents/DEFCON2016/Pwnable/banker$ vi /tmp/users.txt
 
 #### **Main**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + LoadUserInfo() 함수를 이용해 User의 정보를 메모리에 저장합니다.
-  + UserInput() 함수를 이용해 사용자로 부터 Username, Password를 입력 받습니다.
-  + CheckUsername() 함수를 이용해 사용자가 입력한 Username이 존재하는지 확인합니다.
-  + CheckPassword() 함수를 이용해 올바른 Password 인지 확인합니다.
-  + Login에 성공하면 Commands() 함수를 호출합니다.
+* This function has the following functions:
+  + Use the LoadUserInfo() function to store user information in memory.
+  + Use the UserInput() function to receive username and password input from the user.
+  + Use the CheckUsername() function to check whether the Username entered by the user exists.
+  + Use the CheckPassword() function to check whether the password is correct.
+  + If login is successful, the Commands() function is called.
 
 ```c title="main"
 int __cdecl __noreturn main(int argc, const char **argv, const char **envp)
@@ -144,13 +144,13 @@ LABEL_11:
 
 #### LoadUserInfo
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + fopen()함수를 이용해 "/tmp/users.txt" 파일의 내용을 메모리에 저장합니다.
-  + feof()함수를 이용해 파일의 끝인지 확인합니다.
-    - Parsing()함수는 "/tmp/users.txt" 파일 내용에서 Username,Password,Permission 정보를 인자값에 저장합니다.
-    - AddUser()함수를 이용해 User 정보를 등록합니다.
-      * "/tmp/users.txt" 파일에서 확인한 Username, Password, Permission 정보를 이용합니다.
-    - 이러한 과정을 파일의 끝을 만날때 까지 반복합니다.
+* This function has the following functions:
+  + Save the contents of the "/tmp/users.txt" file to memory using the fopen() function.
+  + Use the feof() function to check if it is the end of the file.
+    - The Parsing() function stores Username, Password, and Permission information as arguments in the contents of the "/tmp/users.txt" file.
+    - Register user information using the AddUser() function.
+      * Use the Username, Password, and Permission information found in the “/tmp/users.txt” file.
+    - This process is repeated until the end of the file is reached.
 
 ```c title="LoadUserInfo"
 char __cdecl LoadUserInfo(int a1)
@@ -189,16 +189,16 @@ char __cdecl LoadUserInfo(int a1)
 
 #### Parsing()
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + fget()함수를 이용해 "/tmp/users.txt"으로 부터 파일의 내용을 읽어서 oneline에 저장합니다.
-  + 아래 코드에서 수정이 필요한 내용이 있습니다.
-  - "strChar = \*((\_BYTE \*)&len + lineArrayCount + 3);"는 "strChar = oneline[lineArrayCount-1]" 입니다.
-  - lineArrayCount의 값이 1 이기 때문에 4(1+3)byte떨어져 있는 oneline[0]영역이라는 것을 알 수 있습니다.+ 문자열에서 ' '(공백)을 이용해 단어를 구분해 저장합니다.  
-    - 첫번째 단어는 Username
-    - 두번째 단어는 Password
-    - 세번째 단어는 Permission
-  + 그리고 Password는 base64Decode() 함수를 이용해 값을 복호화(Decode)합니다.
-    - 즉, Password는 base64로 Encoding되어 있다는 것을 알수 있습니다.
+* This function has the following functions:
+  + Use the fget() function to read the contents of the file from "/tmp/users.txt" and save it in oneline.
+  + There is something that needs to be modified in the code below.
+  - "strChar = \*((\_BYTE \*)&len + lineArrayCount + 3);" is "strChar = oneline[lineArrayCount-1]".
+  - Since the value of lineArrayCount is 1, you can see that it is a oneline[0] area that is 4 (1+3) bytes away. + In the string, words are separated and stored using ' ' (space).  
+    - The first word is Username
+    - The second word is Password
+    - The third word is permission
+  + And the Password value is decoded using the base64Decode() function.
+    - In other words, you can see that the password is encoded in base64.
 
 ```c title="Parsing"
 bool __cdecl Parsing(_IO_FILE *ptrFile, char *userName, char *password, int *permission)
@@ -290,7 +290,7 @@ LABEL_29:
 }
 ```
 
-* Parsing() 함수의 코드 분석을 통해 "/tmp/users.txt"파일 내용의 형태를 다음과 같이 추측할 수 있습니다.
+* Through code analysis of the Parsing() function, the form of the contents of the "/tmp/users.txt" file can be guessed as follows.
 
 ```text title="users.txt example"
 [Username] [Base64Encode(Password)] [Permission]
@@ -302,10 +302,10 @@ Admin dGVzdA0K 1
 
 #### CheckUsername
 
-* 해당 함수는 다음과 같은 기능을 합니다.  
-  + sub\_804AEF2() 함수를 이용해 User정보를 전달하고 있습니다.
-  + sub\_804AEF2() 함수는 CheckPassword() 함수에 User정보를 전달하고 있습니다.
-  + 즉, CheckUsername()함수는 CheckPassword()함수를 이용해 User정보를 확인하고 있습니다.
+* This function has the following functions:  
+  + User information is transmitted using the sub\_804AEF2() function.
+  + The sub\_804AEF2() function passes user information to the CheckPassword() function.
+  + In other words, the CheckUsername() function uses the CheckPassword() function to check user information.
 
 ```c title="CheckUsername"
 int *__cdecl CheckUsername(int a1, int name)
@@ -334,23 +334,23 @@ bool __cdecl sub_804AEF2(int a1, int a2)
 
 #### CheckPassword
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 해당 함수를 분석하기 전에 알아야 할 내용이 있습니다.
-    - \*\*info에는 "/tmp/users.txt" 파일에서 읽은 Username, Password 정보가 전달됩니다.
-  + 해당 함수는 파일에서 읽은 단어가 사용자가 입력한 단어의 길이보다 작은지 확인합니다.
-    - 만약 그렇다면 -1을 return 하며, 그렇지 않을 경우 1을 result에 저장합니다.
-  + 다음과 같이 파일에서 읽은 단어와 사용자가 입력한 단어를 비교합니다.
+* This function has the following functions:
+  + Here's what you need to know before analyzing that function.
+    - Username and password information read from the "/tmp/users.txt" file is sent to \*\*info.
+  + The function checks whether the word read from the file is less than the length of the word entered by the user.
+    - If so, -1 is returned; if not, 1 is stored in result.
+  + Compare words read from the file with words entered by the user, as follows:
 
 **if()**
 
-| 조건 | return되는 값 |
+| condition | returned value |
 | --- | --- |
-| 파일에서 읽은 단어의 문자 값 &lt; 사용자가 입력한 단어의 문자 | -1 |
-| 파일에서 읽은 단어의 문자 값 > 사용자가 입력한 단어의 문자 | 1 |
+| Character value of word read from file &lt; Characters of the word entered by the user | -1 |
+| Character value of a word read from a file > Characters of a word entered by the user | 1 |
 
-* + 그리고 다음과 같은 경우에 0을 return합니다.
-    - 파일에서 읽은 단어의 길이가 0 일 경우
-    - 파일에서 읽은 단어와 사용자가 입력한 단어가 같을 경우
+* + And returns 0 in the following cases:
+    - If the length of words read from the file is 0
+    - If the word read from the file and the word entered by the user are the same
 
 ```c title="CheckPassword"
 signed int __cdecl CheckPassword(char **info, char **target)
@@ -405,11 +405,11 @@ signed int __cdecl CheckPassword(char **info, char **target)
 }
 ```
 
-* 다음과 같은 방법으로 Password를 찾을 수 있습니다.
-  + 해당 함수는 첫번째로 두 단어의 길이를 비교하고 있습니다.  
-    - 사용자가 입력한 단어의 길이가 파일에서 읽은 단어의 길이보다 클 경우 -1 을 리턴합니다.
-    - 이러한 조건을 이용해 다음과 같이 Password의 길이를 알수 있습니다.
-      * 예제에서 확인한 Password의 길이는 4입니다.
+* You can find your Password in the following ways.
+  + The function first compares the length of two words.  
+    - If the length of the word entered by the user is greater than the length of the word read from the file, -1 is returned.
+    - Using these conditions, you can find out the length of the password as follows.
+      * The length of the password confirmed in the example is 4.
 
 ```sh title="Password length check"
 lazeca0x0@ubuntu:~/Documents/DEFCON2016/Pwnable/banker$ ./banker
@@ -434,12 +434,12 @@ Invalid username/password, error code=-1
 Enter username:
 ```
 
-* + 두번째로 두 단어의 문자를 차례데로 비교합니다.
-    - 이 또한 사용자가 입력한 단어의 문자가 클경우 -1 을 리턴합니다.
-    - 이러한 조건을 이용해 다음과 같이 Password에 사용된 문자를 찾을 수 있습니다.
-      * 예제에서 확인한 Password의 첫번째 문자는 t 입니다.
-  + 이러한 방식을 이용해 Admin의 Password를 찾을 수 있습니다.
-* "Exploit code" 페이지에 관련 Script가 있습니다.
+* + Second, compare the letters of the two words one after another.
+    - This also returns -1 if the number of characters in the word entered by the user is large.
+    - Using these conditions, you can find the characters used in the password as follows.
+      * The first character of the password confirmed in the example is t.
+  + You can find the Admin's Password using this method.
+* There is a related Script on the "Exploit code" page.
 
 ```sh title="Password characters check"
 lazeca0x0@ubuntu:~/Documents/DEFCON2016/Pwnable/banker$ ./banker
@@ -460,10 +460,10 @@ Enter username:
 
 #### **Commands()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 해당 프로그램에서 제공하는 기능 목록을 출력합니다.
-  + 사용자로 부터 실행하고자 하는 기능의 번호를 입력받아 기능을 실행합니다.
-  + 6번 "Admin Console" 기능은 Permission이 1 일 경우에만 사용가능합니다.
+* This function has the following functions:
+  + Prints a list of functions provided by the program.
+  + The function is executed by receiving the number of the function to be executed from the user.
+  + Function number 6, “Admin Console”, can only be used when Permission is 1.
 
 ```c title="Commands"
 int __usercall Commands@<eax>(long double fst7_0@<st0>, _DWORD *a1, int userInfo, int a3)
@@ -538,9 +538,9 @@ int __usercall Commands@<eax>(long double fst7_0@<st0>, _DWORD *a1, int userInfo
 
 #### **AdminConsole()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 사용가능한 기능 목록을 출력합니다.
-  + 사용자로 부터 실행하고자 하는 기능의 번호를 입력받아 기능을 실행합니다.
+* This function has the following functions:
+  + Prints a list of available features.
+  + The function is executed by receiving the number of the function to be executed from the user.
 
 ```c title="AdminConsole"
 int __cdecl AdminConsole(_DWORD *a1, int a2, int a3)
@@ -596,12 +596,12 @@ LABEL_14:
 
 #### **CreateNewUser()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 사용자로 부터 새로 생성할 계정(Accout)의 UserName을 입력 받습니다.
-  + 입력받은 UserName이 이미 등록되어 있는지 확인합니다.
-    - 입력받은 UserName이 등록되지 않았을 경우 계정 생성을 계속 진행합니다.
-  + 그리고 사용자로 부터 새로 생성한 계정에서 사용할 Password를  입력 받습니다.
-  + 입력 받은 UserName, Password를 AddUser()함수를 이용해 "/tmp/users.txt"파일에 등록합니다.
+* This function has the following functions:
+  + Enter the UserName of the new account (Accout) to be created from the user.
+  + Check whether the entered UserName is already registered.
+    - If the entered UserName is not registered, proceed with account creation.
+  + Then, the user enters the password to be used in the newly created account.
+  + Register the entered UserName and Password in the "/tmp/users.txt" file using the AddUser() function.
 
 ```c title="CreateNewUser"
 int (__cdecl *__cdecl CreateNewUser(_DWORD *arg0, int a1))(_DWORD, _DWORD)
@@ -690,12 +690,12 @@ LABEL_2:
 }
 ```
 
-### 취약성 확인
+### Check for vulnerabilities
 
-* 해당 프로그램의 취약성은 CreateNewUser() 함수에서 Password를 입력 받는 부분에서 발생합니다.
-  + UserInput()함수를 이용해 사용자로부터 입력받을 수 있는 문자열의 최대 길이는 256입니다.
-  + 하지만 copy()함수에 의해 복사대상이 되는 tmpPassword의 크기는 8 byte입니다.
-  + 그리고 해당 프로그램은 Password의 최소 길이 값(5) 만 확인하고 있습니다.
+* The vulnerability of the program occurs in the part where the password is entered in the CreateNewUser() function.
+  + The maximum length of the string that can be input from the user using the UserInput() function is 256.
+  + However, the size of tmpPassword to be copied by the copy() function is 8 bytes.
+  + And the program only checks the minimum length of the password (5).
 
 ```c title="Password length check"
 char tmpPassword[8]
@@ -710,7 +710,7 @@ char tmpPassword[8]
 		break;
 ```
 
-* Username을 입력받은 부분은 사용가능한 최대 길이 값을 확인하고 있기 때문에 Overflow가 발생할 수 없습니다.
+* Overflow cannot occur because the part where the username is entered checks the maximum available length value.
 
 ```c title="Username length check"
 char tmpUsername[8];
@@ -729,32 +729,32 @@ char tmpUsername[8];
 ### Structure of Exploit code
 
 :::note[Description]
-1. Admin의 Password를 추출
-   1. bruteforce 방법을 이용하여 Admin계정의 Password를 추출합니다.
-2. Admin계정을 이용하여 새로운 계정을 생성시 Password에 Payload 입력
-   1. Password에 ROP를 입력합니다.
+1. Extract Admin's Password
+   1. Extract the password of the Admin account using the bruteforce method.
+2. When creating a new account using an Admin account, enter Payload in Password.
+   1. Enter ROP in Password.
 3. Logout
 :::
 
 * The following information is required for an attack:
 
 :::note[Check point]
-* Admin계정의 Password
-* Shell을 획득하기 위한 ROP
+* Password of Admin account
+* ROP to acquire Shell
 :::
 
 ### **Information for attack**
 
-#### **Admin계정의 Password추출**
+#### **Extract password of Admin account**
 
-* "Exploit Code" 에 "findPassword.py" 파일 참조
+* Refer to the "findPassword.py" file in "Exploit Code"
 
-#### **Shell을 획득하기 위한 ROP - (ROP설계)**
+#### **ROP to acquire shell - (ROP design)**
 
-* INT 80  명령어를 이용하여 execve()함수를 실행합니다.
-  + UserInput(0x0804a6b0) 함수를 이용하여 사용자로 부터 "    /bin/sh" 를 입력받아, 해당 값을 dest, src에 값을 저장합니다.
-  + INT 80코드를 이용하여 execve()함수를 실행하기 위해 strlen(0x0804abae)함수를 이용하여 EAX에 execve() 함수의 System call 번호를 저장합니다.
-    - "/bin/sh" 앞에 공백 4개를 입력하는 이유는 EAX에 11이라는 값을 저장하기 위해서 입니다.
+* Execute the execve() function using the INT 80 command.
+  + Using the UserInput(0x0804a6b0) function, “/bin/sh” is input from the user and the value is stored in dest and src.
+  + To execute the execve() function using the INT 80 code, use the strlen(0x0804abae) function to store the system call number of the execve() function in EAX.
+    - The reason you enter 4 spaces before "/bin/sh" is to store the value 11 in EAX.
 
 ```text title="ROP Chaining"
 0x0804a6b0(dest,src,len)
@@ -762,11 +762,11 @@ char tmpUsername[8];
 sys_execve(src,0,0)
 ```
 
-#### **Shell을 획득하기 위한 ROP - (사용자 입력값을 저장할 메모리 공간)**
+#### **ROP to obtain shell - (memory space to store user input)**
 
-* 다음은 readelf를 이용하여 해당 문제 파일의 Secation Headers를 확인할 결과 입니다.
-  + "    /bin/sh"문자열을 저장할 영역으로 .bbs 영역의 끝 부분을 사용하겠습니다.
-    - 0x080fd060 ~ 0x8102f38 영역
+* The following is the result of checking the Secation Headers of the problem file using readelf.
+  + We will use the end of the .bbs area as the area to store the "/bin/sh" string.
+    - 0x080fd060 ~ 0x8102f38 area
 
 ```sh title=".bbs" 
 lazeca0x0@ubuntu:~/Documents/DEFCON 2016$ readelf -S banker
@@ -807,10 +807,10 @@ Key to Flags:
   O (extra OS processing required) o (OS specific), p (processor specific)
 ```
 
-#### **Shell을 획득하기 위한 ROP - (****ROP Gadget)**
+#### **ROP to obtain Shell - (****ROP Gadget)**
 
-* INT 80 명령어를 실행하여면 POP edx, POP ecx, POP ebx 명령어가 필요합니다.
-* 필요한 gadget은 다음과 같은 방법을 이용하여 찾을 수 있으며, 사용될 주소는 0x08083650 입니다.
+* To execute the INT 80 command, the POP edx, POP ecx, and POP ebx commands are required.
+* You can find the gadget you need using the following method, and the address to be used is 0x08083650.
 
 ```sh title="./rp-lin-x86 -r 3 -f ./banker |grep \"pop edx ; pop ecx ; pop ebx\""
 lazeca0x0@ubuntu:~/Documents/DEFCON 2016/$ ./rp-lin-x86 -r 3 -f ./banker |grep "pop ebx ; pop ecx ; pop edx"
@@ -819,8 +819,8 @@ lazeca0x0@ubuntu:~/Documents/DEFCON 2016$ ./rp-lin-x86 -r 3 -f ./banker |grep "p
 0x08083650: pop edx ; pop ecx ; pop ebx ; ret  ;  (1 found)
 ```
 
-* 다음으로 System call 호출을 위한 "int 0x80" 명령어가 필요합니다.
-  + 사용될 주소는 0x080566a3 입니다.
+* Next, we need the “int 0x80” instruction to call the system call.
+  + The address to be used is 0x080566a3.
 
 ```sh title="./rp-lin-x86 -r 0 -f ./banker |grep \"int 0x80\""
 lazeca0x0@ubuntu:~/Documents/DEFCON 2016$ ./rp-lin-x86 -r 0 -f ./banker |grep "int 0x80"
@@ -838,14 +838,14 @@ lazeca0x0@ubuntu:~/Documents/DEFCON 2016$ ./rp-lin-x86 -r 0 -f ./banker |grep "i
 0x080e7803: int 0x80 ;  (1 found)
 ```
 
-#### **확인 내용 정리**
+#### **Summary of confirmation**
 
-:::note[공격에 사용될 정보]
-* Admin계정의 Password : findPassword.py 파일 참조
-* Shell을 획득하기 위한 ROP
+:::note[Information to be used in attacks]
+* Password of Admin account: Refer to findPassword.py file
+* ROP to acquire Shell
   + "pop edx, pop ecx, pop ebx, ret" : 0x08083650
   + "int 0x80" : 0x080566a3
-* 사용자 입력값을 저장할 메모리 공간
+* Memory space to store user input
   + dest : 0x8102010
   + src : 0x8101110
 :::

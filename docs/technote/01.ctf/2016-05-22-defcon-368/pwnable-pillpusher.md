@@ -34,7 +34,7 @@ RELRO           STACK CANARY      NX            PIE             RPATH      RUNPA
 No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   No  0       0   ./glados
 ```
 
-* 해당 프로그램을 실행 하면 다음과 같은 기능 목록을 확인할 수 있습니다.
+* When you run the program, you can see the following list of features:
 
 ```sh title="Program Menu"
 autolycos@ubuntu:~/CTF/DEFCON2016/Pwnable/pillpusher$ ./pillpusher 
@@ -50,12 +50,12 @@ autolycos@ubuntu:~/CTF/DEFCON2016/Pwnable/pillpusher$ ./pillpusher
 
 #### **AddPill()**
 
-* AddPill() 함수는 다음과 같은 기능을 합니다.
-  + 사용자로부터 필요한 데이터들을 입력 받고 있습니다.
-  + 최대 256개의 문자를 입력 받을 수 있습니다.
-  + 입력받은 pillname은 checkPillList() 함수를 이용해 기존에 등록된 값인지 확인합니다.
-  + 유저로 부터 입력받은 pillname 문자열은 해당 문자열의 길이 만큼 pillInfo→pillName 영역에 복사됩니다.
-  + 여기에서 stack addresss가 leak되는 취약성이 있습니다.
+* The AddPill() function has the following functions.
+  + We are receiving necessary data from the user.
+  + Up to 256 characters can be entered.
+  + The entered pillname is checked to see if it is a previously registered value using the checkPillList() function.
+  + The pillname string entered by the user is copied to the pillInfo→pillName area as the length of the string.
+  + There is a vulnerability here where stack addresses are leaked.
 
 ```c title="AddPill() Function"
 __int64 AddPill()
@@ -142,12 +142,12 @@ __int64 AddPill()
 }
 ```
 
-* 다음과 같이 디버깅을 통해 addresss leak에 대한 취약성을 확인해보겠습니다.
-  + "tmp"의 메모리 영역은 0x7fffffffe090 ~ 0x7fffffffe190입니다.
+* Let's check for vulnerabilities to addresses leak through debugging as follows.
+  + The memory area of ​​"tmp" is 0x7fffffffe090 ~ 0x7fffffffe190.
     - 0x7fffffffe090 + 0x100(256) = 0x7fffffffe190
-  + 그리고 0x7fffffffe190 영역에 stack addresss가 저장되어 있습니다.
-  + 즉, 사용자가 "tmp"영역에 256개의 문자를 저장하면 stack addresss를 얻을 수 있습니다.
-    - "tmp"와 0x7fffffffe190 영역 사이에 공백이 없으면 프로그램은 두 영역을 하나의 문자열로 인식합니다.
+  + And stack addresses are stored in the 0x7fffffffe190 area.
+  + That is, if the user saves 256 characters in the "tmp" area, he can get stack addresses.
+    - If there is no space between the "tmp" and 0x7fffffffe190 areas, the program will recognize the two areas as one string.
 
 ```sh title="AddPill Addresss Leak"
 autolycos@ubuntu:~/Documents/DEFCON 2016/Pwnable$ gdb -q ./pillpusher 
@@ -201,7 +201,7 @@ rsi            0x7fffffffe090	140737488347280
 (gdb)
 ```
 
-* 다음과 같이 "Side Effects: ", "Interactions: "에서도 stack addresss를 출력할 수 있습니다.
+* You can also output stack addresses in "Side Effects: " and "Interactions: ", as follows.
 
 ```sh title="Side Effects Addresss Leak"
 Name: AAAAAAAAAA ...생략 ... AAAAAA`x)f
@@ -217,7 +217,7 @@ Name: AAAAAAAAAA ...생략 ... AAAAAA`x)f
 
 ### AddScrip()
 
-* "Add Scrip"기능을 이용하기 위해서는 다음과 같이 사전에 필요한 정보를 저장해야합니다.
+* In order to use the “Add Scrip” function, you must save the necessary information in advance as follows.
 
 ```sh title="Add a Pill"
 autolycos@ubuntu:~/CTF/DEFCON2016/Pwnable/pillpusher$ ./pillpusher
@@ -437,13 +437,13 @@ Current Patient: min
 ->
 ```
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 사전에 선택한 약국, 약사, 환자 정보를 인자값으로 전달 받습니다.
-  + 사용자로 부터 다음 질문에 대한 값을 입력 받습니다.
+* This function has the following functions:
+  + Pre-selected pharmacy, pharmacist, and patient information are received as input values.
+  + The user inputs values ​​for the following questions.
     - "How many pills to add"
     - "Add pill:"
-  + 추가할 후 있는 약의 갯수는 2개로 제한하고 있습니다.  
-    - 하지만 음수(-)를 이용해 더 많은 약을 추가할 수 있습니다.
+  + The number of drugs added is limited to two.  
+    - However, you can add more drugs by using negative numbers (-).
 
 ```c title="AddScrip Vulnerability"
 void __usercall AddScrip(struct_patient *patient@<rdx>, __int64 a2@<rbp>, __int64 pharmacy@<rdi>, __int64 pharmacist@<rsi>)
@@ -511,14 +511,14 @@ void __usercall AddScrip(struct_patient *patient@<rdx>, __int64 a2@<rbp>, __int6
 
 #### **addPillScript()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 사용자로 부터 추가할 pill의 이름을 입력 받습니다.
-  + 추가할 약(pill)의 이름이 사전에 등록되어 있는지 확인합니다.
-  + 사용자가 입력한 약의 이름이 사전에 등록되어 있다면 다음과 같이 동작합니다.
-    - 해당 약 이름에 대한 길이를 출력합니다.
-    - 'script'에 저장된 문자열 뒤에 해당 약 이름을 붙입니다.(strcat() 함수 사용)
-  + 취약성은 여기서 발생합니다.
-    - "Add pill"의 값으로 2 이상의 값을 입력할 수 있다면, strcat()함수에 의해 Stack Overflow가 발생합니다.
+* This function has the following functions:
+  + The name of the pill to be added is input from the user.
+  + Check whether the name of the pill to be added is registered in the dictionary.
+  + If the name of the drug entered by the user is registered in the dictionary, it operates as follows.
+    - Outputs the length of the drug name.
+    - Append the drug name to the string stored in ‘script’ (using the strcat() function).
+  + This is where vulnerability arises.
+    - If you can enter a value of 2 or more as the value of "Add pill", Stack Overflow occurs due to the strcat() function.
 
 ```c title="addPillScript() Vulnerability"
 signed __int64 __fastcall addPillScript(pharmacy *pharmacy, __int64 pharmacist, patient *patient, char *__attribute__((__org_arrdim(0,256))) script)
@@ -613,11 +613,11 @@ signed __int64 __fastcall addPillScript(pharmacy *pharmacy, __int64 pharmacist, 
 }
 ```
 
-* 다음은 디버깅을 통해 Overflow를 확인한 내용입니다.
-  + 사전에 문자 'A' 256개를 "Pill name"으로 등록합니다.
-  + "How many pills to add: "의 값으로 '-1'을 입력합니다.
-  + "Add pill"에 등록한 'A' 256개를 입력하면 script 변수에 계속 해당 약의 이름이 이어서 저장되는 것을 확인할 수 있습니다.
-  + Stack Overflow 후에 공백을 입력해 addPillScript() 함수를 종료하면 Segmentation fault 발생하게 됩니다.
+* The following is what Overflow was confirmed through debugging.
+  + Register 256 letters 'A' as "Pill name" in the dictionary.
+  + Enter '-1' as the value for "How many pills to add: ".
+  + If you enter the 256 'A' registered in "Add pill", you can see that the name of the drug is continuously saved in the script variable.
+  + If you exit the addPillScript() function by entering a space after Stack Overflow, a Segmentation fault will occur.
 
 ```sh title="addPillScript Overflow"   
 Current Pharmacy: lazenca0x0
@@ -789,27 +789,27 @@ signed __int64 __fastcall addPillScript(pharmacy *pharmacy, __int64 pharmacist, 
 ### Structure of Exploit code
 
 :::note[Description]
-1. PillName으로 문자 256개를 입력하여 공격에 사용될 주소 값을 추출합니다.
-2. 공격에 필요한 정보를 등록합니다.
+1. Enter 256 characters as PillName to extract the address value to be used in the attack.
+2. Register information required for attack.
    1. shellcode
-   2. shellcode가 저장되어 있는 addresss
-3. "How many pills to add:" 의 값으로 -1을 입력합니다.
-4. Shellcode와 Shellcode가 저장된 주소값을 Pill Name으로 등록합니다.
+   2. Addresses where shellcode is stored
+3. Enter -1 as the value for "How many pills to add:".
+4. Register the shellcode and the address where the shellcode is stored as Pill Name.
 :::
 
 * The following information is required for an attack:
 
 :::note[Check point]
-* Shellcode가 저장되 주소 값 계산 (offset 구하기)
+* Calculate address value where shellcode is stored (obtain offset)
 :::
 
 ### **Information for attack**
 
-#### Get offset(Shellcode가 저장된 영역 )
+#### Get offset (area where shellcode is stored)
 
-* 앞에서 확인했 듯이 "Pill Name"으로 문자 256개를 입력하여 Stack 주소 값을 얻을 수 있습니다.
+* As confirmed previously, you can obtain the Stack address value by entering 256 characters as “Pill Name”.
   + Leaked stack addresss : "0x00007fffffffe2a8"
-  + 사용자가 입력한 값이 저장된 영역(0x7fffffffe170)에서 0x138 만큼 떨어져 있습니다.
+  + The value entered by the user is 0x138 away from the saved area (0x7fffffffe170).
 
 ```sh title="PillName Stack Addresss Leak"
 (gdb) b *0x400C82    
@@ -862,10 +862,10 @@ $4 = 0x138
 
 #### return addresss
 
-* 다음과 같이 Overwrite할 영역을 찾습니다.
-  + script 값은 addPill() 함수에서 생성되었기 때문에 addPill() 함수의 ret 명령어에 break point를 설정합니다.
-  + return 될 주소가 저장된 영역을 0x7fffffffe0b0 입니다.
-  + script 영역으로 부터 528byte 떨어져 있습니다.
+* Find the area to overwrite as follows.
+  + Because the script value was created in the addPill() function, set a break point in the ret command of the addPill() function.
+  + The area where the address to be returned is stored is 0x7fffffffe0b0.
+  + It is 528 bytes away from the script area.
     - 0x7fffffffe0b0 - 0x7fffffffdea0 = 528
 
 ```sh title="return address"
@@ -883,8 +883,8 @@ $3 = 528
 (gdb)
 ```
 
-:::note[공격에 사용될 정보]
-* Shellcode가 저장되 주소 값 계산 (offset 구하기) : leak Addresss - 0x60
+:::note[Information to be used in attacks]
+* Calculate address value where shellcode is stored (obtain offset): leak Addresses - 0x60
 :::
 
 ## **Exploit Code**

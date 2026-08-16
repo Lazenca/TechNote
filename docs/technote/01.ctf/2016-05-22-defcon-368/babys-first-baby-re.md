@@ -30,9 +30,9 @@ Partial RELRO   Canary found      NX enabled    No PIE          No RPATH   No RU
 
 ### **Binary analysis**
 #### **Main**
-* 해당 문제는 사용자로 부터 총 13개의 값을 입력 받고 있습니다.
-* 입력 받은 값은 CheckSolution()함수에 전달됩니다.
-  + 해당 함수는 사용자가 입력한 값이 조건에 만족하는 값이면 Flag를 출력하게 됩니다.
+* This problem requires a total of 13 values ​​to be entered from the user.
+* The input value is passed to the CheckSolution() function.
+  + This function outputs a Flag if the value entered by the user satisfies the conditions.
 
 ```c title="main()"
 int __cdecl main(int argc, const char **argv, const char **envp)
@@ -94,34 +94,34 @@ int __cdecl main(int argc, const char **argv, const char **envp)
 ```
 
 #### **CheckSolution**
-* 해당 함수를 Hex-rays로 열게되면 다음과 같은 Error가 발생합니다.
+* If you open the function as Hex-rays, the following error occurs.
 
 :::note[Warning]
 ![warning](/img/attachments/327772/327961.jpg)
 :::
 
-* 코드상에 Junk code가 삽입되어 있는 것이 에러의 원인입니다.
+* The cause of the error is that junk code is inserted into the code.
 
 :::note[JUNK Code]
 ![junk_code](/img/attachments/327772/327962.jpg)
 :::
 
-* 제거하고자 하는 코드를 선택한 후에 "Edit" → "Patch program" → "Change byte..." 기능을 이용해 JUNK Code의 byte 값을 "00" 으로 변경합니다.
+* After selecting the code you want to remove, use the "Edit" → "Patch program" → "Change byte..." function to change the byte value of the JUNK Code to "00".
 
-:::note[JUNK Code 변경 전]
+:::note[Before JUNK Code change]
 ![junk_code_before](/img/attachments/327772/327963.jpg)
 :::
 
-:::note[JUNK Code 변경 후]
+:::note[After changing JUNK Code]
 ![junk_code_after](/img/attachments/327772/327964.jpg)
 :::
 
-* 패치 후 Hex-Rays를 이용해 다음과 같은 코드를 확인할 수 있습니다.
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 전달된 인자값을 이용해 주어진 연산을 처리합니다.
-  + if()를 이용해 연산의 결과 값과 조건값이 같은지 확인합니다.  
-    - 이러한 과정이 13번 반복됩니다.
-  + 즉, 13개의 조건문을 만족시키면 Flag 문자열을 알 수 있습니다.
+* After patching, you can check the following code using Hex-Rays.
+* This function has the following functions:
+  + Processes the given operation using the passed argument values.
+  + Use if() to check whether the result value of the operation and the condition value are the same.  
+    - This process is repeated 13 times.
+  + In other words, if 13 conditional statements are satisfied, the Flag string can be known.
 
 ```c title="CheckSolution(Remove JUNK Code)"
 __int64 __fastcall CheckSolution(_DWORD *a1)
@@ -372,16 +372,16 @@ __int64 __fastcall CheckSolution(_DWORD *a1)
 ```
 
 ### structure of Exploit code
-:::note[상세설명]
-1. "==" 연산을 만족하는 13개의 값을 입력합니다.
-   1. 연립방정식을 이용해 13개의 값을 찾습니다.
+:::note[Detailed explanation]
+1. Enter 13 values ​​that satisfy the "==" operation.
+   1. Find 13 values ​​using a system of equations.
 :::
 
 ### **Information for attack**
 
-#### **"==" 연산을 만족하는 13개의 값을 찾기("z3" Module(Python))**
+#### **Find 13 values ​​that satisfy the "==" operation ("z3" Module(Python))**
 
-* 해당 연산은 Microsoft에서 개발한 "z3" Module(Python)을 이용할 수 있습니다. 우선 "z3" module 설치가 필요합니다.
+* This calculation can be done using the “z3” Module (Python) developed by Microsoft. First, you need to install the “z3” module.
 
 ```sh title="z3 install"
 $ git clone https://github.com/Z3Prover/z3.git
@@ -396,7 +396,7 @@ $ sudo make install
 <https://github.com/Z3Prover/z3>
 :::
 
-* 아래와 같이 "z3"를 이용하여 연립방정식 문제를 풀어 보겠습니다.
+* Let’s solve the simultaneous equations problem using “z3” as shown below.
 
 ```python title="z3 Example"
 from z3 import *
@@ -406,7 +406,7 @@ y = Int('y')
 solve(x > 2, y < 10, x + 2*y == 7)
 ```
 
-* 해당 코드를 실행하면 다음과 같은 결과를 얻을 수 있습니다.
+* If you run that code you will get the following output:
 
 ```sh title="z3 result"
 lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/baby-re$ python test2.py 
@@ -417,7 +417,7 @@ lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/baby-re$ python test2.py
 <http://www.cs.tau.ac.il/~msagiv/courses/asv/z3py/guide-examples.htm>
 :::
 
-* 이 프로그램에서 사용된 연립 방정식도 다음과 같이 풀 수 있습니다
+* The simultaneous equations used in this program can also be solved as follows:
 
 ```python title="z3 solve"
 from z3 import *
@@ -614,7 +614,7 @@ for d in m.decls():
   print "%s = %s" %(d.name(),m[d])
 ```
 
-* 해당 코드를 실행하면 다음과 같은 결과가 출력됩니다.
+* Running that code will output the following results:
 
 ```sh title="result"
 lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/baby-re$ python test.py
@@ -634,7 +634,7 @@ a1[5] = 105
 a1[2] = 116
 ```
 
-* 출력된 결과를 다시 정리하면 다음과 같습니다.
+* The output results are rearranged as follows.
 
 :::note[Flag string]
 |  |  |  |  |
@@ -648,11 +648,11 @@ a1[2] = 116
 | a1[6] | 115 |  |  |
 :::
 
-#### **"=="연산을 만족한 13개의 값을 찾기(angr)**
+#### **"=="Find 13 values ​​that satisfy the operation (angr)**
 
-* 해당 문제는 angr를 이용해도 문제를 해결할 수 있습니다.
-* 소스 코드는 다음과 같습니다.
-  + 해당 코드는 <https://docs.angr.io/docs/examples.html에> 공개된 코드입니다.
+* This problem can also be solved using angr.
+* The source code is as follows:
+  + The code is <https://docs.angr.io/docs/examples.html에> public code.
 
 ```python title="angr solve"
 #!/usr/bin/env python2
@@ -687,15 +687,15 @@ if __name__ == '__main__':
 <https://github.com/angr/angr-doc/blob/master/examples/defcon2016quals_baby-re_0/solve.py>
 :::
 
-* 해당 코드의 주요 내용은 "path\_group.explore()" 입니다.
-  + 13개의 모든 if()의 조건이 충족되면, 해당 프로그램은 "0x40294b" 영역으로 이동합니다.
-    - 해당 주소를 "find"에 저장해야 합니다.(find=0x40294b)
-  + if()의 조건이 충족되지 않으면, 해당 프로그램은 "0x402941" 영역으로 이동합니다.
-    - 해당 주소를 "avoid"에 저장해야 합니다.(avoid=0x402941)
+* The main content of the code is "path\_group.explore()".
+  + If all 13 if() conditions are met, the program moves to the "0x40294b" area.
+    - You need to save that address in “find” (find=0x40294b)
+  + If the condition of if() is not met, the program moves to the "0x402941" area.
+    - The address must be saved in “avoid”. (avoid=0x402941)
 
 ![](/img/attachments/327772/327965.jpg)
 
-앞의 코드를 실행하면 다음과 같은 결과를 얻을 수 있습니다.
+If you run the preceding code, you will get the following result:
 
 ```sh title="result"
 $ mkvirtualenv angr

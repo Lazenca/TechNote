@@ -38,10 +38,10 @@ autolycos@ubuntu:~/CTF/HITCON2016/SleepyHolder$
 
 ### Binary analysis
 
-* **해당 문제를 실행하면 다음과 같은 메뉴를 출력합니다.**
-  + 1.비밀 유지
-  + 2.비밀 지우기
-  + 3.비밀 갱신
+* **When you run this problem, the following menu is displayed.**
+  + 1. Maintain confidentiality
+  + 2. Clear secrets
+  + 3.Secret update
 
 ```sh title="Menu" 
 autolycos@ubuntu:~/CTF/HITCON2016/SleepyHolder$ ./SleepyHolder_3d90c33bdbf3e5189febfa15b09ca5ee61b94015 
@@ -55,9 +55,9 @@ I can help you to hold your secrets, and no one will be able to see it :)
 
 #### **Main**
 
-* **해당 문제의 main() 함수 기능은 다음과 같습니다.**
-  + "/dev/urandom" 파일에서 읽어온 값에 "4095"를 AND 연산한 값으로 Heap 영역을 할당합니다.
-  + 기본적인 메뉴를 출력합니다.
+* **The main() function function in question is as follows:**
+  + Allocate the heap area using the value obtained by ANDing “4095” with the value read from the “/dev/urandom” file.
+  + Prints the basic menu.
 
 ```c title="Main Function"
 void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
@@ -104,20 +104,20 @@ void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
 
 #### **KeepSecret**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 다음과 같이 calloc() 함수를 이용하여 세 가지의 크기의 값을 생성 할 수 있습니다.  
+* **The function has the following functions.**
+  + You can create values ​​of three sizes using the calloc() function as follows.  
     - Small : 40 byte
     - Big : 4000 byte
     - Huge : 400000 byte
-  + **할당된 공간의 주소는 전역 변수에 저장됩니다.**
+  + **The address of the allocated space is stored in a global variable.**
     - gSmallSecret
     - gBigSecret
     - gHugeSecret
-  + **메모리 영역 할당 여부를 전역 변수에 저장합니다.**(set 1)****
+  + **Saves memory area allocation status in global variable.**(set 1)****
     - gSmallSecretFlag
     - gBigSecretFlag
     - gHugeSecretFlag
-  + 할당 받은 공간에 read()함수를 이용하여 내용을 입력 받습니다.
+  + Enter content into the allocated space using the read() function.
 
 ```c title="KeepSecret Function"
 unsigned __int64 KeepSecret()
@@ -168,18 +168,18 @@ unsigned __int64 KeepSecret()
 
 #### **WipeSecret**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**  
-  + KeepSecret() 함수에서 생성한 메모리 공간을 삭제 합니다.
-    - 단 Small, Big Secret의 공간만 삭제가 가능합니다.
-    - Huge secret는 삭제할 수 없습니다.
-  + 즉, Huge secret는 단 한번만 생성가능하다는 것을 알수 있습니다.
-  + 그리고 해제된 크기의 flag 전역 변수에 0을 저장합니다.
-* **취약성은 여기서 발생합니다.**
-  + 메모리를 해제할 때 전역 변수에 저장한 값을 초기화 하지 않습니다.
-  + 메모리 할당과 해제를 반복해 **모든 전역변수에 동일한 주소를 저장 할 수 있습니다.**
-* **해당 취약성에 의해 또 다른 취약성이 발생합니다.**
-  + 앞에서 설명한 취약점을 이용해 **flag 전역변수의 값을 변경하지 않고 Heap 영역을 해제 할 수 있습니다.**
-  + Heap 영역을 해제 할 때 free() 함수에 전달되는 값을 할당 받은 Heap의 주소 값 입니다.
+* **The function has the following functions.**  
+  + Delete the memory space created by the KeepSecret() function.
+    - However, only Small and Big Secret spaces can be deleted.
+    - Huge secrets cannot be deleted.
+  + In other words, you can see that a Huge secret can only be created once.
+  + Then, 0 is stored in the flag global variable of the freed size.
+* **This is where the vulnerability comes in**
+  + When freeing memory, values ​​stored in global variables are not initialized.
+  + By repeating memory allocation and deallocation, **the same address can be stored in all global variables.**
+* **This vulnerability causes other vulnerabilities**
+  + Using the vulnerability described above, you can release the heap area without changing the value of the **flag global variable.**
+  + This is the address value of the assigned heap that is passed to the free() function when freeing the heap area.
 
 ```c title="WipeSecret Function"
 unsigned __int64 WipeSecret()
@@ -211,9 +211,9 @@ unsigned __int64 WipeSecret()
 
 #### **RenewSecret**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**  
-  + KeepSecret() 함수에서 생성한 메모리 공간에 내용을 다시 작성할 수 있습니다.
-  + Small, Big Secret의 공간만 내용 변경이 가능합니다.
+* **The function has the following functions.**  
+  + You can write content back to the memory space created by the KeepSecret() function.
+  + Only the Small and Big Secret spaces can be changed.
 
 ```c title="RenewSecret Function"
 __int64 RenewSecret()
@@ -249,13 +249,13 @@ __int64 RenewSecret()
 ### **Debuging**
 
 #### **Heap Overflow**
-* **다음과 같은 상황에서 Heap Overflow가 발생합니다.**
+* **Heap Overflow occurs in the following situations.**
   + "Keep secret" → "Small secret"
   + "Keep secret" → "Big secret"
   + "Wipe secret" → "Small secret"
   + "Keep secret" → "Huge secret"
   + "Wipe secret" → "Small secret"
-* **Debuging을 통해 원인을 확인해 보겠습니다.**
+* **We will check the cause through debugging.**
 
 ```sh title="Break point"
 gdb-peda$ b *0x400000 + 0x9ff
@@ -271,14 +271,14 @@ Breakpoint 5 at 0x400baf
 gdb-peda$
 ```
 
-* **아래 내용은 다음과 같은 입력을 처리한 내용입니다.**
+* **The content below is the processing of the following input.**
   + "Keep secret" → "Small secret"
   + "Keep secret" → "Big secret"
   + "Wipe secret" → "Small secret"
-* **디버깅을 통해 다음과 같은 정보를 확인할 수 있습니다.**
-  + "gSmallSecret" 전역 변수의 주소는 0x6020d0 이며, 할당 받은 Heap 주소는 0x603bb0 입니다.
-  + "gBigSecret" 전역 변수의 주소는 0x6020c0 이며, 할당 받은 Heap 주소는 0x603be0 입니다.
-  + "Wipe secret" → "Small secret" 기능으로 "Small secret" 영역이 해제되었지만, 전역변수에 저장된 값을 변경되지 않았습니다.
+* **Debugging allows you to check the following information:**
+  + The address of the "gSmallSecret" global variable is 0x6020d0, and the allocated Heap address is 0x603bb0.
+  + The address of the "gBigSecret" global variable is 0x6020c0, and the allocated heap address is 0x603be0.
+  + The "Small secret" area was cleared with the "Wipe secret" → "Small secret" function, but the value stored in the global variable was not changed.
 
 ```sh title=""Wipe secret" → "Small secret""
 gdb-peda$ r
@@ -340,13 +340,13 @@ gdb-peda$ x/gx 0x6020c0
 gdb-peda$
 ```
 
-* **"Keep secret" → "Huge secret" 기능을 호출하여 해제된 "Small secret" 영역이 "Small bin"영역에 등록됩니다.**
-  + 초기에 확보한 Heap 공간이 프로그램에서 요청한 크기보다 작기 때문에 malloc() 함수는 새로운 Heap 공간을 확보합니다.
-  + malloc()함수는 새로 확보된 공간에 프로그램이 요청한 크기의 heap 영역을 할당합니다.
-  + 그리고 "Small secret" 영역은 "Small bin"영역에 등록되며, 해당 Heap의 헤더의 fd, bk영역에 main\_arena 영역의 주소가 저장됩니다.
+* **The “Small secret” area released by calling the “Keep secret” → “Huge secret” function is registered in the “Small bin” area.**
+  + Because the initially secured heap space is smaller than the size requested by the program, the malloc() function secures new heap space.
+  + The malloc() function allocates a heap area of ​​the size requested by the program in the newly secured space.
+  + And the "Small secret" area is registered in the "Small bin" area, and the address of the main\_arena area is stored in the fd and bk areas of the header of the corresponding heap.
     - fd : 0x00007ffff7dd1b98
     - bk : 0x00007ffff7dd1b98
-* "gHugeSecret" 전역 변수의 주소는 0x6020c8 이며, 할당 받은 Heap 주소는 0x7ffff7f73010 입니다.
+* The address of the "gHugeSecret" global variable is 0x6020c8, and the allocated Heap address is 0x7ffff7f73010.
 
 ```sh title=""Keep secret" → "Huge secret"""
 gdb-peda$ c
@@ -380,13 +380,13 @@ gdb-peda$ x/4gx 0x603ba0
 gdb-peda$
 ```
 
-* **다음과 같은 방법으로 "Unsafe unlink" 공격을 진행 할 수 있습니다.**
-  + "Unsafe unlink" 공격을 위해 Allocated chunk의 size 영역에서 PREV\_INUSE 값을 제거해야 합니다.
-    - 하지만 해당 영역을 Overflow 할 수 없습니다. "Small secret" 공간을 해제(Double free) 하여 PREV\_INUSE 값을 제거합니다.
-    - "Wipe secret" → "Small secret"기능을 호출하면, 해제된 "Small secret" 공간을 해제(Double free)해 fastbin에 등록합니다.
-  + "Keep secret" → "Small secret"기능을 호출하여, "Big secret"이 사용하는 chunk의 size값에 PREV\_INUSE 값이 추가 되지 않고  해제된 "Small secret" 영역을 재할당 받습니다.
-    - fastbin에 등록된 주소는 제거되지만, smallbin에 등록된 주소는 제거 되지 않습니다.
-  + 입력을 통해 "Small secret"영역에 Fake chunk를 저장합니다.
+* **An “Unsafe unlink” attack can be performed in the following way.**
+  + For "Unsafe unlink" attacks, the PREV\_INUSE value must be removed from the size area of ​​the Allocated chunk.
+    - However, the area cannot be overflowed. Double free the "Small secret" space and remove the PREV\_INUSE value.
+    - When you call the "Wipe secret" → "Small secret" function, the released "Small secret" space is freed (Double free) and registered in fastbin.
+  + By calling the "Keep secret" → "Small secret" function, the released "Small secret" area is reallocated without adding the PREV\_INUSE value to the size value of the chunk used by "Big secret".
+    - Addresses registered in fastbin are removed, but addresses registered in smallbin are not removed.
+  + Save the Fake chunk in the “Small secret” area through input.
 
 ```sh title="Remove \"prev_size\""
 gdb-peda$ p main_arena.bins[4]
@@ -441,8 +441,8 @@ gdb-peda$ x/6gx 0x603bb0
 gdb-peda$
 ```
 
-* **다음과 같이 Fake chunk를 저장합니다.**
-  + 사용자를 입력 값을 통해 Fake chunk와 Allocated chunk의 prev\_size값을 저장 할 수 있습니다.
+* **Save the Fake chunk as follows.**
+  + You can save the prev\_size value of Fake chunk and Allocated chunk through user input value.
 
 ```sh title="Unsafe unlink"
 gdb-peda$ c
@@ -483,7 +483,7 @@ gdb-peda$ x/gx 0x6020d0
 gdb-peda$
 ```
 
-* **다음과 같은 Fake chunk 구조는 다음과 같습니다.**
+* **The Fake chunk structure is as follows:**
 
 :::note[Fake chunk]
 | addresss | 0x0 | 0x8 |
@@ -493,7 +493,7 @@ gdb-peda$
 | 0x603bd0 | prev\_size(0x20) | size(0xfb0) |
 :::
 
-* **"Unsafe unlink" 기법에 의해 "gSmallSecret"(0x6020d0) 전역 변수에 ".bss" 영역(**0x6020d0 - 0x18)의 주소 값이 저장됩니다.**
+* **By the "Unsafe unlink" technique, the address value of the ".bss" area (**0x6020d0 - 0x18) is stored in the global variable "gSmallSecret" (0x6020d0).**
 
 ```sh title="The value of the "gSmallSecret" area has changed."
 gdb-peda$ c
@@ -516,35 +516,35 @@ gdb-peda$
 
 ### Structure of Exploit code
 
-* Payload의 순서는 다음과 같습니다.
+* The order of payload is as follows:
 
-:::note[Payload 순서]
-1. Unsafe unlink(전역 변수)
+:::note[Payload order]
+1. Unsafe unlink (global variable)
 2. Leak Heap Addresss
-3. offset 추출
+3. offset extraction
 4. Overflow(system)
 :::
 
-* 이를 조금더 자세하게 설명하면 다음과 같습니다.
+* This is explained in more detail as follows.
 
-:::note[상세 설명]
-1. Unsafe unlink(전역 변수)
-   1. "gSmallSecret" 전역 변수의 주소값 변경
+:::note[Detailed description]
+1. Unsafe unlink (global variable)
+   1. Change the address value of the “gSmallSecret” global variable
 2. Leak Heap Addresss
-   1. ""gBigSecret"" 변수의 주소값 .got.plt 주소 값으로 변경
-   2. .got.plt "\_free" 영역의 값을 .plt \_puts 주소값 저장
+   1. Change the address value of the ""gBigSecret"" variable to the .got.plt address value.
+   2. Save the value of the .got.plt "\_free" area to the address of .plt \_puts
    3. "WipeSecret" → "BigSecret"
-3. offset 추출
+3. offset extraction
    1. System()
 4. Overflow(system)
-   1. .got.plt "\_free" 영역의 값을 \_\_libc\_system 주소값 저장
+   1. .got.plt Stores the value in the "\_free" area as the \_\_libc\_system address value.
    2. "Keep secret" → "BigSecret"
    3. "WipeSecret" → "BigSecret"
 :::  
 
-* payload를 바탕으로 공격을 위해 알아내어야 할 정보는 다음과 같습니다.
+* The information you need to find out for an attack based on the payload is as follows.
 
-:::note[확인해야 할 정보 목록]
+:::note[List of information to check]
 * Leak libc addresss
 :::
 
@@ -552,12 +552,12 @@ gdb-peda$
 
 #### **Leak libc addresss**
 
-* **공격을 위해 필요한 libc addresss는 다음과 같은 방법으로 획득 할 수 있습니다.**
-  + unsafe unlink 취약성을 이용하여 "gSmallSecret" 변수에 0x6020b8(.bss 영역)을 저장하였습니다.
-  + 공격자는 "gSmallSecret" 변수를 이용해 전역 변수에 저장된 값들을 변경할 수 있습니다.
-  - 전역 변수는 0x6020C0 ~ 0x6020E0 영역을 사용
-* **"Renew secret" 기능을 이용해 "Small secret"을 선택하여 전역 변수들의 값을 변경할 수 있습니다.**
-  + 해당 취약성을 이용해 got, plt의 값을 변경해 필요한 주소 값을 추출하고, shell을 실행 할 수 있습니다.
+* **The libc addresses needed for the attack can be obtained in the following way.**
+  + 0x6020b8 (.bss area) was stored in the "gSmallSecret" variable using an unsafe unlink vulnerability.
+  + An attacker can use the "gSmallSecret" variable to change the values ​​stored in global variables.
+  - Global variables use the area 0x6020C0 ~ 0x6020E0
+* **You can change the values ​​of global variables by selecting “Small secret” using the “Renew secret” function.**
+  + Using this vulnerability, you can change the values ​​of got and plt to extract the required address value and execute the shell.
 
 ```sh title="Overwrite to global variable"
 gdb-peda$ b *0x400C86
@@ -579,16 +579,16 @@ gdb-peda$ x/6gx 0x00000000006020b8
 gdb-peda$
 ```
 
-* **다음과 같은 방법으로 기본 주소를 계산 할 수 있는 libc addresss를 추출 할 수 있습니다.**
-  + 주소 값 추출을 위해 free()함수의 got 영역을 공격 대상으로 합니다.
-  + "Renew secret" → "Small secret"의 기능을 이용해 전역 변수의 값을 아래와 같이 변경 할 수 있습니다.
-    - gBigSecret    [0x6020c0] : atoi() 함수의 got 주소
-    - gHugeSecret [0x6020c8] : puts() 함수의 got 주소
-    - gSmallSecret [0x6020d0] :  free() 함수의 got 주소
-  + "Renew secret" → "Small secret"의 기능을 이용해 free() 함수의 got 영역의 값을 변경 할 수 있습니다.
-    - free() 함수의 plt 값을 puts() 함수의 plt주소로 변경합니다.
-  + "Wipe secret" 기능을 이용해 "Big secret"의 삭제를 요청하면 변경된 free() 함수의 got에 의해 puts() 함수가 호출됩니다.
-    - "Big secret"을 선택하였기 때문에 "gBigSecret"에 저장된 atoi() 함수의 got 주소가 출력됩니다.
+* **You can extract libc addresses from which you can calculate the base address in the following way.**
+  + To extract the address value, the got area of ​​the free() function is targeted for attack.
+  + You can change the value of the global variable as follows using the “Renew secret” → “Small secret” function.
+    - gBigSecret [0x6020c0] : got address of atoi() function
+    - gHugeSecret [0x6020c8] : got address of puts() function
+    - gSmallSecret [0x6020d0]: got address of free() function
+  + You can change the value of the got area of ​​the free() function using the “Renew secret” → “Small secret” function.
+    - Change the plt value of the free() function to the plt address of the puts() function.
+  + If you request deletion of the "Big secret" using the "Wipe secret" function, the puts() function is called by the changed got of the free() function.
+    - Since "Big secret" is selected, the got address of the atoi() function stored in "gBigSecret" is displayed.
 
 ### **Exploit Code**
 

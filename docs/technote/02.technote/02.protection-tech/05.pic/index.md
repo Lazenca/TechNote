@@ -8,14 +8,14 @@ sidebar_position: 1
 
 ## **Description**
 
-* **해당 기술은 보호 기술은 아닙니다. PIE를 이해하기 전에 참고하기 위해 설명합니다.**
-* **PIC(Position Independent Code)은 주기억 장치의 어딘가에 배치되어 절대 주소와 관계없이 모든 메모리 주소에서 수정없이 실행되는 기계 코드입니다.**
-  + PIC는 일반적으로 공유 라이브러리에서 사용되며, 동일한 라이브러리 코드는 각 프로그램의 메모리 영역에 로드됩니다
-  + 각 프로세서 들은 PIC를 서로 다른 주소에서 실행 할 수 있으며, 실행 시 재배치가 필요 없습니다.
-  + 공유 라이브러리를 만들 때 -fPIC 옵션을 이용하여 소스를 컴파일 합니다.
+* **This is not a standalone security mitigation technique itself, but is explained here as foundational context for understanding PIE.**
+* **Position Independent Code (PIC) is machine code that executes properly regardless of the absolute memory address at which it is loaded, without requiring runtime modifications to the code segment itself.**
+  + PIC is commonly used in shared libraries, allowing the same shared library code pages to be mapped into the memory space of multiple processes simultaneously.
+  + Different processes can execute the shared code mapped at different virtual addresses without requiring text relocations.
+  + When creating a shared library, compile the source code using the `-fPIC` option.
 * **Relocatable code**
-  + Relocatable code는 말 그대로 재배치가 필요한 코드를 의미합니다.
-  + 재배치 과정은 동적 링커에 의해 코드에 생성 된 label과 symbol의 주소를 수정하는 것입니다.
+  + Relocatable code refers to code that requires address fixups/relocations when loaded into memory.
+  + The relocation process involves the dynamic linker patching the addresses of labels and symbols referenced in the code at load time.
 
 ## **Example**
 
@@ -23,7 +23,7 @@ sidebar_position: 1
 
 ```c title="Shared library - lazenca.c"
 #include <stdio.h>
- 
+ 
 void lazenca(int a){
 	printf("Lazenca.0x%d\n",a);
 }
@@ -37,11 +37,11 @@ lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ gcc -fPIC -shared -o li
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ gcc -fPIC -nostartfiles -shared -o libNoStartPIC.so lazenca.c
 ```
 
-## **Compare files(Non-PIC vs PIC vs NoStart) - Section Headers**
+## **Compare files(Non-PIC vs PIC vs NoStart) - Section Headers**
 
-* **다음과 같이 PIC가 적용되 파일과 적용되지 않은 파일이 다릅니다.**
-  + PIC가 적용된 바이너리에는 ".rela.plt" 섹션이 추가 되어 있습니다.
-  + PIC와 nostartfiles 옵션이 적용된 바이너리에는 ".rela.dyn", ".init", ".plt.got", ".fini", ".init\_array", ".fini\_array", ".jcr", ".got", ".data", ".bss" 섹션이 없습니다.
+* **The differences between binaries built with and without PIC are as follows:**
+  + The binary built with PIC includes the ".rela.plt" section.
+  + The binary built with PIC and `-nostartfiles` omits ".rela.dyn", ".init", ".plt.got", ".fini", ".init_array", ".fini_array", ".jcr", ".got", ".data", and ".bss" sections.
 * **Check for Section Headers**
 
 ```bash title="Non-PIC"
@@ -238,12 +238,12 @@ Key to Flags:
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ 
 ```
 
-## **Compare files(Non-PIC vs PIC vs NoStart) - Dynamic section**
+## **Compare files(Non-PIC vs PIC vs NoStart) - Dynamic section**
 
-* **다음과 같이 PIC가 적용되 파일과 적용되지 않은 파일이 다릅니다.**
-  + PIC가 적용되지 않은 파일에는 TEXTREL 섹션이 존재하며, PLTRELSZ, PLTREL, JMPREL 섹션은 존재하지 않습니다.
-  + PIC가 적용된 파일에는 PLTRELSZ, PLTREL, JMPREL 섹션이 존재하며, TEXTREL 섹션은 존재하지 않습니다.
-  + PIC와 nostartfiles 옵션이 적용된 파일에는 PLTRELSZ, PLTREL, JMPREL 섹션이 존재하며, INIT, FINI, INIT\_ARRAY, INIT\_ARRAYSZ, FINI\_ARRAY, FINI\_ARRAYSZ, RELA, RELASZ, RELAENT, RELACOUNT 섹션은 존재하지 않습니다.
+* **The differences between binaries in the Dynamic section are as follows:**
+  + The Non-PIC library contains the TEXTREL tag and lacks PLTRELSZ, PLTREL, and JMPREL.
+  + The PIC library contains PLTRELSZ, PLTREL, and JMPREL, and does not contain TEXTREL.
+  + The PIC library built with `-nostartfiles` contains PLTRELSZ, PLTREL, and JMPREL, and omits standard initialization and relocation entries (INIT, FINI, INIT_ARRAY, INIT_ARRAYSZ, FINI_ARRAY, FINI_ARRAYSZ, RELA, RELASZ, RELAENT, RELACOUNT).
 * **Check for Dynamic section**
 
 ```bash title="NonPIC"
@@ -330,11 +330,11 @@ Dynamic section at offset 0xed0 contains 14 entries:
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$
 ```
 
-* **여기서 중요한 내용은 또 있습니다.RELA, RELASZ, RELAENT, RELACOUNT 입니다.**
-* **각 바이너리는 다음과 같은 재배치 정보를 포함하고 있습니다.**
-  + PIC가 적용되지 않은 라이브러리의 경우 재배치가 필요합니다.
-  + PIC가 적용된 라이브러리의 경우도 재배치가 필요합니다.
-  + 하지만 -nostartfiles 옵션이 적용된 파일의 경우 재배치가 필요없습니다.
+* **Another key aspect is the relocation information: RELA, RELASZ, RELAENT, and RELACOUNT.**
+* **Each binary contains the following relocation information:**
+  + Non-PIC libraries require text relocations.
+  + Standard PIC libraries still contain data relocations (e.g., for standard runtime startup routines).
+  + However, with `-nostartfiles`, standard startup relocation entries are excluded.
 * **About relocation information included in the file**
 
 |  | NonPIC | PIC | NoStartPIC |
@@ -344,18 +344,18 @@ lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$
 | RELAENT | 24 | 24 | X |
 | RELACOUNT | 4 | 3 | X |
 
-:::note[해당 섹션들은 재배치와 관련된 섹션입니다.]
-* RELA : 상대주소 재배치 테이블 주소
-* RELASZ : 상대주소 재배치 테이블 크기
-* RELAENT : 상대 주소 재배치 엔트리 크기
-* RELACOUNT : 재배치 횟수
+:::note[Relocation Section Descriptions]
+* RELA : Relocation table address
+* RELASZ : Relocation table size
+* RELAENT : Relocation entry size
+* RELACOUNT : Number of relative relocations
 :::
 
-## **Compare files(Non-PIC vs PIC) - Code**
+## **Compare files(Non-PIC vs PIC) - Code**
 
 ### **NonPIC**
 
-* **다음과 같이 PIC가 적용되지 않은 바이너리의 경우 함수를 호출 할 때 rdx 레지스터에 저장된 주소를 호출합니다.**
+* **In a Non-PIC binary, when invoking an external function, an absolute address is loaded into RDX and called via `call rdx` (requiring text relocation):**
 
 ```bash title="Disassemble"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ gdb -q ./libNonPIC.so
@@ -409,13 +409,13 @@ gdb-peda$ x/s 0x6d9
 gdb-peda$
 ```
 
-* **다음과 같이 디버깅을 통해 함수 호출을 분석할 수 있습니다.**
-  + main 함수는 lazenca 함수를 호출하기 위해 0x400570(lazenca@plt)영역을 호출합니다.
-  + 0x400699 영역에 Break point를 설정 후 프로그램을 실행합니다.
-    - lazenca 함수의 실제 주소가 0x601020영역에 재배치됩니다.
-  + 공유 라이브러리가 프로그램에 로드되어 lazenca 함수를 Disassemble 할 수 있습니다.
-  + rdx 레지스터에 0x7ffff7860800이 저장되고, 호출됩니다.
-  + 0x7ffff7860800 영역은 "/lib/x86\_64-linux-gnu/[libc.so](http://libc.so).6"의 .text 영역 입니다. (0x7ffff782a8b0 - 0x7ffff797dac4)
+* **We can analyze function execution and relocations through debugging as follows:**
+  + `main()` calls 0x400570 (`lazenca@plt`) to invoke `lazenca`.
+  + Set a breakpoint at 0x400699 and run the program:
+    - The resolved address for `lazenca` is stored in 0x601020.
+  + Once the shared library is loaded, `lazenca` can be disassembled.
+  + Address 0x7ffff7860800 is loaded into RDX and called.
+  + 0x7ffff7860800 is the `printf` entry point within the .text section of `/lib/x86_64-linux-gnu/libc.so.6` (0x7ffff782a8b0 - 0x7ffff797dac4).
 
 ```bash title="Disassemble"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ gdb -q ./test
@@ -594,7 +594,7 @@ gdb-peda$
 
 ### **PIC**
 
-* **다음과 같이 PIC가 적용된 바이너리는 함수를 호출 할 때 .plt 영역의 해당 함수의 주소를 호출합니다.**
+* **In a PIC binary, external function calls use RIP-relative addressing and jump through the PLT/GOT without requiring text relocations:**
 
 ```bash title="Disassemble"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ gdb -q ./libNoStartPIC.so
@@ -638,13 +638,13 @@ gdb-peda$ x/s 0x3a4
 gdb-peda$
 ```
 
-* **다음과 같이 디버깅을 통해 함수 호출을 분석할 수 있습니다.**
-  + main 함수는 lazenca 함수를 호출하기 위해 0x400570(lazenca@plt)영역을 호출합니다.
-  + 0x400699 영역에 Break point를 설정 후 프로그램을 실행합니다.
-    - lazenca 함수의 실제 주소가 0x601020영역에 재배치됩니다.
-  + 공유 라이브러리가 프로그램에 로드되어 lazenca 함수를 Disassemble 할 수 있습니다.
-  + lazenca 함수는 printf함수를 호출하기 위해 0x7ffff7bd5580 영역을 호출합니다.
-  + 0x7ffff7bd5580 영역은 "/home/lazenca0x0/Documents/Definition/protection/PIC/libPIC.so"의 .plt 영역 입니다. (0x7ffff7bd5570 - 0x00007ffff7bd5590)
+* **We can analyze the PIC execution flow through debugging as follows:**
+  + `main()` calls 0x400570 (`lazenca@plt`) to invoke `lazenca`.
+  + Set a breakpoint at 0x400699 and run the program:
+    - The address of `lazenca` is resolved and populated in 0x601020.
+  + Disassemble `lazenca` in the loaded shared library.
+  + `lazenca` calls 0x7ffff7bd5580 (`printf@plt`) using RIP-relative addressing (`lea rdi, [rip+0x16]`).
+  + 0x7ffff7bd5580 is the .plt section of `/home/lazenca0x0/Documents/Definition/protection/PIC/libPIC.so` (0x7ffff7bd5570 - 0x00007ffff7bd5590).
 
 ```bash title="Disassemble"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/PIC$ gdb -q ./testPIC

@@ -36,7 +36,7 @@ autolycos@ubuntu:~/CTF/HITCON/houseoforange$
 
 ### Binary analysis
 
-* 해당 문제를 실행하면 다음과 같은 메뉴를 출력합니다.
+* When you run this problem, the following menu is displayed.
 
 ```sh title="Main Menu"
 autolycos@ubuntu:~/CTF/HITCON/houseoforange$ ./houseoforange_22785bece84189e632567da38e4be0e0c4bb1682 
@@ -51,7 +51,7 @@ autolycos@ubuntu:~/CTF/HITCON/houseoforange$ ./houseoforange_22785bece84189e6325
 Your choice :
 ```
 
-* "Build the house"는 다음과 같이 사용자로 부터 값을 입력 받습니다.
+* “Build the house” receives values ​​from the user as follows.
 
 ```sh title="Build the house menu"
 Your choice : 1
@@ -70,7 +70,7 @@ Color of Orange:1
 Finish
 ```
 
-* "See the house"는 사용자가 입력한 내용을 출력합니다.
+* "See the house" prints what the user entered.
 
 ```sh title="See the house menu"
 Your choice : 2
@@ -89,7 +89,7 @@ Price of orange : 0
    '-.__.__.__._-'
 ```
 
-* "Upgrade the house"는 사용자가 입력한 값을 다음과 같이 수정할 수 있게 합니다.
+* “Upgrade the house” allows the user to modify the values ​​entered as follows:
 
 ```sh title="Upgrade the house menu"
 Your choice : 3
@@ -110,10 +110,10 @@ Finish
 
 #### **Main**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + PrintMenu() 함수를 호출해 Menu를 출력합니다.
-  + UserInput()함수를 이용해 사용자로부터 값을 입력받습니다.
-  + 입력받은 값은 menuNumber 변수에 저장되며, if()를 이용해 정의된 함수를 호출합니다.
+* **The function has the following functions.**
+  + Print the Menu by calling the PrintMenu() function.
+  + Use the UserInput() function to receive input from the user.
+  + The input value is stored in the menuNumber variable, and the defined function is called using if().
 
 ```c title="Main Function"
 void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
@@ -160,16 +160,16 @@ LABEL_14:
 
 #### **BuildTheHouse() - 0x5640720E0D37**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 전역 변수 gHouseCount의 값이 3보다 큰 값인지 확인합니다.
-    - 해당 변수를 이용해 해당 함수를 4번만 사용 가능하도록 합니다.
-  + HOUSE 구조체의 Heap 공간을 할당합니다.
-  + 사용자로 부터 입력할 이름의 길이를 입력받습니다.
-    - 입력받은 값이 4096보다 클 경우 size변수에 4096을 저장합니다.
-    - 최대 4096 크기의 Heap을 houseData→name 할당합니다.
-    - 사용자로 부터 입력 받은 "Name" 값을 houseData→name에 저장합니다.
-  + 사용자로 부터 "Name", "Price of Orange", "Color of Orange" 값을 입력받습니다.
-  + 전역 변수 gHouseCount의 값을 증가 시킵니다.
+* **The function has the following functions.**
+  + Check if the value of the global variable gHouseCount is greater than 3.
+    - Use the variable to ensure that the function can be used only 4 times.
+  + Allocate heap space for the HOUSE structure.
+  + The length of the name to be entered is received from the user.
+    - If the input value is greater than 4096, 4096 is stored in the size variable.
+    - Allocate a heap with a maximum size of 4096 to houseData→name.
+    - The “Name” value entered by the user is saved in houseData→name.
+  + The values ​​“Name”, “Price of Orange”, and “Color of Orange” are input from the user.
+  + Increases the value of the global variable gHouseCount.
 
 ```c title="Build The House Function"
 int BuildTheHouse()
@@ -227,7 +227,7 @@ int BuildTheHouse()
 }
 ```
 
-* **여기에서 해당 프로그램이 사용하는 2가지의 Struct를 확인할 수 있습니다.**
+* **Here you can check the two Structs used by the program.**
 
 ```c title="Struct HOUSE"
 struct HOUSE
@@ -247,13 +247,13 @@ struct INFO
 
 #### **SeeTheHouse() - 0x5640720E0EE6**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + "gHouseDate->house->color"의 값을 확인합니다.
-    - "56746"과 같다면 orange 색의 orange가 출력됩니다.
-    - "56746"과 같지 않지만, 30~37 범위 안에 속한다면 해당 값에 맞는 컬러의 orange가 출렫됩니다.
-    - "56746"과 같지 않고, 30~37 범위에도 포합되지 않으며, 해당 프로그램은 종료됩니다.
-  + Orange 모양이 출력될 때 name, price 값도 같이 출력됩니다.
-  + Orange 모양을 출력할 때 rand()함수를 이용해 다른 형태의 Orange가 출력됩니다.
+* **The function has the following functions.**
+  + Check the value of "gHouseDate->house->color".
+    - If it is equal to "56746", the color orange is output.
+    - It is not the same as "56746", but if it falls within the range of 30 to 37, the color orange that matches that value is displayed.
+    - If it is not equal to "56746" and is not within the range 30 to 37, the program will terminate.
+  + When the orange shape is printed, the name and price values ​​are also printed.
+  + When outputting the orange shape, a different form of orange is output using the rand() function.
 
 ```c title="SeeTheHouse Function"
 int SeeTheHouse()
@@ -289,17 +289,17 @@ int SeeTheHouse()
 
 #### **UpgradeTheHouse() - 0x05640720E107C**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 전역 변수 gUpgradeCount의 값이 2보다 큰지 확인합니다.
-    - 해당 변수를 이용해 해당 함수를 3번만 사용 가능하도록 합니다.
-  + 전역 변수 gHouseDate에 데이터가 있으면 사용자로 부터 값을 입력 받습니다.
-  + 사용자로 부터 "name"의 길이 값을 입력받습니다.
-    - 해당 값이 4096보다 클 경우 size 값을 4096으로 설정합니다.
-  + NameInput()함수를 이용해 "gHouseDate→name" 변수에 저장된 값을 변경합니다.
-    - gHouseDate→name에 저장 가능한 문자열의 길이에 대한 제한이 없습니다.
-    - 여기에서 Heap Overflow가 발생합니다.
-  + 사용자로 부터 Price, Color 값을 입력 받습니다.
-  + gUpgradeCount 변수의 값을 증가 시킵니다.
+* **The function has the following functions.**
+  + Checks whether the value of the global variable gUpgradeCount is greater than 2.
+    - Use the variable to ensure that the function can be used only three times.
+  + If there is data in the global variable gHouseDate, the value is input from the user.
+  + The length of “name” is input from the user.
+    - If the value is greater than 4096, set the size value to 4096.
+  + Change the value stored in the “gHouseDate→name” variable using the NameInput() function.
+    - There is no limit to the length of the string that can be stored in gHouseDate→name.
+    - Heap Overflow occurs here.
+  + Price and color values ​​are input from the user.
+  + Increases the value of the gUpgradeCount variable.
 
 ```c title="Upgrade The House Function"
 int UpgradeTheHouse()
@@ -348,12 +348,12 @@ int UpgradeTheHouse()
 
 #### **Heap Overflow**
 
-* **Heap Overflow를 확인하기 위해 다음과 같이 Break pointf를 설정합니다.**
-  + 0x555555554daa : BuildTheHouse() 함수에서 "Name" 값을 저장할 Heap을 할당 후
-  + 0x555555554dfe : BuildTheHouse() 함수에서 NameInput() 함수 호출 후
-  + 0x555555554e0d : BuildTheHouse() 함수에서 calloc() 함수 호출 후
-  + 0x555555555119 : UpgradeTheHouse()함수에서 NameInput() 함수 호출 전
-  + 0x55555555511e : UpgradeTheHouse()함수에서 NameInput() 함수 호출 후
+* **To check for Heap Overflow, set Break pointf as follows.**
+  + 0x555555554daa: After allocating a Heap to store the “Name” value in the BuildTheHouse() function
+  + 0x555555554dfe: After calling the NameInput() function in the BuildTheHouse() function
+  + 0x555555554e0d: After calling the calloc() function in the BuildTheHouse() function
+  + 0x555555555119: Before calling the NameInput() function in the UpgradeTheHouse() function
+  + 0x55555555511e: After calling the NameInput() function in the UpgradeTheHouse() function
 
 ```sh title="Set break point"
 autolycos@ubuntu:~/CTF/HITCON/houseoforange$ gdb -q ./houseo*
@@ -371,10 +371,10 @@ Breakpoint 4 at 0x55555555511e
 gdb-peda$
 ```
 
-* **"Build the house" 기능을 호출합니다.**
-  + Name의 길이로 10을 입력했으며, malloc()에 의해 할당 메모리영역은 0x555555758030 입니다.
-  + calloc() 함수를 이용해 Price, Color 값을 저장할 Heap 공간을 할당 받습니다.
-    - 0x20byte의 Heap공간이 할당되어 있습니다.
+* **Calls the “Build the house” function.**
+  + 10 was entered as the length of the Name, and the memory area allocated by malloc() is 0x555555758030.
+  + Heap space to store Price and Color values ​​is allocated using the calloc() function.
+    - Heap space of 0x20 bytes is allocated.
 
 ```sh title="Build the house"
 (gdb) r
@@ -420,14 +420,14 @@ gdb-peda$ x/8gx 0x555555758030
 gdb-peda$ c
 ```
 
-* **"Upgrade the house"기능을 이용해 Heap Overflow를 발생시켜 보겠습니다.**
-  + "Length of name"의 값으로 60을 입력합니다.
-  + "Name"의 값으로 'B' \* 50개, 'C' \* 8개를 입력합니다.
-    - 0x555555758030 ~ 0x55555575806C 영역에 입력한 문자열이 저장되어 있습니다.
-    - 0x555555758050 영역에는 price,color 값이 저장됩니다.
-* **해당 취약성을 이용해 다음과 같은 공격이 가능합니다.**
-  + 해당 Heap Overflow를 이용해 Libc addresss,Heap addresss 추출이 가능합니다.
-  + Top chunk의 값을 변경해 "Unsort bin attack" 공격도 가능합니다.
+* **Let’s use the “Upgrade the house” function to cause a Heap Overflow.**
+  + Enter 60 as the value for "Length of name".
+  + Enter 50 'B' \* and 8 'C' \* as the value for "Name".
+    - The entered string is stored in the 0x555555758030 to 0x55555575806C area.
+    - The price and color values ​​are stored in the 0x555555758050 area.
+* **The following attacks are possible using this vulnerability.**
+  + It is possible to extract Libc addresses and Heap addresses using Heap Overflow.
+  + An “Unsort bin attack” attack is also possible by changing the value of the top chunk.
 
 ```sh title="Upgrade the house"
 gdb-peda$ c
@@ -475,21 +475,21 @@ gdb-peda$
 
 ### Structure of Exploit code
 
-* Payload의 순서는 다음과 같습니다.
+* The order of payload is as follows:
 
 :::note Payload Flow
 1. Libc, Heap addresss Leak
 2. Unsorted bin attack
 ::: 
 
-* 이를 조금더 자세하게 설명하면 다음과 같습니다.
+* This is explained in more detail as follows.
 
 :::note[Detailed description]
 1. Libc, Heap addresss Leak
-   1. Heap overflow를 이용해 large chunk를 생성
+   1. Create large chunk using heap overflow
 2. Unsorted bin attack
 :::
-* payload를 바탕으로 공격을 위해 알아내어야 할 정보는 다음과 같습니다.
+* The information you need to find out for an attack based on the payload is as follows.
 
 :::note[List of information to check]
 1. Leaklibcaddresss
@@ -499,15 +499,15 @@ gdb-peda$
 
 #### **Leak - Overwrite of top chunk**
 
-* **"Upgrade the house" 기능에서 발생하는 Heap overflow를 이용해 Top chunk를 변조할 수 있습니다.**
-  + Top chunk의 크기를 작게 많들어서 새로운 메모리 영역을 할당하도록 합니다.
-  + malloc()은Top chunk 크기가 충분하지 않으면 sysmalloc()을 사용하여 새 메모리 영역을 할당합니다.
-* **sysmalloc()은 새로운 영역을 할당하기 위해서는 Top chunk의 값을 확인합니다.**
-  + Top chunk 변조를 통해 새로운 메모리 영역을 할당받기 위해 다음과 같은 조건을 만족시켜야 합니다.
-    1. MINSIZE (0x10)보다 커야 합니다. (unsigned long) (old\_size) >= MINSIZE
-    2. need size + MINSIZE 보다 작아야 합니다. (unsigned long) (old\_size) &lt; (unsigned long) (nb + MINSIZE))
-    3. prev\_inuse가 설정되어 있어야 합니다. prev\_inuse (old\_top)
-    4. old\_top +oldsize 페이지를 정렬해야합니다.
+* **Top chunk can be modified using the heap overflow that occurs in the “Upgrade the house” function.**
+  + Reduce the size of the top chunk to allocate a new memory area.
+  + malloc() uses sysmalloc() to allocate a new memory area if the Top chunk size is not enough.
+* **sysmalloc() checks the value of Top chunk to allocate a new area.**
+  + In order to be allocated a new memory area through top chunk modulation, the following conditions must be met.
+    1. Must be greater than MINSIZE (0x10). (unsigned long) (old\_size) >= MINSIZE
+    2. Must be smaller than need size + MINSIZE. (unsigned long) (old\_size) &lt; (unsigned long) (nb + MINSIZE))
+    3. prev\_inuse must be set. prev\_inuse (old\_top)
+    4. old\_top +oldsize The pages need to be sorted.
 
 ```c title = "malloc.c -> sysmalloc() [ ver. glibc 2.23 ]"
  /*
@@ -522,11 +522,11 @@ gdb-peda$
   assert ((unsigned long) (old_size) < (unsigned long) (nb + MINSIZE));
 ```
 
-* **다음과 같이 Break point를 설정합니다.**
-  + 0x555555554daa : BuildTheHouse() 함수에서 "Name" 값을 저장할 Heap을 할당 후
-  + 0x555555554dfe : BuildTheHouse() 함수에서 NameInput() 함수 호출 후
-  + 0x555555554e0d : BuildTheHouse() 함수에서 calloc() 함수 호출 후
-  + 0x55555555511e : UpgradeTheHouse()함수에서 NameInput() 함수 호출 후
+* **Set the break point as follows.**
+  + 0x555555554daa: After allocating a Heap to store the “Name” value in the BuildTheHouse() function
+  + 0x555555554dfe: After calling the NameInput() function in the BuildTheHouse() function
+  + 0x555555554e0d: After calling the calloc() function in the BuildTheHouse() function
+  + 0x55555555511e: After calling the NameInput() function in the UpgradeTheHouse() function
 
 ```sh title="Set break point"
 gdb-peda$ b *0x555555554000 + 0xDAA
@@ -540,8 +540,8 @@ Breakpoint 4 at 0x55555555511e
 gdb-peda$
 ```
 
-* **"BuildTheHouse" 기능을 이용해 Heap 영역을 할당합니다.**  
-  + 할당할 Heap의 크기는 16입니다.
+* **Allocate heap area using the “BuildTheHouse” function.**  
+  + The size of the heap to be allocated is 16.
 
 ```sh title="Create heap"
 gdb-peda$ r
@@ -598,12 +598,12 @@ gdb-peda$ x/16gx 0x555555758030
 gdb-peda$
 ```
 
-* **"UpgradeTheHouse" 기능을 이용해 Top chunk를 변경 할 수 있습니다.**
-  + Top chunk의 값을 0xfa1(3889)으로 변경합니다.  
-    - 변경 전 Top chunk의 값은 0x20fa1 입니다.
-  + 변경된 Top chunk의 크기로 인해 해당 크기보다 큰 크기의 heap을 할당을 요청하면, malloc는 sysmalloc()을 사용해 새로운 메모리 영역을 할당하게 됩니다.  
-    - 이로 인해 기존의 Top chunk영역은 Free chunk로 Unsorted bin에 추가됩니다.
-    - Free chunk의 fd, bk영역의 값도 생성됩니다.
+* **You can change the top chunk using the “UpgradeTheHouse” function.**
+  + Change the value of Top chunk to 0xfa1 (3889).  
+    - The value of Top chunk before change is 0x20fa1.
+  + If you request allocation of a heap larger than that size due to the changed size of the top chunk, malloc uses sysmalloc() to allocate a new memory area.  
+    - As a result, the existing top chunk area is added to the unsorted bin as a free chunk.
+    - Free chunk fd and bk area values ​​are also created.
 
 ```sh title="Overwrite for Top chunk"
 gdb-peda$ c
@@ -656,13 +656,13 @@ gdb-peda$ x/16gx 0x555555758030
 gdb-peda$
 ```
 
-* **"BuildTheHouse" 기능을 이용해 Top chunk 보다 큰 크기의 Heap을 할당합니다.**  
-  + Top chunk의 크기 보다 큰 4096 크기의 Heap 할당을 요청합니다.
-  + sysmalloc()에 의해 새로 할당된 Heap 영역은 0x55f72a511010 입니다.
-  + 앞에서 설명했듯이 Top chunk가 Free chunk가 되었으며, fd(Forward pointer), bk(Backward pointer)의 값도 생성되었습니다.
-    - 공격자를 해당 fd, bk 영역에 저장된 데이터를 악용할 수 있습니다.  
-      * fd,bk 주소(0x7f68e8d2c7b8)에 저장된 값은 0x55f72a512010 입니다.
-      * 0x55f72a512010 = 할당된 heap의 시작 주소(0x55f72a511010) + heap size(0x1000, 4096)
+* **Use the "BuildTheHouse" function to allocate a heap larger than the top chunk.**  
+  + Request allocation of a heap of size 4096, which is larger than the size of the top chunk.
+  + The heap area newly allocated by sysmalloc() is 0x55f72a511010.
+  + As explained earlier, the top chunk became a free chunk, and the values ​​of fd (forward pointer) and bk (backward pointer) were also created.
+    - An attacker can exploit data stored in the fd and bk areas.  
+      * The value stored in the fd,bk address (0x7f68e8d2c7b8) is 0x55f72a512010.
+      * 0x55f72a512010 = Starting address of the allocated heap (0x55f72a511010) + heap size (0x1000, 4096)
 
 ```sh title="Create unsorted bin"
 gdb-peda$ c
@@ -706,12 +706,12 @@ gdb-peda$
 
 #### **Leak - Libc addresss**
 
-* **"BuildTheHouse" 기능을 이용해 Libc addresss를 추출할 수 있습니다.**
-  + 새로 할당할 Heap의 크기로 1024를 입력합니다.
-  + 이로 인해 기존 Heap영역 내에서 해당 영역(0x5555557580d0)이 할당됩니다.
-    - sysmalloc()으로 인해 추가 생성된 Heap영역이 아닙니다.
-  + "0x5555557580d0", "0x5555557580d8"영역에 main\_arena 영역의 주소가 저장되어 있습니다.
-  + "Name"의 입력 값으로 문자 8개를 입력하면 해당 주소 값을  출력할 수있습니다.
+* **You can extract Libc addresses using the "BuildTheHouse" function.**
+  + Enter 1024 as the size of the newly allocated heap.
+  + As a result, the corresponding area (0x5555557580d0) is allocated within the existing heap area.
+    - This is not an additional heap area created by sysmalloc().
+  + The address of the main\_arena area is stored in the “0x5555557580d0” and “0x5555557580d8” areas.
+  + If you enter 8 characters as the input value for "Name", the corresponding address value can be output.
 
 ```sh title="Write 8 characters in the Heap"
 gdb-peda$ c
@@ -762,11 +762,11 @@ gdb-peda$ x/gx 0x00007ffff7dd2188
 gdb-peda$
 ```
 
-* **"Name"으로 문자 8개를 입력합니다.**
-  + 아래 예제에서는 "LEAKADD"을 입력했습니다.
-    - 메모리에 "0x0a4444414b41454c" 이 저장되었습니다.
-  + "0x5555557580d8" 영역 값과 입력한 문자열을 하나의 문장으로 인식하게 됩니다.
-* **"See the house"기능을 통해 "0x5555557580d8" 영역의 값을 출력할 수 있습니다.**
+* **Enter 8 characters as “Name”**
+  + In the example below, we entered "LEAKADD".
+    - “0x0a4444414b41454c” is stored in memory.
+  + "0x5555557580d8" The area value and the entered string are recognized as one sentence.
+* **You can output the value in the “0x5555557580d8” area through the “See the house” function.**
   + Leak data : ?!???
 
 ```sh title="Leak libc address"
@@ -835,10 +835,10 @@ Your choice :
 
 #### **Leak - Heap addresss**
 
-* **다음과 같이 "Upgrade the house" 기능을 이용해 Heap addresss를 누출 할 수 있습니다.**
-  + "0x5555557580d0"으로 부터 16 byte 떨어진곳에 Heap의 주소가 존재합니다.
-  + 이를 Leak하기 위해 "Name"의 값으로 문자 15를 입력합니다.
-* **"See the house"기능을 통해 heap addresss 를 출력할 수 있습니다.**
+* **Heap addresses can be leaked using the "Upgrade the house" function as follows.**
+  + The heap address exists 16 bytes away from "0x5555557580d0".
+  + To leak it, enter the character 15 as the value for "Name".
+* **You can output heap addresses through the “See the house” function.**
   + Leak data : ??uUUU
 
 ```sh title="Leak for Heap address"
@@ -927,16 +927,16 @@ Your choice :
 
 ### **HouseOfOrange**
 
-* **다음과 같은 방법으로 Unsorted bin attack을 이용해 HouseOfOrange 공격이 가능합니다.**
-  + 분석을 위해 "0x555555555119"영역에 Break point를 설정합니다.
-  + "Length of name" 의 입력 값으로 "2048"를 전달합니다.
-* **중요한 부분은 현재 main\_arena의 Unsorted bin에 저장된 영역입니다.**
-  + Unsorted bin영역에 저장된 영역은 0x5555557584f0 입니다.
-  + 즉, 덮어써야 할 영역은 0x5555557584f0이 됩니다.
-  + NamaInput() 함수에 의해 입력받은 값은 "0x5555557580d0"영역 부터 저장됩니다.
-    - 0x5555557584f0 영역을 덮어쓰기 위해서 임이의 문자 1056개의 입력이 필요합니다.
+* **HouseOfOrange attack is possible using Unsorted bin attack in the following way.**
+  + For analysis, set a break point in the “0x555555555119” area.
+  + Pass “2048” as the input value for “Length of name”.
+* **The important part is the area currently stored in the Unsorted bin of main\_arena.**
+  + The area saved in the unsorted bin area is 0x5555557584f0.
+  + That is, the area to be overwritten is 0x5555557584f0.
+  + The value entered by the NamaInput() function is stored starting from the "0x5555557580d0" area.
+    - To overwrite the 0x5555557584f0 area, 1056 random characters must be entered.
     - Ex) "A" \* 1056 + "B" \* 32
-  + 아래와 같이 입력값에 의해 Unsorted chunk영역의 값이 변경되었습니다.
+  + The value of the Unsorted chunk area has been changed according to the input value as shown below.
 
 ```sh title="Check Unsorted bin"
 Your choice : 2
@@ -996,11 +996,11 @@ gdb-peda$ x/8gx 0x5555557580d0 + 1040
 gdb-peda$
 ```
 
-* **입력값을 이용해 아래와 같이 영역의 값을 변경합니다.**
+* **Change the value of the area using the input value as shown below.**
   + freechunk→prev\_size = "/bin/sh"
   + freechunk→size = 0x61
-  + freechunk→fd = "임의의 값"
-  + freechunk→bk = "\_IO\_list\_all" 주소 - 0x10
+  + freechunk → fd = “random value”
+  + freechunk→bk = "\_IO\_list\_all" address - 0x10
 
 ```sh title="Set the Fake chunk"  
 Breakpoint 4, 0x000055555555511e in ?? ()
@@ -1028,9 +1028,9 @@ gdb-peda$ x/8gx 0x5555557580d0 + 1040
 gdb-peda$
 ```
 
-* 다음과 같이 "Build the house" 기능을 실행 하면 변경된 Unsorted chunk 에 의해 "\_IO\_list\_all"의 값이 변경됩니다. (Unsorted bin attack)
-  + "\_IO\_list\_all"에 저장된 값은 main\_arena.top 영역의 주소 값 입니다.
-  + 에러가 출력되지만 해당 취약성을 이용해 충분히 shell을 획득할 수 있습니다.
+* When you run the "Build the house" function as follows, the value of "\_IO\_list\_all" will be changed by the changed Unsorted chunk. (Unsorted bin attack)
+  + The value stored in "\_IO\_list\_all" is the address value of the main\_arena.top area.
+  + An error is displayed, but the shell can be obtained by exploiting the vulnerability.
 
 ```sh title="Unsorted bin attack"
 gdb-peda$ c
@@ -1106,10 +1106,10 @@ gdb-peda$ x/gx 0x00007ffff7dd1b78
 gdb-peda$
 ```
 
-* **HouseOfOrange에 대한 자세한 설명은 아래 페이지를 참조하세요**
+* **For a detailed explanation of HouseOfOrange, please refer to the pages below**
 
 :::note[Page]
-[House of Orange[Korean]](/technote/02.technote/06.heap-exploitati-882/02.heap-exploitation/house-of-orange)
+[House of Orange](/technote/technote/heap-exploitati-882/heap-exploitation/house-of-orange)
 :::
 
 ## **Exploit Code**

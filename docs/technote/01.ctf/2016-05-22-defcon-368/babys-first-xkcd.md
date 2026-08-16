@@ -38,28 +38,28 @@ lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/xkcd$
 
 #### **Main**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + fopen(), fread()를 이용해 "flag" 파일을 내용을 읽습니다.
-  + fgetln()함수를 이용해서 사용자로 부터 문자열을 입력받습니다.
-* 다음과 같이 입력받은 값이 해당 프로그램이 원하는 내용과 같은지 확인합니다.
+* This function performs the following operations:
+  + Reads the contents of the "flag" file using fopen() and fread().
+  + Receives string input from the user using the fgetln() function.
+* It verifies whether the input matches the format expected by the program:
 
-**해당 프로그램이 원하는 내용**
+**Expected Input Format**
 |  |  |
 | --- | --- |
-| 문자열의 첫번째 부터 ? 까지의 내용 | "SERVER, ARE YOU STILL THERE" |
-| ? 부터 " 까지의 내용 | " IF SO, REPLY " |
+| String from the beginning up to ? | "SERVER, ARE YOU STILL THERE" |
+| String from ? up to " | " IF SO, REPLY " |
 
-* 또 다시 문자열에서 " 에서 " 까지 문자열을 자고, 해당 문자열의 길이를 얻습니다.
-  + 해당 문자열을 memcpy()함수를 이용해 globals 변수에 복사합니다.
-* 그리고 ( 와 ) 문자 사이에 문자열을 자르며, 해당 문자열의 형태는 다음과 같습니다.
+* Next, it extracts the substring between " and " and calculates its length.
+  + Copies this substring into the globals buffer using the memcpy() function.
+* It then extracts the substring between ( and ), which should match the following format:
 
-**( 와 ) 사이에 있어야 할 문자열의 형태**
+**Expected Format Between ( and )**
 
-* "(숫자) LETTERS"
+* "(number) LETTERS"
 
-* sscanf()함수를 이용해 해당 문자열에서 숫자 값을 num에 저장합니다.  
-  + 해당 값은 globals 배열에서 num이 가리키는 자리에 0을 저장합니다
-* 그리고 globals의 내용은 globals에 저장된 문자열의 길이가 num 보다 작거나 같으면 내용을 출력합니다.
+* Parses the numeric value from this substring into num using sscanf().  
+  + Sets globals[num] = 0.
+* Finally, it prints globals if num is not greater than strlen(globals).
 
 ```c title="main"
 int __cdecl main(int argc, const char **argv, const char **envp)
@@ -117,7 +117,7 @@ int __cdecl main(int argc, const char **argv, const char **envp)
 }
 ```
 
-### Debuging
+### Debugging
 
 #### **gContentOfFile & globals**
 
@@ -130,11 +130,11 @@ gdb-peda$ b *0x4010E0
 Breakpoint 2 at 0x4010e0
 ```
 
-* 디버깅을 통해 확인한 정보는 다음과 같습니다.
-  + gContentOfFile : 0x6b7540
-  + globals : 0x6b7340
-  + gContentOfFile - globals = 0x200(512)
-* 즉, globals, num 값을 이용해 flag string을 출력 할 수 있습니다.
+* The following information was verified through debugging:
+  + gContentOfFile : 0x6b7540
+  + globals : 0x6b7340
+  + gContentOfFile - globals = 0x200 (512 bytes)
+* In other words, by manipulating globals and num, we can leak the flag string stored adjacent in memory (Heartbleed vulnerability).
 
 ```c title="Debuging"
 Breakpoint 1, 0x0000000000400ffd in main ()
@@ -160,11 +160,11 @@ gdb-peda$
 ### Exploit plan
 
 :::note [Description]
-* 다음과 같은 문자열 형태를 이용합니다.
-  * SERVER, ARE YOU STILL THERE? IF SO, REPLY \"%s\" (%d LETTERS)
-  * %S 에 문자 512개를 채웁니다.
-  * %d에 문자열의 끝자리 값을 입력합니다.
-  * 문자열의 끝을 찾기 위해 512를 기준으로 1씩 증가 시킨 값을 입력해 문자열의 끝을 찾습니다.  
+* Use the following string format:
+  * `SERVER, ARE YOU STILL THERE? IF SO, REPLY \"%s\" (%d LETTERS)`
+  * Fill `%s` with 512 characters.
+  * Enter the desired length in `%d`.
+  * Increment the length by 1 starting from 512 to reveal the entire flag string character by character until hitting "NICE TRY".
 :::
 
 * The following information is required for an attack:

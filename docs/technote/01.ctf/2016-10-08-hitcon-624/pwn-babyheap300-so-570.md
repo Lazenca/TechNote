@@ -39,9 +39,9 @@ autolycos@ubuntu:~/CTF/HITCON/Babyheap$
 
 #### **Main()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + PrintMenu() 함수를 이용해 메뉴를 출력합니다.
-  + UserInput() 함수를 이용해 사용자로 부터 값을 입력받습니다.
+* **The function has the following functions.**
+  + Print the menu using the PrintMenu() function.
+  + Use the UserInput() function to receive input from the user.
 
 ```sh title="Main Function"
 void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
@@ -92,9 +92,9 @@ LABEL_14:
 }
 ```
 
-* **다음과 같이 Hex-ray로 복원된 코드가 조금 이상합니다.**
-  + - main() 함수의 2번째 인자값을 printf()함수의 2번째 인자로 전달합니다.
-    - main() 함수의 2번째 인자값에 &v4 값을 저장합니다.
+* **The code restored to Hex-ray is a little strange as follows.**
+  + - Pass the second argument value of the main() function as the second argument of the printf() function.
+    - Store the value &v4 in the second argument of the main() function.
 
 ```sh title="Exit"
 else if ( command == 4 )
@@ -107,8 +107,8 @@ else if ( command == 4 )
 }
 ```
 
-* **다음은 해당 코드를 Assembly code로 출력한 내용입니다.**
-  + Assembly code 에서는 scanf()함수의 2번째 인자 값으로 main() 함수의 2번째 인자 값이 전달됩니다.
+* **The following is the output of the code as assembly code.**
+  + In assembly code, the second argument value of the main() function is passed as the second argument value of the scanf() function.
     - "lea rax, [rbp+var\_10]"
     - "mov rsi, rax"
 
@@ -131,7 +131,7 @@ else if ( command == 4 )
 .text:0000000000400D57                 call    __exit
 ```
 
-* **즉, 다음과 같은 코드라고 유추 할수 입습니다.**
+* **In other words, we can infer that it is the following code.**
 
 ```sh title="Exit C Code"
 else if ( command == 4 )
@@ -145,11 +145,11 @@ else if ( command == 4 )
 
 #### **UserInput()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + read() 함수를 이용해 사용자로 부터 값을 입력받습니다.
-  + 입력 받은 값을 atoi() 함수에 전달해 정수를 반환 받습니다.
-* **여기에 취약성이 존재합니다.**
-  + nptr의 크기는 4byte이지만 read() 함수에서는 16byte를 입력받습니다.
+* **The function has the following functions.**
+  + Use the read() function to receive input from the user.
+  + The input value is passed to the atoi() function and an integer is returned.
+* **There is a vulnerability here**
+  + The size of nptr is 4 bytes, but the read() function receives 16 bytes as input.
 
 ```c title="UserInput()"
 __int64 UserInput()
@@ -163,9 +163,9 @@ __int64 UserInput()
 }
 ```
 
-* **다음과 같이 "nptr"변수 뒤에 값을 변경할 수 있습니다.**
-  + read() 함수에 입력 받은 값을 저장할 공간은 0x7fffffffe140 입니다.
-  + 아래와 같이 15개의 문자를 입력해 0x7fffffffe148 영역을 덮어쓸 수 있습니다.
+* **You can change the value after the "nptr" variable like this:**
+  + The space to store the value input to the read() function is 0x7fffffffe140.
+  + You can overwrite the 0x7fffffffe148 area by entering 15 characters as shown below.
 
 ```sh title="Debugging"
 lazenca0x0@ubuntu:~/CTF/HITCON/Babyheap$ gdb -q ./baby*
@@ -201,7 +201,7 @@ gdb-peda$
 
 #### **New()**
 
-* **해당 함수는 다음과 같은 구조체를 사용합니다.**
+* **The function uses the following structure.**
 
 ```c title="Data Structure"
 struct DATA
@@ -212,11 +212,11 @@ struct DATA
 };
 ```
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + gData 전역 변수에 DATA 구조체의 공간을 할당합니다.
-  + 사용자로 부터 "Size"의 값을 입력 받아, 해당 크기 만큼 Heap 공간을 할당합니다.
-  + UserInputStr() 함수를 이용해 "gData→content" 영역에 "gData→size"에 저장된 값 만큼 문자를 입력 받습니다.
-  + UserInputStr() 함수를 이용해 "gData→name" 영역에 최대 8개의 문자를 입력받습니다.
+* **The function has the following functions.**
+  + Allocate space for the DATA structure in the gData global variable.
+  + Receives the “Size” value from the user and allocates heap space equal to that size.
+  + Use the UserInputStr() function to input characters as much as the value stored in “gData→size” in the “gData→content” area.
+  + Use the UserInputStr() function to input up to 8 characters in the “gData→name” area.
 
 ```c title="New()"
 int New()
@@ -254,11 +254,11 @@ int New()
 ```
 
 #### **UserInputStr**
-* **해당 함수는 다음과 같은 기능을 처리합니다.**
-  + 인자값으로 문자열을 저장할 주소, String의 size값을 전달 받습니다.
-  + read()함수를 이용하여 content변수에, size크기 만큼 값을 입력받습니다.
-  + 입력된 문자열의 맨 마지막에 위치한 값을 0으로 변경합니다.
-    - 문자열 입력시 같이 입력되는 Line feed(0xA)를 제거하기 위한것이라고 유추해볼 수 있습니다.
+* **The function handles the following functions:**
+  + As argument values, the address to store the string and the size of the String are received.
+  + Use the read() function to input a value equal to the size of the content variable.
+  + Changes the value located at the end of the input string to 0.
+    - It can be inferred that this is to remove the line feed (0xA) that is input when entering a string.
 
 ```c title="UserInputStr"
 char *__fastcall UserInputStr(char *content, int size)
@@ -278,11 +278,11 @@ char *__fastcall UserInputStr(char *content, int size)
 }
 ```
 
-* **여기에서 Off-by-One Error 취약성이 발생합니다.**
-  + read() 함수로 부터 반환되는 값을 read() 함수를 통해 **읽어들인 byte의 수를 반환**합니다.
-  + **해당 값을 배열의 위치 값으로 사용**하며, 입력된 문자열의 맨 마지막에 위치한 값을 0으로 변경합니다.
-  + 예를 들어 "content"에 할당된 공간의 크기가 8byte 일 경우 사용자가 8byte의 문자열을 입력 할 경우 "content" 영역을 벗어난 영역의 값을 '0'으로 변경하게 됩니다.
-  + - 배열의 시작은 '1' 이 아닌 '0' 부터 시작합니다.
+* **This is where the Off-by-One Error vulnerability arises.**
+  + The value returned from the read() function is **returns the number of bytes read** through the read() function.
+  + **Use the value as the position value of the array**, and change the value located at the end of the input string to 0.
+  + For example, if the size of the space allocated to "content" is 8 bytes and the user enters an 8-byte string, the value of the area outside the "content" area will be changed to '0'.
+  + - The array starts from ‘0’, not ‘1’.
 
 **Off-by-One Error**
 
@@ -293,9 +293,9 @@ char *__fastcall UserInputStr(char *content, int size)
 
 #### **Delete**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + gDeleteState 전역변수를 이용하여 해당 기능이 단 한번만 동작하도록 합니다.(기본 값 0)
-  + free() 함수를 이용하여 gData→content, gData 영역에 할당된 영역을 해제 합니다.
+* **The function has the following functions.**
+  + Use the gDeleteState global variable to ensure that the function operates only once. (Default value 0)
+  + Use the free() function to release the area allocated to the gData → content and gData areas.
 
 ```c title="Delete()"
 __int64 Delete()
@@ -314,9 +314,9 @@ __int64 Delete()
 
 #### **Edit**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + 전역변수 gEditState를 이용하여 해당 기능이 단 한번만 동작하도록 합니다.(기본 값 0)
-  + UserInputString() 함수를 이용하여 "gData→content"에 저장된 내용을 변경합니다.
+* **The function has the following functions.**
+  + Use the global variable gEditState to ensure that the function operates only once. (Default value 0)
+  + Change the content stored in “gData→content” using the UserInputString() function.
 
 ```c title="Edit()"
 int Edit()
@@ -337,10 +337,10 @@ int Edit()
 
 #### **Scanf()**
 
-* **해당 프로그램에서는 "Exit" 기능을 선택했을 때문 scanf()함수를 이용해 값을 입력 받고 있습니다.**
-  + scanf()함수를 호출하기 전에는 heap 영역이 없습니다.
-  + scanf()함수를 호출 후에는 heap 영역이 생성됩니다.
-    - 생성된 Heap영역에는 사용자가 입력한 모든 값이 저장되어 있습니다.
+* **In this program, the value is being input using the scanf() function because the “Exit” function has been selected.**
+  + There is no heap area before calling the scanf() function.
+  + After calling the scanf() function, a heap area is created.
+    - All values ​​entered by the user are stored in the created heap area.
 
 ```sh title="scanf() 함수 호출 전, 후 메모리 변화"
 lazenca0x0@ubuntu:~/CTF/HITCON/Babyheap$ gdb -q ./baby*
@@ -445,9 +445,9 @@ gdb-peda$ x/10gx 0x603000
 gdb-peda$
 ```
 
-* **생성된 heap 영역에 저장된 값은 scanf() 함수를 통해 입력 받은 값이 저장되어 있습니다.**
-  + scanf() 함수를 위해 할당된 메모리의 크기는 1024(0x400) byte 입니다.
-  + 디버깅 모드가 아닐 경우 할당되는 메모리의 크기는 4096(0x1000) byte 입니다.
+* **The value stored in the created heap area is the value input through the scanf() function.**
+  + The size of memory allocated for the scanf() function is 1024 (0x400) bytes.
+  + When not in debugging mode, the size of allocated memory is 4096 (0x1000) bytes.
 
 ```sh title="heap 영역에 저장된 값"
 (gdb) x/30gx 0x603000
@@ -471,7 +471,7 @@ gdb-peda$
 
 #### **Overflow(Off-by-One Error)**
 
-* **다음과 같이 Break point를 설정합니다.**
+* **Set the break point as follows.**
 
 ```sh title="Set Breakpoint"
 gdb-peda$ b *0x4009B8
@@ -481,9 +481,9 @@ Breakpoint 2 at 0x4009c5
 gdb-peda$
 ```
 
-* **다음과 같이 top chunk의 값을 1byte 덮어쓸 수 있습니다.**
-  + "Content"의 크기를 24로 설정하면, 할당받은 메모리 영역 뒤 8byte는 "Top chunk" 영역을 사용됩니다.
-  + "Content"의 입력 값으로 문자 24개를 입력하게 되면 "Top chunk"의 1byte가 "0x00"으로 변경됩니다.
+* **You can overwrite the value of top chunk by 1 byte as follows.**
+  + If the size of "Content" is set to 24, the 8 bytes after the allocated memory area are used as the "Top chunk" area.
+  + When 24 characters are entered as the input value for "Content", 1 byte of "Top chunk" is changed to "0x00".
 
 ```sh title="Off-by-One Error(Top chunk)"
 gdb-peda$ r
@@ -529,10 +529,10 @@ gdb-peda$ x/4gx 0x603030
 gdb-peda$
 ```
 
-* **다음과 같이 "\*content"의 값을 1byte 덮어쓸 수 있습니다.**
-  + "gData→name" 변수 영역 뒤에 "gData→content"가 위치 합니다.
-    - "gData→content" 영역에는 할당 받은 Heap 영역의 주소가 저장되어 있습니다.
-  + "Name"의 값으로 문자 8개를 입력해 "gData→content" 영역의 1byte를 "0x00"으로 변경됩니다.
+* **You can overwrite the value of "\*content" by 1 byte as follows.**
+  + “gData→content” is located after the “gData→name” variable area.
+    - The address of the allocated heap area is stored in the “gData→content” area.
+  + Enter 8 characters as the value for "Name" and 1 byte in the "gData→content" area will be changed to "0x00".
     - 0x603030 → 0x603000
 
 ```sh title="Off-by-One Error(content)"
@@ -571,48 +571,48 @@ gdb-peda$
 
 ### Structure of Exploit code
 
-* **Payload의 순서는 다음과 같습니다.**
+* **Payload order is as follows.**
 
-:::note[Payload 순서]
+:::note[Payload order]
 1. Write Fake chunk
-2. Off-by-One Error에 의한 Heap Overflow
-3. 메모리 해제
-4. UAF에 의한 Heap Overflow
-5. FSB 취약점 생성
+2. Heap Overflow due to Off-by-One Error
+3. free memory
+4. Heap Overflow by UAF
+5. Create FSB Vulnerability
 6. Leak libc addresss
-7. system() 함수를 이용한 shell 획득
+7. Acquire shell using system() function
 :::
 
-* **이를 조금더 자세하게 설명하면 다음과 같습니다.**
+* **This is explained in more detail as follows.**
 
-:::note[상세 설명]
+:::note[Detailed description]
 1. Write Fake chunk
-   1. "4. Exit" 기능을 이용해 Heap영역에 Fake chunk 저장
-2. Off-by-One Error에 의한 Heap Overflow
-   1. "1. New" 기능을 이용해 "ptr->Content" 값 변경
-3. 메모리 해제
-   1. "2. Delete" 기능을 이용해 메모리 해제
-4. UAF를 이용한 Heap Overflow
-   1. 첫번째 malloc()함수로 0x18 크기의 Heap memory 생성
-   2. 두번째 malloc()함수로 Fake chunk에 저장된 Heap size를 전달해서 Heap memory 생성
-   3. Content 내용 입력을 통해 "ptr->Content" 값을 atoi()함수의 GOT값으로 변경
-5. FSB 취약점 생성
-   1. "3.edit" 기능을 이용하여 GOT overflow
-   2. atoi() 함수의 GOT 영역에 printf() 함수의 PLT 주소 값 저장
+   1. Save the fake chunk in the heap area using the "4. Exit" function
+2. Heap Overflow due to Off-by-One Error
+   1. Change the “ptr->Content” value using the “1. New” function
+3. free memory
+   1. Release memory using the "2. Delete" function
+4. Heap Overflow using UAF
+   1. Heap memory of size 0x18 is created using the first malloc() function.
+   2. Heap memory is created by passing the heap size stored in the fake chunk to the second malloc() function.
+   3. Change the “ptr->Content” value to the GOT value of the atoi() function by entering the content.
+5. Create FSB Vulnerability
+   1. GOT overflow using the “3.edit” function
+   2. Saving the PLT address value of the printf() function in the GOT area of ​​the atoi() function
 6. Leak Libc addresss
-   1. FSB취약성을 이용한 Libc addresss 추출
-7. system() 함수를 이용한 shell 획득
-   1. FSB취약성을 이용하여 "gEditState" 전역 변수 값을 0으로 변경
-   2. "3.edit" 기능을 이용하여 GOT overflow  
+   1. Extracting Libc addresses using FSB vulnerability
+7. Acquire shell using system() function
+   1. Change the value of the "gEditState" global variable to 0 by exploiting the FSB vulnerability.
+   2. GOT overflow using the “3.edit” function  
       1. atoi() GOT → Libc system()
 :::
 
-* payload를 바탕으로 공격을 위해 알아내어야 할 정보는 다음과 같습니다.
+* The information you need to find out for an attack based on the payload is as follows.
 
-:::note[확인해야 할 정보]
-* Off-by-One Error를 이용한 UAF 취약성 생성
-  + Fake chunk 구조
-* FSB 취약성
+:::note[Information to check]
+* Creation of UAF vulnerability using Off-by-One Error
+  + Fake chunk structure
+* FSB vulnerability
   + Leak libc addresss
 :::
 
@@ -620,11 +620,11 @@ gdb-peda$
 
 #### **UAF vulnerability creation using off-by-one error(Fake chunk)**
 
-* **scanf() 함수와 "Off-by-One Error" 취약성을 이용해 UAF 취약성을 생성 할 수 있습니다.**
-* **scanf() 함수를 이용해 Fake allocated chunk를 Heap 영역에 저장합니다.**
-  + 우선 공격 대상 프로그램이 디버깅 모드에서 동작하는 것이 아니기 때문에 scanf() 함수에서 할당되는 Heap의 크기는 4096(0x1000)이 됩니다.
-  + 정확한 Exploit code를 작성하기 위해 다음과 같은 코드가 필요합니다.
-* **scanf() 함수에 전달된 입력 값은 다음과 같습니다.**
+* **You can create UAF vulnerabilities using the scanf() function and the "Off-by-One Error" vulnerability.**
+* **Use the scanf() function to store Fake allocated chunks in the Heap area.**
+  + First, because the program targeted for attack is not operating in debugging mode, the size of the heap allocated in the scanf() function is 4096 (0x1000).
+  + To write accurate exploit code, you need the following code:
+* **The input values ​​passed to the scanf() function are:**
   + 'n' + 'A' \* 4064 + prev\_size(0x00000000) + size(0x00000071)
 
 ```python title="poc.py"
@@ -665,26 +665,26 @@ ExitFunction(fakechunk)
 p.interactive()
 ```
 
-* **다음과 같이 Heap 영역에 Fake allocated chunk가 저장됩니다.**
-  + scanf() 함수에 의해 Heap 영역이 할당됩니다.
-    - 할당된 Heap 영역 : 0x20e7010
-    - 할당된 Heap 영역의 크기 : 0x1000
-    - Top chunk 영역 : 0x20e8018
-  + 입력 값으로 전달된 fake allocated chunk는 다음과 같은 영역에 저장됩니다.
-    - Fake allocated chunk가 저장된 영역 : 0x20e7ff0
-  + 즉, 0x20e8000 영역의 해제를 요청하면 free() 함수는 0x20e7ff8 영역을 allocated chunk의 size 값으로 인식하고 해제 합니다.
+* **Fake allocated chunks are stored in the Heap area as follows.**
+  + Heap area is allocated by the scanf() function.
+    - Allocated Heap Area: 0x20e7010
+    - Size of allocated heap area: 0x1000
+    - Top chunk area: 0x20e8018
+  + The fake allocated chunk passed as input value is stored in the following area.
+    - Area where fake allocated chunk is stored: 0x20e7ff0
+  + In other words, if you request the release of the 0x20e8000 area, the free() function recognizes the 0x20e7ff8 area as the size value of the allocated chunk and releases it.
 
 ```sh title="result"
 lazenca0x0@ubuntu:~/CTF/HITCON/Babyheap$ python test.py 
 [+] Starting local process './babyheap_bb488b64300c18a3cd7c60ec1deac79cddb1327b': pid 103665
 ```
 
-* **다음과 같이 Fake allocated chunk를 확인 할 수 있습니다.**
-  + scanf()에 의해 Heap 영역이 할당되었습니다.
-    - 할당된 Heap 영역 : 0x20e7000
-    - 할당된 Heap 영역 크기 : 4096(0x1000)
-  + scanf() 함수에 의해 Heap 영역에 fake chunk가 저장되었습니다.
-    - fake chunk 영역 : 0x20e7ff0 ~ 0x20e7ff8
+* **You can check Fake allocated chunk as follows.**
+  + Heap area has been allocated by scanf().
+    - Allocated Heap Area: 0x20e7000
+    - Allocated heap area size: 4096 (0x1000)
+  + A fake chunk was saved in the heap area by the scanf() function.
+    - fake chunk area: 0x20e7ff0 ~ 0x20e7ff8
 
 ```sh title="GDB attach result"
 lazenca0x0@ubuntu:~/CTF/HITCON/Babyheap$ gdb -q -p 103665
@@ -763,8 +763,8 @@ gdb-peda$ x/10gx 0x20e7000 + 0xfe0
 gdb-peda$
 ```
 
-* **다음과 같이 "content->content"의 변화를 확인 할 수 있습니다.**
-  + 분석을 위해 다음과 같이 Break point를 설정합니다.
+* **You can check the change in “content->content” as follows.**
+  + For analysis, set the break point as follows.
 
 ```sh title="Breakpoint setting"
 gdb-peda$ b *0x400ADD 
@@ -790,12 +790,12 @@ Name:$ CCCCCCCC
 $
 ```
 
-* **다음과 같이 content->content의 값을 변경됩니다.**  
-  + scanf()에서 사용한 Heap 영역 뒤에 "gData"를 위한 Heap 영역이 할당 되었습니다.
-  + "gData"의 Heap 영역 뒤에 "content->content"를 위한 Heap 영역이 할당 되었습니다.
-* **중요한 것은 "content->content"에 저장된 값 입니다.**
-  + "content→content"(0x20e8030)에 저장된 값은 0x20e8040 입니다.
-  + 즉, Off-by-One Error에 의해 "0x30"을 "0x00"으로 변경 할 수 있습니다.
+* **The value of content->content is changed as follows.**  
+  + The heap area for “gData” is allocated after the heap area used in scanf().
+  + The heap area for “content->content” has been allocated after the heap area of ​​“gData”.
+* **What is important is the value stored in “content->content”.**
+  + The value stored in "content→content" (0x20e8030) is 0x20e8040.
+  + In other words, “0x30” can be changed to “0x00” by an Off-by-One Error.
     - 0x20e8030 → 0x20e8000
 
 ```sh title="p.interactive() - after off-by-one"
@@ -833,7 +833,7 @@ gdb-peda$ x/20gx 0x20e7000 + 0xfe0
 gdb-peda$
 ```
 
-* 다음과 같이 "Delete"기능을 호출합니다.
+* We call the "Delete" function like this:
 
 ```sh title="p.interactive() - delete"
 #########################
@@ -847,7 +847,7 @@ gdb-peda$
 Your choice:$ 2
 ```
 
-* **다음과 같이 Fake chunk가 fastbin에 등록된 것을 확인 할 수 있습니다.**
+* **You can check that the Fake chunk is registered in fastbin as follows.**
   + fastbinsY[0] : gData(0x20e8010)
   + fastbinsY[5] : Fake chunk(0x20e7ff0)
 
@@ -863,28 +863,28 @@ $3 = (mfastbinptr) 0x20e7ff0
 gdb-peda$
 ```
 
-* **다음과 같은 방법으로 fastbinsY[5]영역을 할당받을 수 있습니다.**
-  + "1. New" 기능을 이용해 "Size :"의 값으로 0x60(96)을 입력합니다.
-  + malloc() 함수에 의해fastbinsY[5]영역을 재할당합니다.
-  + "gData"에는 fastbinsY[0]영역이 재할당됩니다.
-* **즉, UAF 취약점을 이용하여 gData 구조체 변수의 내용을 Overflow가 가능합니다.**
-  + "ptr→content" 영역에 공격자가 값을 저장하기 원하는 주소 값을 저장 할 수 있습니다.
-  + "3. Edit" 기능을 이용해 ptr→content 영역에 저장된 주소에 원하는 값을 저장 할 수 있습니다.
+* **You can allocate the fastbinsY[5] area in the following way.**
+  + Use the "1. New" function and enter 0x60(96) as the value for "Size:".
+  + Reallocate the fastbinsY[5] area by the malloc() function.
+  + The fastbinsY[0] area is reallocated to “gData”.
+* **In other words, it is possible to overflow the contents of the gData structure variable by exploiting the UAF vulnerability.**
+  + In the "ptr→content" area, the attacker can store the address value where he or she wants to store the value.
+  + You can use the "3. Edit" function to save the desired value to the address saved in the ptr→content area.
 
 #### **Create FSB vulnerability**
 
-* **해당 문제에서 shell을 획득하기 위해서 libc addresss, 프로그램의 흐름을 변경할 수 있는 주소값이 필요합니다.**
-* **이러한 문제를 해결하기 위해 FSB 취약점을 만들어서 해결 할 수 있습니다.**
-* **다음과 같은 방법으로 FSB 취약성을 만들 수 있습니다.**
-  + atoi() 함수의 GOT 영역에 printf()함수의 plt 주소 값을 저장합니다.
-  + printf()함수의 plt 주소 값만 전달 할 경우 \_\_isoc99\_scanf()함수의 GOT 영역에 Lline feed(0x0000000A)값이 저장됩니다.  
-    - 이로 인해 Error가 발생합니다.
-  + 해당 에러를 해결하기 위해 "printf()의 PLT 주소" 와 "\_\_isoc99\_scanf()의 PLT" 주소를 같이 저장합니다.
-* **atoi() 함수를 prinf() 함수로 변경하는 이유는 다음과 같습니다.**
-  + 전달되는 인자의 형태
-  + printf() 함수의 경우 출력된 문자의 갯수를 반환합니다.
-    - 즉, 문자열의 길이를 이용해 기능을 호출 할 수 있습니다.
-* 스트립트 코드는 다음과 같습니다.
+* **In order to obtain a shell in this problem, libc addresses, an address value that can change the flow of the program, are required.**
+* **To solve this problem, you can create an FSB vulnerability.**
+* **FSB vulnerabilities can be created in the following ways:**
+  + Store the plt address value of the printf() function in the GOT area of ​​the atoi() function.
+  + When only the plt address value of the printf() function is passed, the Lline feed (0x0000000A) value is stored in the GOT area of ​​the \_\_isoc99\_scanf() function.  
+    - This causes an Error to occur.
+  + To resolve the error, save the “PLT address of printf()” and “PLT address of \_\_isoc99\_scanf()” together.
+* **The reasons for changing the atoi() function to the prinf() function are as follows:**
+  + Type of argument passed
+  + In the case of the printf() function, it returns the number of printed characters.
+    - In other words, you can call a function using the length of the string.
+* The script code is as follows:
 
 ```python title="babyheap-attack.py"
 from pwn import *
@@ -950,7 +950,7 @@ EditFunction(p64(plt_printf) + p64(plt_scanf))
 p.interactive()
 ```
 
-* **다음은 해당 스크립트를 실행한 결과 입니다.**
+* **The following is the result of running the script.**
 
 ```sh title="result"
 autolycos@ubuntu:~/CTF/HITCON/Babyheap$ python Exploit.py 
@@ -980,9 +980,9 @@ Your choice:$
 
 ### Leaklibcaddresss
 
-* **다음과 같이 FSB 취약성을 이용해libcaddresss 추출할 수 있습니다.**
-  + 첫번째 값(0x7fff5adbd6e0)은 Stack 영역의 주소 입니다.
-  + 세번째 값(0x7fef49664cdc)은 Libc영역의 주소입니다.
+* **You can extract libcaddresses using the FSB vulnerability as follows.**
+  + The first value (0x7fff5adbd6e0) is the address of the stack area.
+  + The third value (0x7fef49664cdc) is the address of the Libc area.
 
 ```sh title="FSB 취약성을 이용해 출력된 Stack에 저장된 값"
 [*] Switching to interactive mode
@@ -1002,8 +1002,8 @@ Invalid choice !
 
 ### Reset the "gEditState" value
 
-* **앞에서 작성한 스트립트를 이용해 FSB 취약성을 생성한 후에 분석을 진행합니다.**
-  + 0x400948 영역에 break point를 설정합니다.
+* **After creating the FSB vulnerability using the script written previously, we proceed with the analysis.**
+  + Set a break point in the 0x400948 area.
 
 ```sh title="Breakpoint setting"
 gdb-peda$ b *0x400948
@@ -1012,13 +1012,13 @@ gdb-peda$ c
 Continuing.
 ```
 
-* **다음과 같은 방법으로 "gEditState"의 값을 변경 할 수 있습니다.**
-  + UserInput() 함수의 취약성을 이용해 16개의 문자를 Stack에 저장 할 수 있습니다.
-  + 즉, FSB 취약성을 이용해 사용자가 입력한 값의 위치를 알면 "gEditState"의 값을 0으로 변경 할 수 있습니다.
-* **다음과 같이 "%8$p"를 입력하면 "0xa70243825" 를 출력합니다.**
-  + 출력된 "0xa70243825"는 사용자가 입력한 "%8$p" 문자열의 Hex 값입니다.
-  + %8 영역은 "nptr" 변수 영역이며, %9 영역은 지역변수의 기본주소가 저장된 영역입니다.
-  + 즉,"Your choice:$"의 입력 값으로 "%9$nAAAA" + p64(gEditState의 주소)를 저장하면 FSB 취약성에 의해 "gEditState" 전역 변수의 값이 0으로 변경됩니다.
+* **You can change the value of “gEditState” in the following ways.**
+  + By exploiting a vulnerability in the UserInput() function, 16 characters can be stored in the Stack.
+  + In other words, if you know the location of the value entered by the user using the FSB vulnerability, you can change the value of "gEditState" to 0.
+* **If you enter "%8$p" as follows, "0xa70243825" will be output.**
+  + The output "0xa70243825" is the hex value of the "%8$p" string entered by the user.
+  + The %8 area is the “nptr” variable area, and the %9 area is where the basic address of the local variable is stored.
+  + That is, if you store "%9$nAAAA" + p64 (address of gEditState) as the input value of "Your choice:$", the value of the "gEditState" global variable will be changed to 0 by the FSB vulnerability.
 
 ```sh title="p.interactive() - leak gEditState address"
 #########################
@@ -1139,12 +1139,12 @@ p.interactive()
 ```
 
 :::Note
-* atoi() 함수의 GOT 값을 printf()함수의 PLT로 변경했기 때문에 숫자 값을 입력으로 메뉴 기능을 사용할 수 없습니다.
-  + 문자의 갯수를 사용해야 합니다.
-  + 1번 메뉴 호출은 Enter
-  + 2번 메뉴 호출은 문자 1개
-  + 3번 메뉴 호출은 문자 2개
-  + 4번 메뉴 호출은 문자 3개
+* Because the GOT value of the atoi() function has been changed to the PLT of the printf() function, the menu function cannot be used with a numeric value as input.
+  + The number of characters must be used.
+  + To call menu number 1, press Enter
+  + Menu call number 2 requires 1 character
+  + Menu call number 3 requires 2 letters
+  + Menu number 4 call requires 3 letters
 :::
 
 ## **Flag**

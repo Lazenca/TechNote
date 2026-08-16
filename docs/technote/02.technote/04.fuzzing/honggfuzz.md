@@ -6,24 +6,24 @@ sidebar_position: 1
 
 ## **Honggfuzz**
 
-* **Honggfuzz는 google에서 관리하는 프로젝트입니다.**
-* **Honggfuzz는 멀티 스레드와 멀티 프로세스를 사용합니다.**
-  + 그렇기 때문에 fuzzer를 여러 개 복사할 필요가 없습니다.
-  + Honggfuzz는 사용 가능한 모든 CPU 코어 이용할 수 있습니다.
-  + Honggfuzz는 스레드 간에 Corpus 파일을 공유 합니다.
-* **Honggfuzz는 OpenSSL에서 중요한 취약성을 발견하였습니다.**
+* **Honggfuzz is a project managed by google.**
+* **Honggfuzz is multi-threaded and multi-processed.**
+  + So there is no need to make multiple copies of the fuzzer.
+  + Honggfuzz can take advantage of any available CPU core.
+  + Honggfuzz shares corpus files between threads.
+* **Honggfuzz discovered a critical vulnerability in OpenSSL.**
   + [Fix Use After Free for large message sizes (CVE-2016-6309)](https://www.openssl.org/news/secadv/20160926.txt)
-* **Honggfuzz는 낮은 수준의 인터페이스를 사용하여 프로세스를 모니터링 합니다.**
-  + 이로 인해 Honggfuzz는 다른 fuzzer들과 달리 숨겨진 신호를 발견하고 보고 합니다.
-* **Honggfuzz는 간단한 Corpus를 전달하고, 피드백 기반의 커버리지 메트릭스를 활용하여 확장하는 방식으로 동작합니다.**
-* **Honggfuzz는 하드웨어 기반, 소프트웨어 기반의 다른 퍼저의 구동을 지원합니다.**
+* **Honggfuzz uses a low-level interface to monitor processes.**
+  + This makes Honggfuzz discover and report hidden signals unlike other fuzzers.
+* **Honggfuzz operates by delivering a simple corpus and expanding it using feedback-based coverage metrics.**
+* **Honggfuzz supports running other hardware-based and software-based fuzzers.**
   + software-based: libfuzzer, afl
   + hardware-based: branch/instruction counting, Intel BTS, Intel PT
   + [Feedback-driven fuzzing](https://github.com/google/honggfuzz/blob/master/docs/FeedbackDrivenFuzzing.md)
-* **Honggfuzz는** "liubfuzz/PULIBROOzza.a"를 사용하여 [지속적인 퍼지 모드](https://github.com/google/honggfuzz/blob/master/docs/PersistentFuzzing.md)를 지원합니다.
-* **Honggfuzz는 원격 / 독립 실행형 프로세스를 오랜 시간동안 원할하게 fuzz 할 수 있습니다.**
+* **Honggfuzz** supports [Continuous purge mode](https://github.com/google/honggfuzz/blob/master/docs/PersistentFuzzing.md) using** "liubfuzz/PULIBROOzza.a".
+* **Honggfuzz can fuzz remote/standalone processes smoothly for long periods of time.**
   + [Can fuzz remote/standalone long-lasting processes](https://github.com/google/honggfuzz/blob/master/docs/AttachingToPid.md)
-* **Honggfuzz는 다음과 같은 환경에서 동작합니다.**
+* **Honggfuzz operates in the following environments.**
 
 | OS | Status | Notes |
 | --- | --- | --- |
@@ -59,14 +59,14 @@ $./honggfuzz [options] -- path_to_command [args]
 
 ### **Example(Fuzzing OpenSSL)**
 
-* **honggfuzz에서 제공하는 example을 이용해 설명하며, 대상은 OpenSSL 입니다.**
-  + 해당 예제에서는 libFuzzer도 이용하고 있기 때문에 libFuzzer의 설치도 필요합니다.
+* **This is explained using an example provided by honggfuzz, and the target is OpenSSL.**
+  + Since libFuzzer is also used in this example, installation of libFuzzer is also required.
 
 ```bash title="Example"
 $ cd honggfuzz/example/openssl/
 ```
 
-* **우선 아래 2파일에서 Honggfuzz가 설치된 경로를 재설정이 필요합니다.**
+* **First, you need to reset the path where Honggfuzz is installed in the 2 files below.**
 
 ```bash title="compile_hfuzz_openssl_master.sh"
 export CC="honggfuzz path"/hfuzz_cc/hfuzz-clang
@@ -76,7 +76,7 @@ export CC="honggfuzz path"/hfuzz_cc/hfuzz-clang
 HFUZZ_SRC = "honggfuzz path"
 ```
 
-* **다음과 같이 open-ssl소스를 다운받아 빌드합니다.**
+* **Download and build the open-ssl source as follows.**
 
 ```bash title="Download and Build"
 $ git clone --depth=1 https://github.com/openssl/openssl.git
@@ -86,7 +86,7 @@ $ ./config
 $ ~/Fuzz/honggfuzz/examples/openssl/compile_hfuzz_openssl_master.sh
 ```
 
-* **다음과 같이 honggfuzz에서 제공되는 corpus를 이용해 fuzz을 진행합니다.**
+* **Fuzz is performed using the corpus provided by honggfuzz as follows.**
 
 ```bash title="Fuzzing"
 lazenca0x0@ubuntu:~/Fuzz/honggfuzz/examples/openssl$ ~/Fuzz/honggfuzz/honggfuzz -f corpus_server/ -P -- ./stdin.openssl-master.addresss.server 
@@ -118,7 +118,7 @@ Persistent mode: Launched new persistent PID: 30654
 Persistent mode: Launched new persistent PID: 30655
 ```
 
-* **honggfuzz에서는** openssl **이외에도 다양한 예제들을 제공하고 있습니다.**
+* **honggfuzz** provides various examples in addition to openssl **.
 
 :::note[Example]
 * <https://github.com/google/honggfuzz/tree/master/examples>

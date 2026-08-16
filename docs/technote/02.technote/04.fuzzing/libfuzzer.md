@@ -6,11 +6,11 @@ sidebar_position: 1
 
 ## **LibFuzzer**
 
-* **LibFuzzer는 테스트 대상 라이브러리와 연결되어 있습니다.**
-* **LibFuzzer는 Fuzz 입력은 특정 입력 지점(분석 대상 함수)을 통해 전달됩니다.**
-* **LibFuzzer는 라이브러리는 특정 진입 점을 통해 입력 값이 코드의 어느 영역에 도달했는데 추적합니다.**
-* **LibFuzzer는 코드 커버리지를 최대화하기 위해 입력 데이터의 코퍼스 (corpus)에 변형을 생성한다.**
-* **LibFuzzer의 코드 범위 정보는 LLVM의 [SanitizerCoverage](http://clang.llvm.org/docs/SanitizerCoverage.html) 계측기에서 제공합니다.**
+* **LibFuzzer is linked to the library being tested.**
+* **In LibFuzzer, Fuzz input is passed through a specific input point (function to be analyzed).**
+* **LibFuzzer tracks which areas of the code a library's input reaches through specific entry points.**
+* **LibFuzzer generates variants on a corpus of input data to maximize code coverage.**
+* **LibFuzzer's code coverage information is provided by LLVM's [SanitizerCoverage](http://clang.llvm.org/docs/SanitizerCoverage.html) instrument.**
 
 :::note
 * <http://apt.llvm.org/>
@@ -38,8 +38,8 @@ Fuzzer/build.sh
 
 #### **Set target**
 
-* **다음과 같이 LibFuzzer의 첫 번재 단계는 Fuzz 대상을 구현하는 것입니다.**
-  + LLVMFuzzerTestOneInput() 함수를 이용해 Byte 배열을 입력받아 fuzzing을 수행합니다.
+* **The first step in LibFuzzer is to implement the Fuzz target, as follows:**
+  + Perform fuzzing by receiving a Byte array as input using the LLVMFuzzerTestOneInput() function.
 
 ```c title="fuzz_target.cc" 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
@@ -48,41 +48,41 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 }
 ```
 
-* **Fuzz 대상에 중요한 사항은 다음과 같습니다.**
-  + 퍼징 대상은 퍼징 엔진에 의해 동일한 프로세스에 다른 입력 값을 전달받아 여러번 실행합니다.
-  + 퍼징 대상은 어떠한 종류의 입력에도 종료되어서는 안됩니다.
-  + 퍼징 대상은 어떤 입력에 의해 exit() 하지 않아야 합니다.
-  + 퍼징 대상은 Thread를 사용할 수 있지만, 이상적으로는 모든 스레드는 함수의 끝에서 결합되어야 합니다.
-  + 퍼징 대상은 결정론적(deterministic) 이어야 합니다.  
-    - 비결정론적(Non-determinism)일 경우 퍼징이 비효율적 일 수 있습니다.
-  + 퍼징 대상은 매우 빠르기 때문에 큰 복잡성, 로깅 또는 과도한 메모리 소비를 피해야 합니다.
-  + 퍼징 대상은 전역 상태를 변경해서는 안됩니다.
-  + 퍼징 대상은 일반적으로 대상이 좁을수록 좋습니다.
-* **Fuzz 대상은 LibFuzzer에 의존하지 않으며, 다른 Fuzzing 엔진들과 함게 사용하는 것이 가능하며 바람직합니다.**
+* **Important things to Fuzz about include:**
+  + The fuzzing target is executed multiple times by receiving different input values ​​from the same process by the fuzzing engine.
+  + The fuzz target must not be terminated by any kind of input.
+  + The fuzz target must not exit()ed by any input.
+  + The fuzz target can use a Thread, but ideally all threads should be joined at the end of the function.
+  + The fuzzing target must be deterministic.  
+    - If it is non-deterministic, fuzzing may be inefficient.
+  + Because fuzzing targets are very fast, you should avoid large complexity, logging, or excessive memory consumption.
+  + The fuzz target must not change global state.
+  + When it comes to fuzzing targets, the narrower the target, the generally better.
+* **Fuzz targets do not depend on LibFuzzer, and it is possible and desirable to use them with other fuzzing engines.**
   + AFL, Radamsa
 
 #### **libFuzz build**
 
-* **다음과 같이 퍼징 대상을 빌드 할 수 있습니다.**
+* **You can build your fuzz target like this:**
 
 ```bash title="Build fuzzer target"
 clang -fsanitize-coverage=trace-pc-guard -fsanitize=addresss your_lib.cc fuzz_target.cc libFuzzer.a -o my_fuzzer
 ```
 
-* **그리고 빌드시 다음과 같이 Sanitizer를 사용할 수 있습니다.**
-  + AddresssSanitizer (ASAN) : 메모리 액세스 오류를 감지합니다.
-  + UndefinedBehaviorSanitizer (UBSAN) : 정의되지 않은 행동을 실행 중에 탐지 합니다.
-  + MemorySanitizer (MSAN) : MemorySanitizer는 초기화되지 않은 메모리의 참조를 실행 중에 탐지합니다.
+* **And you can use Sanitizer at build time like this:**
+  + AddresssSanitizer (ASAN): Detects memory access errors.
+  + UndefinedBehaviorSanitizer (UBSAN): Detects undefined behavior during execution.
+  + MemorySanitizer (MSAN): MemorySanitizer detects references to uninitialized memory at runtime.
 
 #### **Run**
 
-* **다음과 같은 형태로 Fuzz를 실행 할 수 있습니다.**
+* **You can run Fuzz in the following format.**
 
 ```bash title="Run fuzzer target"
 ./fuzzer [-flag1=val1 [-flag2=val2 ...] ] [dir1 [dir2 ...] ]
 ```
 
-* **아래 Site에서 더 많은 옵션을 확인 할 수 있습니다.**
+* **You can check more options on the site below.**
 
 :::note[Options]
 * <https://releases.llvm.org/5.0.0/docs/LibFuzzer.html#options>
@@ -90,9 +90,9 @@ clang -fsanitize-coverage=trace-pc-guard -fsanitize=addresss your_lib.cc fuzz_ta
 
 ### **Example - Heartbleed**
 
-* **해당 예제는 아래 페이지에서 제공하는 예제 입니다.**
+* **This example is provided on the page below.**
   + <https://github.com/google/fuzzer-test-suite/blob/master/tutorial/libFuzzerTutorial.md>
-  + 이외에도 [https://github.com/google/fuzzer-test-suite](https://github.com/google/fuzzer-test-suite/blob/master/tutorial/libFuzzerTutorial.md) 에 많은 테스트 케이스가 있습니다.
+  + In addition, there are many test cases at [https://github.com/google/fuzzer-test-suite](https://github.com/google/fuzzer-test-suite/blob/master/tutorial/libFuzzerTutorial.md).
 
 #### **Get the tutorial**
 
@@ -105,8 +105,8 @@ git clone https://github.com/google/fuzzer-test-suite.git FTS
 
 #### **Source code**
 
-* **아래 코드는 libFuzzer를 이용해 Heartbleed 취약성을 찾기 위한 Fuzz 코드입니다.**
-  + Fuzz의 Data, size 인수를 BIO\_write() 함수에 전달됩니다.
+* **The code below is a Fuzz code to find Heartbleed vulnerabilities using libFuzzer.**
+  + Fuzz's Data and size arguments are passed to the BIO\_write() function.
 
 ```c title="libFuzzer - Heartbleed"
 // Copyright 2016 Google Inc. All Rights Reserved.
@@ -148,7 +148,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 }
 ```
 
-* **BIO\_write() 함수의 원형은 다음과 같습니다.**
+* **The prototype of the BIO\_write() function is as follows.**
 
 ```c title="SYNOPSIS"
 int    BIO_write(BIO *b, const void *buf, int len);

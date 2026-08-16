@@ -3,6 +3,9 @@
   "position": 1,
   "key": "technote_02.technote",
   "link": {
-    "type": "generated-index"
+    "type": "generated-index",
+    "slug": "/category/02technote",
+    "title": "02.TechNote",
+    "description": "Exploit & Reverse Engineering Tech Notes"
   }
 }

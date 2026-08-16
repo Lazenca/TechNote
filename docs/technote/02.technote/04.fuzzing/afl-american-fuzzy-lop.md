@@ -6,13 +6,13 @@ sidebar_position: 1
 
 ## **Description**
 
-* **AFL(American Fuzzy Lop)은 테스트 케이스의 코드 적용 범위(Code coverage)를 효율적으로 늘리기 위해 유전자 알고리즘(Genetic algorithm)을 사용하는 fuzzer입니다.**
-  + 지원 가능한 OS는 Linux, OpenBSD, FreeBSD, NetBSD의 32bit 및 64bit를 지원합니다.
-    - MacOS X 및 Solaris에서도 작동하지만 일부 제약이 있습니다.
-  + 지원 가능한 프로그램 언어는 C, C++, Objective C를 지원합니다.
-  + 지원 가능한 컴파일러는 gcc, g++, clang, clang++를 지원합니다.
-  + 지원 가능한 테스트 방식은 White-box, Black-box를 지원합니다.
-    - 리눅스에서는 QEMU 옵션을 사용해서 블랙 박스 바이너리를 퍼징 할 수 있습니다.
+* **AFL (American Fuzzy Lop) is a fuzzer that uses genetic algorithm to efficiently increase code coverage of test cases.**
+  + Supportable OSes include 32bit and 64bit versions of Linux, OpenBSD, FreeBSD, and NetBSD.
+    - It also works on MacOS X and Solaris, but with some limitations.
+  + Supported programming languages ​​include C, C++, and Objective C.
+  + Supported compilers include gcc, g++, clang, and clang++.
+  + Supportable test methods include White-box and Black-box.
+    - On Linux, you can fuzz black box binaries using the QEMU option.
 
 ### **Site**
 
@@ -32,42 +32,42 @@ $ sudo make install
 
 | Command | Description | Basic methods of use |
 | --- | --- | --- |
-| afl-analyze | 파일 포맷 분석기 | afl-analyze -i <test case file> target\_app |
-| afl-clang | clang wrapper | clang 명령어와 동일합니다. |
-| afl-clang++ | clang++ wrapper | clang++ 명령어와 동일합니다. |
-| afl-cmin | 중복되는 테스트 케이스 제거 | afl-cmin -i <test case dir> -o <output dir> target\_app |
-| afl-fuzz | AFL의 코드 퍼지 | afl-fuzz -i <test case dir> -o <output dir> target\_app |
-| afl-g++ | g++ wrapper | g++명령어와 동일합니다. |
-| afl-gcc | gcc wrapper | gcc 명령어와 동일합니다. |
-| afl-gotcpu | CPU 선점 비율 출력 | afl-gotcpu |
-| afl-plot | 진행률 출력- "gnuplot" 설치 필요 | afl-plot <afl state dir> <graph output dir> |
-| afl-tmin | 테스트 케이스 최소화 | afl-tmin -i <test case file> -o <output file> target\_app |
-| afl-whatsup | 상태 점검 도구 | afl-whatsup <afl\_sync\_dir> |
+| afl-analyze | file format analyzer | afl-analyze -i <test case file> target\_app |
+| afl-clang | clang wrapper | Same as clang command. |
+| afl-clang++ | clang++ wrapper | Same as clang++ command. |
+| afl-cmin | Eliminate duplicate test cases | afl-cmin -i <test case dir> -o <output dir> target\_app |
+| afl-fuzz | AFL's code purge | afl-fuzz -i <test case dir> -o <output dir> target\_app |
+| afl-g++ | g++ wrapper | Same as g++ command. |
+| afl-gcc | gcc wrapper | Same as gcc command. |
+| afl-gotcpu | CPU preemption ratio output | afl-gotcpu |
+| afl-plot | Progress output - requires "gnuplot" installed | afl-plot <afl state dir> <graph output dir> |
+| afl-tmin | Minimize test cases | afl-tmin -i <test case file> -o <output file> target\_app |
+| afl-whatsup | health check tool | afl-whatsup <afl\_sync\_dir> |
 
 ## **Description of commands**
 
 ### afl-fuzz
 
-* 해당 도구는 바이너리를 대상으로 다양한 퍼징을 시도합니다.
+* The tool attempts various fuzzing operations on the binary.
 
 #### **White-box, Black-box test**
 
-* **해당 도구는 White-box, Black-box 테스트를 지원합니다.**
-  + White-box를 사용하기 위해서 afl에서 제공하는 컴파일러를 이용해 바이너리를 빌드해야 합니다.
-  + Black-box를 사용하기 위해 afl에서는 QEMU를 사용하며, -Q 옵션을 이용해 사용할 수 있습니다.
-* 다음과 같이 White-box 테스트를 할 수 있습니다.
+* **The tool supports white-box and black-box testing.**
+  + To use white-box, you must build the binary using the compiler provided by afl.
+  + To use black-box, afl uses QEMU and can be used using the -Q option.
+* You can do white-box testing as follows.
 
 ```bash title="White-box"
 afl-fuzz -i <test case dir> -o <output dir> target_app
 ```
 
-* 다음과 같이 black-box 테스트를 할 수 있습니다.
+* You can do black-box testing like this:
 
 ```bash title="Black-box"
 afl-fuzz -Q -i <test case dir> -o <output dir> target_app
 ```
 
-:::note[데이터 입력 옵션]
+:::note[Data entry options]
 ```bash title="Standard input"
 afl-fuzz -i <test case dir> -o <output dir> target_app [params...]
 ```
@@ -79,24 +79,24 @@ afl-fuzz -i <test case dir> -o <output dir> target_app @@
 
 #### **Parallel fuzzing**
 
-* **해당 도구는 병렬 퍼징을 지원합니다.**
-  + afl-fuzz의 모든 복사본은 하나의 CPU 코어를 차지합니다.
-  + 즉,n 코어 시스템에서는 거의 항상 성능 저하없이 거의 동시 n 개의 동시 퍼징 작업을 실행할 수 있습니다
-    - afl-gotcpu 도구를 사용하여 확인할 수 있음
-  + 사실 멀티 코어 시스템에서 단 하나의 작업에만 의존한다면 하드웨어를 충분히 활용 하지 못할 것 입니다.
-  + 병렬 처리가 일반적으로 올바른방법입니다.
+* **The tool supports parallel fuzzing.**
+  + Every copy of afl-fuzz occupies one CPU core.
+  + This means that on an n core system, you can almost always run n concurrent fuzzing operations at almost the same time without any performance penalty.
+    - You can check this using the afl-gotcpu tool:
+  + In fact, if you rely on just one task on a multi-core system, you will not be fully utilizing the hardware.
+  + Parallel processing is generally the right approach.
 
 ##### **Single-system parallelization**
 
-* 단일 시스템 병렬화를 이용하기 위해 로컬 시스템의 여러 코어에 단일 작업을 병렬로 연결하기위한 빈 디렉토리("sync dir")를 생성합니다.
-  + 해당 디렉토리에 모든 인스턴스가 공유됩니다.
-* 다음과 같이 마스터 인스턴스(-M)를 실행합니다.
+* To take advantage of single-machine parallelism, we create an empty directory ("sync dir") to connect a single task to multiple cores on the local machine in parallel.
+  + All instances will be shared in that directory.
+* Run the master instance (-M) as follows:
 
 ```bash title="Master instance"
 ./afl-fuzz -i testcase_dir -o sync_dir -M fuzzer01 [...other stuff...]
 ```
 
-* 다음과 같이 보조 인스턴스(-S)를 실행합니다.
+* Run the secondary instance (-S) as follows:
 
 ```bash title="Slave instance"
 $ ./afl-fuzz -i testcase_dir -o sync_dir -S fuzzer02 [...other stuff...]
@@ -105,9 +105,9 @@ $ ./afl-fuzz -i testcase_dir -o sync_dir -S fuzzer03 [...other stuff...]
 
 ##### **Multi-system parallelization**
 
-* 다중 시스템 병렬화 처리의 기본 작동 원리는 단일 시스템 병렬화에서 설명한 메커니즘과 비슷합니다.
-* 두 가지 작업을 수행하는 간단한 스크립트가 필요합니다.
-* 로컬 시스템에서 모든 <fuzzer\_id> 디렉토리의 "/queue/" 경로 아래에 있는 파일들을 압축합니다.
+* The basic operating principle of multi-system parallel processing is similar to the mechanism described in single-system parallelization.
+* I need a simple script that does two things:
+* Compresses files under the "/queue/" path in all <fuzzer\_id> directories on the local system.
 
 ```bash title="Compressing files"
 for s in {1..10}; do
@@ -115,7 +115,7 @@ for s in {1..10}; do
     done
 ```
 
-* 압축된 파일을 모든 컴퓨터에 파일을 배포하고 압축을 해제합니다
+* Distribute and unzip the compressed file to all computers
 
 ```bash title="Uncompressing files"
   for s in {1..10}; do
@@ -132,17 +132,17 @@ for s in {1..10}; do
 
 ### afl-analyze
 
-* **해당 도구는 Test case의 파일 포맷을 분석합니다.**
-  + 데이터 스트림으로 부터 순차적으로 전달되는 데이터들을 가져오며, 매 입력마다 바이너리의 동작을 관찰합니다.
-* 다음과 같은 정보를 유추 할 수 있습니다.
+* **The tool analyzes the file format of the test case.**
+  + It retrieves data delivered sequentially from the data stream and observes the binary operation for each input.
+* We can infer the following information:
   + no-op block
   + Critical stream
-  + "magic value" 섹션
-  + 내용으로 의심되는 영역
-  + 길이 필드로 의심되는 영역
-  + 체크섬 블럭으로 의심되는 영역
-  + 체크썸 또는 Magic 값으로 의심되는 영역
-* 다음과 같이 사용할 수 있습니다.
+  + "magic value" section
+  + Areas with suspicious content
+  + Area suspected of being a length field
+  + Area suspected of being a checksum block
+  + Areas suspected of having checksum or magic values
+* You can use it like this:
 
 ```bash title="afl-analyze -i testcase/test1.txt ./test"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-analyze -i testcase/test1.txt ./test
@@ -168,10 +168,10 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 ### **afl-cmin**
 
-* **해당 도구는 Test case의 중복을 최소화 합니다.**
-* 다음과 같이 가장 적합한 test case만을 분리 합니다.
-  + 4개의 test case에서 7개의 tuple을 발견했으며, 2개의 파일로 축소했습니다.
-  + 여기서 사용된 test case는 아래 "Create to Test cases."에서 생성한 파일을 사용했습니다.
+* **This tool minimizes duplication of test cases.**
+* Separate only the most suitable test cases as follows.
+  + We found 7 tuples in 4 test cases and reduced them to 2 files.
+  + The test case used here used the file created in “Create to Test cases.” below.
 
 ```bash title="afl-cmin -i testcase/ -o newTestCase/ ./test"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-cmin -i testcase/ -o newTestCase/ ./test
@@ -202,15 +202,15 @@ lazenca0x0@ubuntu:~/Documents/AFL/test/newTestCase$
 
 ### **afl-tmin**
 
-* **해당 도구는 Test case의 최적화를 진행합니다.**
-* 최적화되는 내용은 다음과 같습니다.
-  + 데이터 블럭의 최소화
-  + 기호의 최소화
-  + 문자의 최소화
-* 다음과 같이 Test case를 최소화 할 수 있습니다.
-  + 68개의 문자가 56개로 변경되었습니다.
-  + 임의 문자들이 숫자 0(0x30)으로 변경되었습니다.
-  + Test case에 기호가 없었기 때문에 기호의 최소화는 진행되지 않았습니다.
+* **This tool optimizes test cases.**
+* What is optimized is as follows:
+  + Minimization of data blocks
+  + Minimization of symbols
+  + Minimization of characters
+* Test cases can be minimized as follows.
+  + 68 characters changed to 56.
+  + Random characters have been changed to the number 0 (0x30).
+  + Because there were no symbols in the test case, symbol minimization was not carried out.
 
 ```bash title="afl-tmin -i result/crashes/id\:000000\,sig\:11\,src\:000000\,op\:havoc\,rep\:128 -o testcaseMin ./test"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-tmin -i result/crashes/id\:000000\,sig\:11\,src\:000000\,op\:havoc\,rep\:128 -o testcaseMin ./test
@@ -262,7 +262,7 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$ cat testcaseMin
 
 ### **afl-gotcpu**
 
-* **해당 도구는 afl-fuzz에서 사용중인 cpu 선점 비율을 출력합니다.**
+* **The tool prints the cpu preemption ratio being used by afl-fuzz.**
 
 ```bash title="afl-gotcpu"
 lazenca0x0@ubuntu:~$ afl-gotcpu 
@@ -277,8 +277,8 @@ lazenca0x0@ubuntu:~$
 
 ### afl-plot
 
-* **해당 도구는 fuzz의 진행 상황을 그래프로 출력합니다.**
-  + 다음과 같이 해당 프로그램을 실행하면, index.html 파일이 생성됩니다.
+* **The tool graphs the progress of the fuzz.**
+  + If you run the program as follows, an index.html file will be created.
 
 ```bash title="afl-plot result/ graph/"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-plot result/ graph/
@@ -296,7 +296,7 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 ### **alf-whatsup**
 
-* **해당 도구는 병렬 퍼징을 진행했을 때 개별 fuzzer의 상태를 확인할 수 있습니다.**
+* **This tool can check the status of individual fuzzers when parallel fuzzing is performed.**
 
 ```bash title="afl-whatsup result/"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-whatsup result/
@@ -333,12 +333,12 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 ### **Example code**
 
-* **아래 코드는 다음과 같은 동작을 합니다.**
-  + 사용자로 부터 ID, Password를 입력받습니다.
-  + 입력받은 값이 프로그램이 요구하는 값과 일치하면 "Success"를 출력합니다.
-  + 그렇지 않을 경우 "Fail"을 출력합니다.
-* 여기서 중요한 부분은 사용자로부터 입력 받는 값에 대한 길이 제한이 없다는 것입니다.
-  + 이로 인해 Stack Buffer Overflow가 발생합니다.
+* **The code below performs the following actions.**
+  + ID and password are input from the user.
+  + If the input value matches the value requested by the program, “Success” is output.
+  + Otherwise, “Fail” is output.
+* The important part here is that there is no length limit to the value input from the user.
+  + This causes Stack Buffer Overflow.
 
 ```c title="test.c"
 #include <stdio.h>
@@ -366,11 +366,11 @@ int main(void){
 
 ### Create to Test cases.
 
-* **다음과 같이 Test case를 생성합니다.**
-  + ID가 틀린 경우
-  + Password가 틀린 경우
-  + ID, Password 모두 틀린 경우
-  + ID, Password 정확한 경우
+* **Create a test case as follows.**
+  + If the ID is incorrect
+  + If the password is incorrect
+  + If ID and Password are both incorrect
+  + If ID and Password are correct
 
 ```bash title="Create to Test cases."
 lazenca0x0@ubuntu:~/Documents/AFL/test$ mkdir testcase
@@ -386,9 +386,9 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 #### **Build using afl-gcc.**
 
-* **다음과 같이 AFL에서 제공하는 컴파일러를 이용해 빌드합니다.**
-  + 빌드된 파일이 정상적으로 동작하는 것을 확인 할 수 있습니다.
-  + 테스트를 위해 Canary를 제거 합니다. (-fno-stack-protector)
+* **Build using the compiler provided by AFL as follows.**
+  + You can check that the built file operates normally.
+  + Remove Canary for testing. (-fno-stack-protector)
 
 ```bash title="afl-gcc -fno-stack-protector -o test test.c"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-gcc -fno-stack-protector -o test test.c
@@ -415,11 +415,11 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 #### **Run afl-fuzz**
 
-* **다음과 같이 AFL을 실행하면 "uniq crashes"를 발견할 수 있습니다.**
-  + 테스트 프로그램에서 2개의 Uniq crashes를 발견하였습니다.
-* 옵션은 다음과 같습니다.
-  + -i : Test case가 저장된 디렉토리 경로
-  + -o : 탐지된 결과를 저장할 디렉토리 경로
+* **You can find "uniq crashes" by running AFL like this:**
+  + Two Uniq crashes were found in the test program.
+* The options are:
+  + -i: Directory path where test cases are stored
+  + -o: Directory path to save detected results
 
 ```bash title="core_pattern & afl-fuzz"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ echo core > /proc/sys/kernel/core_pattern 
@@ -489,8 +489,8 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 #### **Install library files**
 
-* **Black box 테스트를 진행하기 위해 다음과 같은 설정이 필요합니다.**
-  + **설치 라이브러리 :** libini-config-dev, libtool-bin, automake, bison, libglib2.0-dev, qemu
+* **To proceed with black box testing, the following settings are required.**
+  + **Installed libraries:** libini-config-dev, libtool-bin, automake, bison, libglib2.0-dev, qemu
 
 ```bash title="Install library files"
 lazenca0x0@ubuntu:~/Documents/AFL/afl-2.49b$ apt-get install libini-config-dev libtool-bin automake bison libglib2.0-dev qemu -y
@@ -502,7 +502,7 @@ lazenca0x0@ubuntu:~/Documents/AFL/afl-2.49b$ sudo make install
 
 #### **Build using gcc**
 
-* **다음과 같이 gcc를 이용해 빌드합니다.**
+* **Build using gcc as follows.**
 
 ```bash title="Build using gcc"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ gcc -fno-stack-protector -o test test.c
@@ -510,9 +510,9 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$ gcc -fno-stack-protector -o test test.c
 
 #### **Run afl-fuzz**
 
-* **다음과 같이 Black box test를 진행할 수 있습니다.**
-  + Black box test를 진행하기 위해 -Q 옵션만 추가하면 됩니다.
-  + White box test와 같이 2개의 uniq crashes를 발견하였습니다.
+* **Black box testing can be performed as follows.**
+  + To proceed with black box testing, you only need to add the -Q option.
+  + As with the white box test, two uniq crashes were found.
 
 ```bash title="afl-fuzz -Q -i testcase/ -o result/ ./test"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ afl-fuzz -Q -i testcase/ -o result/ ./test
@@ -584,8 +584,8 @@ lazenca0x0@ubuntu:~/Documents/AFL/test$
 
 ### **Check for the crash.**
 
-* **다음과 같이 발견된**uniq **crashes는 result 폴더에 저장되어 있습니다.**
-  + 해당 파일을 이용해 crash를 재현 할 수 있습니다.
+* **Uniq **crashes found as follows are stored in the result folder.**
+  + You can reproduce the crash using that file.
 
 ```bash title="Check for the crash."
 lazenca0x0@ubuntu:~/Documents/AFL/test$ ls -al result/crashes/
@@ -604,8 +604,8 @@ Segmentation fault
 lazenca0x0@ubuntu:~/Documents/AFL/test$
 ```
 
-* **다음은 생성 crash 파일의 내용입니다.**
-  + 저장된 내용은 특별한 의미를 가지지 않습니다.
+* **The following is the contents of the generated crash file.**
+  + The stored content has no special meaning.
 
 ```bash title="hexdump"
 lazenca0x0@ubuntu:~/Documents/AFL/test$ hexdump result/crashes/id\:000000\,sig\:11\,src\:000000\,op\:havoc\,rep\:128 

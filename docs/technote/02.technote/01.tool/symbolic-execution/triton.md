@@ -8,24 +8,24 @@ sidebar_position: 1
 
 ## **Description**
 
-* **Triton은 Pin 기반의 Concolic execution framework 입니다.**
-* **Triton은 다음과 같은 구성요소를 제공합니다.**
-  + 해당 요소들을 기반으로 자동화된 Reverse engineering 과 Vulnerability research 도구를 만들 수 있습니다.
+* **Triton is a Pin-based concolic execution framework.**
+* **Triton provides the following components:**
+  + Based on these components, you can build automated reverse engineering and vulnerability research tools:
     - Taint engine
-    - Dynamic symbolic execution engine
-    - Snapshot engine
-    - x64 명령어를 SMT2-LIB IR로 변환
+    - Dynamic symbolic execution engine
+    - Snapshot engine
+    - Translation of x86/x64 instructions to SMT2-LIB IR
     - Z3 interface
     - Python bindings
-* **Triton을 이용해 다음과 같은 작업이 가능합니다.**
-  + 디버깅
-  + 구체적인 정보를 이용해 분석
+* **Triton enables the following tasks:**
+  + Debugging
+  + Concrete execution and analysis
   + Symbolic execution
-  + Symbolic fuzzing session
-  + 경로 제약 조건 생성 및 해결
-  + 코드 적용 범위 수집
-  + 레지스터 및 메모리 실시간 수정
-  + 이 외에도 다양한 작업들이 가능합니다.
+  + Symbolic fuzzing sessions
+  + Path constraint generation and solving
+  + Code coverage collection
+  + Real-time register and memory modification
+  + And many other analysis tasks.
 
 :::note[SMT2-LIB]
 * <http://smtlib.cs.uiowa.edu/>
@@ -33,18 +33,18 @@ sidebar_position: 1
 
 ## **Install**
 
-* **Triton은 Linux, OSX, Windows,등 을 지원합니다.**
-* **Triton을 설치하기 위해 우선 다음 라이브러리들이 설치되어 있어야 합니다.**
+* **Triton supports Linux, macOS, Windows, and more.**
+* **Before installing Triton, the following libraries must be installed:**
 
 | lib | Version | Site |
 | --- | --- | --- |
-| libboost-all-dev | 1.55 이상 | <http://www.boost.org/> |
+| libboost-all-dev | 1.55 or higher | <http://www.boost.org/> |
 | libpython | 2.7.x | <https://www.python.org/> |
-| libz3-dev | 4.4.1 이상 | <https://github.com/Z3Prover/z3> |
-| libcapstone-dev | 3.0 이상 | <http://www.capstone-engine.org/> |
-| Pin | 71313 버전만 지원 | <https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads> |
+| libz3-dev | 4.4.1 or higher | <https://github.com/Z3Prover/z3> |
+| libcapstone-dev | 3.0 or higher | <http://www.capstone-engine.org/> |
+| Pin | Version 71313 only | <https://software.intel.com/en-us/articles/pin-a-binary-instrumentation-tool-downloads> |
 
-* **다음과 같이 Triton을 설치할 수 있습니다.**
+* **You can install Triton as follows:**
 
 ```bash title="Install Triton - Ubuntu 16.04(64bit)"
 lazenca0x0@ubuntu:~/Documents/triton$ wget http://software.intel.com/sites/landingpage/pintool/downloads/pin-2.14-71313-gcc.4.4.7-linux.tar.gz
@@ -91,10 +91,10 @@ lazenca0x0@ubuntu:~/Documents/triton/pin-2.14-71313-gcc.4.4.7-linux/source/tools
 
 ## **Example**
 
-* **아래 예제들은 Triton 에서 제공하는 Example 입니다.**
-  + 동일한 내용을 중복으로 설명하는 것은 불필요하다고 생각되기 때문에 추가적인 설명은 작성하지 않겠습니다.
-  + 자세한 내용을 위에 작성된 페이지에서 확인가능합니다.
-  + 아래에 작성한 예제 이외에도 다양한 예제들이 Github에 있으니, 해당 내용들도 꼭 읽어보시기를 권장합니다.
+* **The examples below are provided by Triton.**
+  + Detailed duplicate explanations are omitted here.
+  + Detailed information is available on the project documentation page linked above.
+  + In addition to the examples listed below, there are various other examples on GitHub, which are highly recommended reading.
 
 :::note[Github]
 * <https://github.com/JonathanSalwan/Triton/tree/f16847f439bc959c66fb923144a60c41df106edc/src/examples>
@@ -102,8 +102,8 @@ lazenca0x0@ubuntu:~/Documents/triton/pin-2.14-71313-gcc.4.4.7-linux/source/tools
 
 ### **Tracer**
 
-* **해당 API는 Pintool을 활용합니다.**
-* **해당 API는 다음과 같은 기능들을 구현할 수 있습니다.**
+* **This API utilizes Pintool.**
+* **This API allows implementing the following features:**
   + Display IR
   + Runtime Memory Tainting
   + Runtime Register Modification
@@ -119,13 +119,12 @@ lazenca0x0@ubuntu:~/Documents/triton/pin-2.14-71313-gcc.4.4.7-linux/source/tools
 
 #### **Example - callback\_syscall.py**
 
-* ****해당 예제는 분석 대상 바이너리(******"crackme\_xor" )를 실행하여 호출되는****Syscall 번호를 추출해서 Write함수를 사용하는지 확인합니다.**
-  + Write함수가 호출되면 해당 함수에 전달되는 인자 값을 출력합니다.
+* **This example runs the target binary ("crackme_xor") and extracts the invoked syscall numbers to check if the write syscall is called.**
+  + When the write syscall is called, it prints the argument values passed to the function.
 
 ```python title="callback_syscall.py"
 from triton  import *
 from pintool import *
-
 def my_callback_syscall_entry(threadId, std):
     if getSyscallNumber(std) == SYSCALL.WRITE:
         arg0 = getSyscallArgument(std, 0)
@@ -156,10 +155,10 @@ lazenca0x0@ubuntu:~/Documents/triton/pin-2.14-71313-gcc.4.4.7-linux/source/tools
 
 #### **Example - sym\_only\_on\_tainted.py**
 
-* **해당 예제는 다음과 같은 동작은 합니다.**
-  + crackme\_xor에서 사용하는 check() 함수에 대해서 Tainted 분석만 진행합니다.
-  + 분석 대상은 "0x400574" 코드 영역에서 사용되는 rax 레지스터 입니다.
-  + 분석을 통해 확인된 심볼릭 식을 출력합니다.
+* **This example performs the following operations:**
+  + Performs taint-only analysis on the check() function in crackme_xor.
+  + The target of analysis is the RAX register used at code address "0x400574".
+  + Prints the symbolic expressions identified during analysis.
 
 ```python title="sym_only_on_tainted.py"
 #!/usr/bin/env python2

@@ -6,22 +6,22 @@ sidebar_position: 1
 
 ## **Valgrind - Memcheck**
 
-* **Memcheck는 C, C++ 프로그램에서 메모리 관리 문제를 탐지합니다.**
-* **Memcheck는 프로그램이 실행되면 메모리의 모든 읽기와 쓰기가 검사 되고 malloc / new / delete에 대한 호출이 인터셉트됩니다.**
-* **Memcheck는 다음과 같은 내용을 탐지 할 수 있습니다.**
-  + 불필요한 메모리 엑세스
-    - 할당되지 않은 영역
-    - 해제된 영역
-    - 스택 블록의 끝 부분
-    - 액세스 할 수 없는 영역
-  + 초기화 되지 않은 값 사용
-  + 메모리 누수
-  + Heap 블록의 잘못된 해제
+* **Memcheck detects memory management problems in C and C++ programs.**
+* **When a program runs under Memcheck, every memory read and write is checked, and calls to malloc/new/free/delete are intercepted.**
+* **Memcheck can detect the following issues:**
+  + Invalid memory accesses:
+    - Unallocated memory regions
+    - Already freed memory regions
+    - Past the boundaries of stack blocks
+    - Inaccessible memory regions
+  + Use of uninitialized values
+  + Memory leaks
+  + Incorrect freeing of heap blocks:
     - Double free
-    - mismatched free
-* **Memcheck는 오류가 발생하면 즉시 오류를 보고하고 오류가 발생한 영역에 대한 스택 추적 정보를 제공합니다.**
-* **Memcheck는 바이트 수준에서 주소 지정 가능성을 추적하고 비트 수준에서 값을 초기화합니다.**
-* **Memcheck는 프로그램을 정상 속도보다 느린 약 10~30배 속도로 실행합니다**
+    - Mismatched free
+* **Memcheck reports errors immediately when they occur and provides detailed stack trace information for the offending locations.**
+* **Memcheck tracks addressability at the byte level and value initialization at the bit level.**
+* **Memcheck runs programs significantly slower than normal execution (around 10x to 30x slowdown).**
 
 ## **Example**
 
@@ -44,7 +44,7 @@ int main(){
 
 ### Build
 
-* **다음과 같이 Sample 코드를 빌드합니다.**
+* **Compile the sample code with debugging symbols:**
 
 ```bash title="Build"
 lazenca0x0@ubuntu:~$ gcc -o test -g test.c
@@ -63,7 +63,7 @@ test.c:12:3: note: include '<stdlib.h>' or provide a declaration of 'free'
 
 ### **Run memcheck**
 
-* **다음과 같이 valgrind의 옵션과 분석 할 대상 바이너리의 경로를 전달하면, 탐지된 Errors의 정보를 출력합니다.**
+* **Pass the valgrind options along with the target binary path to analyze and display information on detected errors:**
 
 ```bash title="Run memcheck"
 lazenca0x0@ubuntu:~$ valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./test
@@ -110,6 +110,6 @@ lazenca0x0@ubuntu:~$
 
 ## **Related site**
 
-* Memcheck: <http://valgrind.org/docs/manual/mc-manual.html>
+* Memcheck: <http://valgrind.org/docs/manual/mc-manual.html>
 * <http://cs.ecs.baylor.edu/~donahoo/tools/valgrind/>
 * <http://www.thegeekstuff.com/2011/11/valgrind-memcheck/>

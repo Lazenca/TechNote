@@ -10,28 +10,27 @@ sidebar_position: 1
 
 ### **Lazy binding**
 
-* Lazy Binding은 lazy linking 또는 on-demand symbol resolution이라고도 합니다.
-* Lazy Binding은 심볼이 실제로 사용될 때까지 심볼의 라이브러리 파일의 주소 값 확인이 수행되지 않습니다..
+* Lazy Binding is also known as lazy linking or on-demand symbol resolution.
+* In Lazy Binding, the address resolution for a library symbol is deferred until the symbol is actually executed at runtime.
 
 ### **Lazy binding behavior flow**
 
-* 모든 동적라이브러리 함수는 PLT(Procedure Linkage Table) stub코드를 통해 호출됩니다.
-  + PLT의 stub 코드는 상대 주소를 이용하여, 사용할 GOT(Global Offset Table)의 주소 값을 검색합니다.
-  + PLT는 GOT의 위치를 알고 있으며, 해당 GOT에 저장된 대상 함수의 주소를 읽고 이동합니다.
-* 이와 같은 동작이 실행되기 위해서 GOT에 적절한 주소가 채워 져야합니다.
-  + Lazy Binding은 함수 호출이 처음 요청될 때 stub 코드를 이용해 GOT영역에 해당 함수의 심볼 주소를 생성합니다.
-  + Stub 코드는 런타임 링커가 제공하는 바인딩 함수에 필요한 정보를 설정하는 역할을 하며, 설정이 완료되면 스텁 코드는 바인딩 함수로 이동합니다.
-* 바인딩 함수는 "\_dl\_runtime\_resolve" 함수에 대한 인수를 설정 후에 해당 함수를 호출합니다.
-  + 그리고 "\_dl\_runtime\_resolve" 함수에서 반환 된 주소로 이동합니다.
-* 다음부터는 유저가 함수를 호출 할 때 PLT stub code는 호출한 함수로 바로 이동합니다.
-  + GOT 영역에 해당 함수의 동적 라이브러리 주소 값이 저장되어 있기 때문입니다.
-* 초기 GOT 영역에는 특수 Stub code의 주소가 저장되어 있고, 런타임 링커는 로드 기반에 대한 단순한 재배치만 수행합니다.
-  + 런타임 링크는 부하 베이스에 대한 간단한 재배치만 수행합니다.
+* All dynamic library functions are invoked through Procedure Linkage Table (PLT) stub code.
+  + The PLT stub code uses relative addressing to look up the target address in the Global Offset Table (GOT).
+  + The PLT references the GOT and jumps to the function address stored therein.
+* For this execution flow to work properly, the GOT must be populated with the correct target address.
+  + With Lazy Binding, when a function is first called, the resolver stub resolves the symbol and updates the GOT entry.
+  + The stub code sets up the necessary arguments (such as the relocation offset) required by the runtime linker's resolver routine, then jumps to the resolver.
+* The resolver routine sets up arguments for `_dl_runtime_resolve` and invokes it.
+  + Control then transfers to the resolved address returned by `_dl_runtime_resolve`.
+* On subsequent calls, the PLT stub immediately jumps directly to the target function.
+  + This is because the GOT entry now directly contains the resolved function address in the dynamic library.
+* Initially, the GOT entry contains the address of the PLT resolution stub, so the dynamic linker performs only basic base relocations at load time.
 
 |  | Lazy binding | Now binding |
 | --- | --- | --- |
 | Build option | -Wl,-zlazy | -Wl,-znow |
-| Description | * 프로그램 실행 후 함수가 호출 될 때 심볼을 찾도록 설정합니다. | * 프로그램이 실행 될 때 dlopen()을 사용하여 공유 라이브러리가 링크 될 때 동적 링커에 모든 심볼을 찾게됩니다. |
+| Description | * Configures symbol resolution to occur on-demand when each function is first called during execution. | * The dynamic linker resolves all external symbols immediately upon program startup or when libraries are linked via dlopen(). |
 
 ## **Example**
 
@@ -68,17 +67,17 @@ void main(){
 
 ### **Lazy binding**
 
-* **다음과 같이 심볼 주소가 저장됩니다.**
-  + main 함수는 printf 함수를 호출하기 위해 0x4005b0 주소를 호출합니다.
-  + 0x4005b0 영역의 코드는 0x601020 영역에 저장된 주소로 이동합니다.
-  + 0x601020 영역에는 0x4005b6 주소 값이 저장되어 있습니다.
-    - printf 함수가 한번도 호출 되지 않았기 때문에 stub 코드 영역의 주소가 저장되어 있습니다.
-  + 0x4005b6 영역에서는 개별 함수 번호를 스택에 저장하고, 0x400590 영역으로 이동합니다.
-  + 0x400590 영역에서는 프로그램 파일의 정보를 스택에 저장하고, 0x601010 주소에 저장된 영역으로 이동합니다.
-  + 0x601010 영역은 \_dl\_runtime\_resolve() 함수의 코드 영역입니다.
-  + \_dl\_runtime\_resolve() 함수는 \_dl\_fixup() 호출을 통해 실제 함수 주소를 got 영역에 저장하고 리턴합니다.
-* **해당 작업으로 인해 printf 함수만 got 영역에 실제 주소가 저장됩니다.**
-  + 아직 호출되지 않은 함수들은 got 영역에 실제 주소가 저장되어 있지 않습니다.
+* **The symbol address is resolved as follows:**
+  + `main()` calls 0x4005b0 to invoke `printf`.
+  + The code at 0x4005b0 jumps to the address stored at 0x601020.
+  + Location 0x601020 holds the address 0x4005b6.
+    - Because `printf` has not yet been called, the PLT stub address is stored.
+  + At 0x4005b6, the function's relocation index is pushed onto the stack, and execution jumps to 0x400590 (PLT[0]).
+  + At 0x400590, the link map identifier is pushed onto the stack, and execution jumps to the address stored at 0x601010 (GOT[2]).
+  + 0x601010 points to `_dl_runtime_resolve()`.
+  + `_dl_runtime_resolve()` calls `_dl_fixup()` to resolve the actual function address, writes it into the GOT entry, and transfers control to the target.
+* **As a result, only the `printf` entry in the GOT is populated with its actual address.**
+  + Uncalled functions still have unresolved stub addresses in their GOT entries.
 
 ```bash title="Process of Lazy binding"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q ./RELRO-Relro 
@@ -177,12 +176,12 @@ gdb-peda$
 
 ### **Now binding**
 
-* **다음과 같이 심볼 주소가 저장됩니다.**
-  + main함수는 printf 함수를 호출하기 위해 0x4005c8 주소를 호출합니다.
-  + 0x4005c8 영역의 코드는 0x600fc8 영역에 저장된 주소로 이동합니다.
-  + lazy binding과 달리 0x600fc8 영역에는 0x0 값이 저장되어 있습니다.
-  + Now binding의 경우 프로그램이 실행될 때 해당 프로그램에서 사용되는 함수들의 주소를 읽어와 got영역에 저장합니다.
-  + 해당 과정을 확인하지 위해 0x600fc8 영역을 watchpoint로 설정하고 프로그램을 실행하면 해당 영역의 값이 실제주소값으로 변경되는 것을 확인할 수 있습니다.
+* **Under Now binding, symbol addresses are stored as follows:**
+  + `main()` calls 0x4005c8 to invoke `printf`.
+  + The instruction at 0x4005c8 jumps to the address stored at 0x600fc8.
+  + Unlike lazy binding, prior to loading, 0x600fc8 contains 0x0.
+  + In Now binding, the dynamic linker resolves all referenced function addresses when the program starts and stores them in the GOT.
+  + Setting a hardware watchpoint on 0x600fc8 in GDB confirms that this entry is overwritten with the resolved runtime libc address during startup.
 
 ```bash title="Process of Now binding"
 lazenca0x0@ubuntu:~/Documents/Definition/protection/RELRO$ gdb -q RELRO-FullRelro

@@ -34,20 +34,20 @@ lazenca0x0@ubuntu:~/CTF/DEFCON2017/insanity$
 ### **Binary analysis**
 
 #### **Main(voice command system)**
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 해당 프로그램에서 pocketsphinx, SphinxBase, zlib 라이브러리를 사용하고 있습니다.
-  - 해당 라이브러리 들은 음성 data를 Text로 변환해주는 라이브러리 입니다.+ CMDs.cmdList[0]영역에 CMDs 주소 값과 0x8000000000000000을 OR 연산한 값을 저장합니다.
-  + 해당 프로그램은 사용자로 부터 입력받을 data의 크기 값을 입력받습니다.(read() 함수이용)
-    - 해당 값은 65536 를 넘을 수 없습니다.
-  + 그리고 read()함수를 이용해 사용자로 부터 음성 Data를 입력 받습니다.
-    - 음성 data는zlib라이브러리를 이용해 압축을 해제합니다.
-    - 압축 해제 된 음성 데이터는 \_mm\_xor\_si128() 함수에 의해 xor 연산이 진행됩니다.
-      * xor연산시 8bit씩 진행되며, xor연산에 사용되는 키는 0x80 입니다.
-    - 복호화 된 음성 데이터를 samples\_8bit, samples\_16bit 에 저장됩니다.
-    - 즉, 전달되는 음성 data는 0x80을 이용해 xor 연산이 되어 있어야 하며, zlib 라이브러리를 이용해 압축되어 있어야 합니다.
-  + 가공된 음성 data는 ps\_get\_hyp() 함수에 의해 text로 변경된 값을 return 합니다.
-    - return 된 문자열에서 "insanity" 단어의 갯수를 계산합니다.
-    - 그리고 "insane" 단어가 나타나면 "insanity" 단어 갯수를 CMDs.cmdList[] 에 저장합니다.
+* This function has the following functions:
+  + The program uses pocketsphinx, SphinxBase, and zlib libraries.
+  - These libraries are libraries that convert voice data into text. + The value obtained by ORing the CMDs address value and 0x8000000000000000 is stored in the CMDs.cmdList[0] area.
+  + The program receives the size of data to be input from the user (using the read() function).
+    - The value cannot exceed 65536.
+  + Then, voice data is input from the user using the read() function.
+    - Voice data is decompressed using the zlib library.
+    - The decompressed voice data is xored by the \_mm\_xor\_si128() function.
+      * The xor operation is performed 8 bits at a time, and the key used for the xor operation is 0x80.
+    - Decrypted voice data is stored in samples\_8bit and samples\_16bit.
+    - In other words, the transmitted voice data must be xored using 0x80 and compressed using the zlib library.
+  + The processed voice data returns a value converted to text by the ps\_get\_hyp() function.
+    - Counts the number of "insanity" words in the returned string.
+    - And when the word "insane" appears, the number of "insanity" words is stored in CMDs.cmdList[].
 
 ```c title="main"
 signed __int64 __fastcall main(__int64 a1, char **a2, char **a3)
@@ -187,27 +187,27 @@ LABEL_7:
 
 #### **Main(Processing function)**
 
-* 해당 영역의 코드는 다음과 같은 기능을 합니다.
-  + CMDs.cmdList[] 에서 저장된 command 번호를 불러옵니다.
-  + command는 9 보다 클수는 없습니다.
-* 해당 프로그램에서 지원하는 기능은 다음과 같습니다.
-  + 여기서 주의해야 할 부분은 CMDs[] 배열에 저장된 데이터를 가져오는 부분입니다.  
-    - 연산을 할 때 사용되는 데이터를 가져올 때는 cmdMaxCount에 저장된 값을 사용하고 있습니다.
-    - 프로그램의 코드를 가져올 때는 codeCount의 값을 사용하고 있습니다.
+* The code in that area has the following functions:
+  + Load the saved command number from CMDs.cmdList[].
+  + command cannot be greater than 9.
+* The functions supported by the program are as follows:
+  + The part to pay attention to here is the part where you get the data stored in the CMDs[] array.  
+    - When retrieving data used for calculations, the value stored in cmdMaxCount is used.
+    - When retrieving the code of a program, the value of codeCount is used.
 
 **Explain function.**
 
 | Command number | Function | Explain |
 | --- | --- | --- |
-| 1 |  | "insanity" 단어를 스택에 저장합니다. |
-| 2 | Add | CMDs.cmdList[]에서 2개의 값(cmdMaxCount, cmdMaxCount -1)을 가져와 덧셈한 값을 CMDs.cmdList[cmdMaxCount -1]에 저장합니다. |
-| 3 | Sub | CMDs.cmdList[]에서 2개의 값(cmdMaxCount, cmdMaxCount -1)을 가져와 뺄셈한 값을 CMDs.cmdList[cmdMaxCount -1]에 저장합니다. |
-| 4 | Mul | CMDs.cmdList[]에서 2개의 값(cmdMaxCount, cmdMaxCount -1)을 가져와 곱셈한 값을 CMDs.cmdList[cmdMaxCount -1]에 저장합니다. |
-| 5 | Cmp | CMDs.cmdList[]에서 2개의 값(cmdMaxCount, cmdMaxCount -1)을 가져와 비교한 값을 CMDs.cmdList[cmdMaxCount -1]에 저장합니다. |
-| 6 | load | CMDs.cmdList[]에서 값을 가져와 다음과 같이 동작 후 연산된 값을 저장합니다.   + CMDs.cmdList[++cmdMaxCount]에 저장된 값을 firstLoad에 저장합니다.   + CMDs.cmdList[firstLoad]에 저장된 값 secLoad에 저장합니다.   + secLoad 값을 0x7FFFFFFFFFFFFFFFLL 값과 AND 연산 합니다.   + 그리고 해당 값에 "8 \CMDs.cmdList[cmdMaxCount]"  연산된 값을 더합니다.   + 이렇게 연산된 된 값을 CMDs.cmdList[cmdMaxCount] 영역에 저장됩니다.   + 해당 기능을 이용해 임의의 영역에 저장된 값을 불러 올수 있습니다. |
-| 7 | Store | CMDs.cmdList[]에서 2개의 값(cmdMaxCount, cmdMaxCount -1)을 가져와 storeDest, storeSrc에 저장됩니다.   + 해당 값은 CMDs.cmdList[storeDest] 영역에 storeSrc 가 저장됩니다.   + 해당 기능을 이용해 임의의 영역에 값을 덮어쓸수 있습니다.   + cmdMaxCount 에 저장된 값에 2를 뺀 값을 cmdMaxCount 저장합니다. |
-| 8 | Jump | CMDs.cmdList[]에서 2개의 값(cmdMaxCount, cmdMaxCount -1)을 가져와 jump\_1, jump\_2에 저장됩니다. 해당 값 중 jump\_1는 다음과 같은 연산에 사용됩니다.   + "codeCount + jump\_1 - 1" 연산 결과 값은 tmp\_1에 저장됩니다. jump2에 값이 있다면 앞에서 연산된 값이 codeCount에 저장됩니다.   + 이로 인해 임의의 영역에 접근 할 수 있습니다. |
-| default | Save | getCmd의 값이 1 ~ 8, 999과 같지 않으면 다음과 같이 동작합니다.    + CMDs.cmdList[++cmdMaxCount] = getCMD - 10;   + 해당 기능을 이용해 CMDs 배열에 값을 저장할 수 있습니다. |
+| 1 |  | Store the word "insanity" on the stack. |
+| 2 | Add | Get two values ​​(cmdMaxCount, cmdMaxCount -1) from CMDs.cmdList[] and store the added value in CMDs.cmdList[cmdMaxCount -1]. |
+| 3 | Sub | Takes two values ​​(cmdMaxCount, cmdMaxCount -1) from CMDs.cmdList[] and stores the subtracted value in CMDs.cmdList[cmdMaxCount -1]. |
+| 4 | Mul | Takes two values ​​(cmdMaxCount, cmdMaxCount -1) from CMDs.cmdList[] and stores the multiplied value in CMDs.cmdList[cmdMaxCount -1]. |
+| 5 | Cmp | Gets two values ​​(cmdMaxCount, cmdMaxCount -1) from CMDs.cmdList[] and stores the compared values ​​in CMDs.cmdList[cmdMaxCount -1]. |
+| 6 | load | The value is taken from CMDs.cmdList[] and the calculated value is saved after operation as follows.   + Save the value stored in CMDs.cmdList[++cmdMaxCount] to firstLoad.   + The value stored in CMDs.cmdList[firstLoad] is stored in secLoad.   + AND the secLoad value with the 0x7FFFFFFFFFFFFFFFLL value.   + And add the calculated value "8 \CMDs.cmdList[cmdMaxCount]" to that value.   + The calculated value is saved in the CMDs.cmdList[cmdMaxCount] area.   + You can use this function to load values ​​stored in an arbitrary area. |
+| 7 | Store | Two values ​​(cmdMaxCount, cmdMaxCount -1) are taken from CMDs.cmdList[] and stored in storeDest and storeSrc.   + The value is stored in storeSrc in the CMDs.cmdList[storeDest] area.   + You can overwrite values ​​in arbitrary areas using this function.   + Saves cmdMaxCount by subtracting 2 from the value stored in cmdMaxCount. |
+| 8 | Jump | Two values ​​(cmdMaxCount, cmdMaxCount -1) are taken from CMDs.cmdList[] and stored in jump\_1 and jump\_2. Among those values, jump\_1 is used in the following operations.   + "codeCount + jump\_1 - 1" operation result value is stored in tmp\_1. If there is a value in jump2, the previously calculated value is stored in codeCount.   + This allows access to random areas. |
+| default | Save | If the value of getCmd is not equal to 1~8,999, it behaves like this:    + CMDs.cmdList[++cmdMaxCount] = getCMD - 10;   + You can use this function to store values ​​in the CMDs array. |
 
 ```c title="Main - Processing function"
 ...
@@ -402,34 +402,34 @@ LABEL_76:
 
 ### Structure of Exploit code
 :::note
-* Jump 기능을 이용해 Fake code가 저장되어있는 영역으로 이동합니다.
-  + Add, Mul 기능을 이용해 필요한 값을 계산합니다.
-* Fake code를 이용해 Stack 영역을 Overwrite 합니다.  
+* Use the Jump function to move to the area where the fake code is stored.
+  + Calculate the required values ​​using the Add and Mul functions.
+* Overwrite the stack area using fake code.  
   + system()
-    - Save 기능을 이용해 Offset(libc addresss)을 저장합니다.
-    - Load 기능을 이용해 libc addresss를 leak합니다.
-      * CMDs.cmdList[0]영역에 저장된 값을 가져오기 위해 '0'을 추가합니다.
-      * 즉, CMDs.cmdList[0]영역에 저장된 값 CMDs 주소 값에 Offset(libc addresss)을 더한 주소에 저장된 값을 CMDs.cmdList[]에 저장합니다.
-    - Save 기능을 이용해 **Offset(system)**을 저장합니다.
-    - Add 기능을 이용해 system() 함수의 주소를 계산합니다.
-    - Save 기능을 이용해 Offset(ret + 2)을 저장합니다.
-    - Store 기능을 이용해 ret 영역에 계산된 값을 저장합니다.
+    - Save Offset (libc addresses) using the Save function.
+    - Leak libc addresses using the Load function.
+      * Add '0' to retrieve the value saved in the CMDs.cmdList[0] area.
+      * In other words, the value stored in the CMDs.cmdList[0] area and the value stored in the address of the CMDs address plus Offset (libc addresses) are stored in CMDs.cmdList[].
+    - Save **Offset(system)** using the Save function.
+    - Calculate the address of the system() function using the Add function.
+    - Save Offset (ret + 2) using the Save function.
+    - Save the calculated value in the ret area using the Store function.
   + "/bin/sh"
-    - Save 기능을 이용해 Offset(libc addresss)을 저장합니다.
-    - Load 기능을 이용해 libc addresss를 leak합니다.  
-      * system()부분에서 설명한 내용과 같이 구현 및 동작합니다.
-    - Save 기능을 이용해 **Offset("/bin/sh")**을 저장합니다.
-    - Add 기능을 이용해 "/bin/sh" 문자열의 주소를 계산합니다.
-    - Save 기능을 이용해 Offset(ret + 1)을 저장합니다.
-    - Store 기능을 이용해 ret 영역에 계산된 값을 저장합니다.
+    - Save Offset (libc addresses) using the Save function.
+    - Leak libc addresses using the Load function.  
+      * It is implemented and operates as described in the system() section.
+    - Save **Offset("/bin/sh")** using the Save function.
+    - Calculate the address of the "/bin/sh" string using the Add function.
+    - Save Offset (ret + 1) using the Save function.
+    - Save the calculated value in the ret area using the Store function.
   + "POP RDI"
-    - Save 기능을 이용해 Offset(libc addresss)을 저장합니다.
-    - Load 기능을 이용해 libc addresss를 leak합니다.
-      * system()부분에서 설명한 내용과 같이 구현 및 동작합니다.
-    - Save 기능을 이용해 **Offset(POP RDI)**을 저장합니다.
-    - Add 기능을 이용해 "POP RDI" 명령어의 주소를 계산합니다.
-    - Save 기능을 이용해 Offset(ret + 2)을 저장합니다.
-    - Store 기능을 이용해 ret 영역에 계산된 값을 저장합니다.
+    - Save Offset (libc addresses) using the Save function.
+    - Leak libc addresses using the Load function.
+      * It is implemented and operates as described in the system() section.
+    - Save **Offset(POP RDI)** using the Save function.
+    - Use the Add function to calculate the address of the “POP RDI” instruction.
+    - Save Offset (ret + 2) using the Save function.
+    - Save the calculated value in the ret area using the Store function.
 :::
 
 * The following information is required for an attack:
@@ -450,10 +450,10 @@ LABEL_76:
 
 #### **Create a voice files**
 
-* 음성 인식을 위한 Voice 파일을 생성하기 위해 Mac OS에서 지원하는 say 커맨드를 이용합니다.
-* say에서 다음과 같이 사용 가능한 음성을 선택할 수 있습니다.
-  + Alex, Fred, Victoria 는 en\_US를 지원하지만, 인식률이 좋지않았습니다.
-  + 그래서 인식률이 좋은 Samantha를 사용합니다.
+* To create a voice file for voice recognition, use the say command supported by Mac OS.
+* In say, you can select any of the available voices as follows:
+  + Alex, Fred, and Victoria support en\_US, but the recognition rate was not good.
+  + So we use Samantha, which has a good recognition rate.
 
 ```sh title="List of available voices"
 **********:Voices lazenca0x0$ say -v ?|grep en_US
@@ -463,9 +463,9 @@ Samantha            en_US    # Hello, my name is Samantha. I am an American-Engl
 Victoria            en_US    # Isn't it nice to have a computer that will talk to you?
 ```
 
-* 다음과 같은 script를 이용해 음성 파일을 생성합니다.
-  + "insanity" 단어가 5개 이상 포함된 음성 파일을 생성할 때는 -r 옵션을 이용해 발음 속도를 조절 해야합니다.
-  + 속도를 조절하지 않을 경우 생성되는 음성 파일의 크기가 해당 문제에서 허용하는 음성 데이터의 크기 보다 크게 됩니다.
+* Create a voice file using the following script.
+  + When creating a voice file containing more than 5 words "insanity", you must use the -r option to adjust the pronunciation speed.
+  + If the speed is not adjusted, the size of the generated voice file will be larger than the voice data size allowed by the problem.
 
 ```python title="Generate a voice file - CreateVoiceFiles.py"
 import os
@@ -481,7 +481,7 @@ for i in range(1,9):
     os.system(command)
 ```
 
-* 해당 script를 이용해 생성한 음성 데이터 입니다.
+* This is voice data created using the script.
 
 ```sh title="Create a voice file - ls -al"
 **********:Voices lazenca0x0$ ls -al
@@ -503,8 +503,8 @@ drwx------+ 14 JP11704  staff     476  5 18 18:05 ..
 
 #### **Encrypt audio file**
 
-* 다음과 같이 음성 데이터를 변환합니다.
-  + 음성 데이터의 크기를 줄이기 위해 상위 bit만 가져와서 변환합니다.
+* Convert voice data as follows:
+  + To reduce the size of voice data, only the upper bits are imported and converted.
 
 ```python title="Encrypt a voice file - EncryptVoiceFile.py"
 def converter(filePath):
@@ -532,7 +532,7 @@ def converter(filePath):
 
 #### **Space to store Fake code**
 
-* 다음과 같은 Script를 이용해 Fake code를 저장할 공간을 확인할 수 있습니다.
+* You can check the space to store the fake code using the following script.
 
 ```python title="Find a space to store fake code"
 import os
@@ -560,7 +560,7 @@ p.send(p32(0))
 p.interactive()
 ```
 
-* 해당 프로그램에 전달된 음성 Data는 sampel\_8bit 영역에 저장되어 있습니다.
+* Voice data delivered to the program is stored in the sampel\_8bit area.
 
 ```sh title="Find a space to store fake code - GDB" 
 gdb-peda$ b *0x55b4c2947000 + 0x1180
@@ -580,7 +580,7 @@ gdb-peda$ x/10gx 0x7ffd3c950160
 gdb-peda$
 ```
 
-* 하지만 음성 데이터가 포함되어 있지 않아 Error가 발생하고 프로그램이 종료됩니다.
+* However, since voice data is not included, an error occurs and the program ends.
 
 ```sh title="Segmentation fault"
 gdb-peda$ c
@@ -588,8 +588,8 @@ Continuing.
 Program received signal SIGSEGV, Segmentation fault.
 ```
 
-* 해당 문제를 해결하기 위해 "Fake code" 뒤에 음성데이터를 추가해서 전달 합니다.
-  + 음성 데이터 추가되어 정상적으로 명령 Code가 추가되었습니다.
+* To solve this problem, voice data is added after the “Fake code” and transmitted.
+  + Voice data has been added and the command code has been added properly.
 
 ```sh title="Find a space to store fake code - GDB"
 gdb-peda$ b *0x555df242e000 + 0x137f
@@ -617,12 +617,12 @@ gdb-peda$
 
 #### **Offset(CMDS - sample\_8bit)**
 
-* 다음과 같은 방법으로 offset 값을 얻을 수 있습니다.
+* You can get the offset value in the following way.
   + 0x7fffc7b9d1c0(sample\_8bit) - 0x7fffc7b7b280(CMDS) = 0x21f40 / 8 = 0x43e8(17384)
 
 #### **Offset(CMDS - ret)**
 
-* 다음과 같은 방법으로 offset 값을 얻을 수 있습니다.  
+* You can get the offset value in the following way.  
   + 0x7fffc7bbd218(ret) - 0x7fffc7b7b280(CMDS) = 0x41f98 / 8 = 0x83f3(33779)
 
 ```bash title="Offset(CMDS - ret) - GDB" 
@@ -647,9 +647,9 @@ gdb-peda$
 
 #### **Leak libc addresss**
 
-* 다음과 같은 방법으로 libc addresss를 얻을 수 있습니다.
-  + ret 명령어 호출시 사용되는 rsp 영역에 libc addresss가 저장되어 있습니다.
-  + 해당 주소를 Base addresss로 사용할 수 있습니다.
+* You can get libc addresses in the following way:
+  + The libc addresses are stored in the rsp area used when calling the ret command.
+  + You can use those addresses as base addresses.
 
 ```bash title="Leak libc addresss - GDB" 
 gdb-peda$ x/2gx 0x7fffc7bbd218
@@ -689,7 +689,7 @@ $14 = 0x20830
 
 #### **Offset(Leak libc addresss- Base libc addresss)**
 
-* 다음과 같은 방벙을 이용해 offset 값을 얻을 수 있습니다.
+* You can get the offset value using the following method.
 
 ```bash title="Offset(Leak libc addresss- Base libc addresss)"
 gdb-peda$ x/3i 0x00007fbcb9600830
@@ -704,7 +704,7 @@ $24 = 16646
 
 #### **Offset("/bin/sh" addresss)**
 
-* 다음과 같은 방벙을 이용해 offset 값을 얻을 수 있습니다.
+* You can get the offset value using the following method.
 
 ```bash title="Offset(\"/bin/sh\" addresss) - GDB"
 gdb-peda$ find "/bin/sh" libc
@@ -717,7 +717,7 @@ $2 = 0x18c177
 
 #### **Offset(POP rdi)**
 
-* RDI 레지스터에 "/bin/sh"를 저장하기 위해 "POP rdi" 가 필요합니다.
+* "POP rdi" is needed to store "/bin/sh" in the RDI register.
 
 ```bash title="Offset(POP rdi) - GDB"
 gdb-peda$ info proc map

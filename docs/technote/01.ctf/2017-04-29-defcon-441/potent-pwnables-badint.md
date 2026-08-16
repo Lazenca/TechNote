@@ -33,7 +33,7 @@ lazenca0x0@ubuntu:~/Documents/CTF/DEFCON2017/Pwnable/badint$
 
 #### **struct**
 
-* 다음과 같은 구조체를 사용합니다.
+* Use the following structure:
 
 ```c title="struct INFO"
 struct INFO
@@ -67,11 +67,11 @@ struct SEQALLINFO
 
 #### **Main**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
+* This function has the following functions:
 
-  + 255개의 SEQALLINFO 구조체를 생성하고, 초기화 후에 gSeqList[] 에 저장합니다.
-  + Menu() 함수를 호출합니다.
-  + gSeqList[] 에 저장된 SEQALLINFO 구조체의 메모리를 해제 합니다.
+  + Create 255 SEQALLINFO structures and store them in gSeqList[] after initialization.
+  + Call the Menu() function.
+  + Free the memory of the SEQALLINFO structure stored in gSeqList[].
 
 ```c title="main()"
 void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
@@ -113,15 +113,15 @@ void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
 
 #### **Menu()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 사용자로 부터 SEQ, Offset, Data를 입력 받습니다.
-  + 입력 받은 데이터는 DataCopyToHeap() 함수를 이용해 Heap 영역에 복사됩니다.
-  + setSeqAllInfo() 함수를 이용해 Data를 저장하고, Seq 정보를 관리합니다.
-  + 사용자로 부터 "LSF Yes/No:" 질문에 대한 값을 입력 받습니다.
-  + "Yes" 일 경우 다음과 같이 동작합니다.
-    - getAssembledData() 함수를 이용해 저장된 Data가 저장된 주소를 리턴합니다.
-    - gSeqList[], DATAINFO에 저장된 Seq 정보를 재정의 합니다.
-    - 리턴된 주소에 저장된 내용을 출력합니다.
+* This function has the following functions:
+  + SEQ, Offset, and Data are input from the user.
+  + The input data is copied to the heap area using the DataCopyToHeap() function.
+  + Save data and manage Seq information using the setSeqAllInfo() function.
+  + The user inputs values ​​for the “LSF Yes/No:” question.
+  + If “Yes”, it operates as follows.
+    - Returns the address where the data saved using the getAssembledData() function is stored.
+    - gSeqList[], redefines the Seq information stored in DATAINFO.
+    - Prints the contents stored in the returned address.
 
 ```c title="Menu()"
 __int64 __fastcall Menu(__int64 a1, __int64 a2, __int64 a3)
@@ -206,13 +206,13 @@ __int64 __fastcall Menu(__int64 a1, __int64 a2, __int64 a3)
 
 #### **DataCopyToHeap()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 사용자로 부터 입력받은 문자열의 길이의 절반을 Heap 영역에 할당합니다.
-  + 사용자로 부터 입력받은 문자열에서 문자를 한개씩 추출해 4bit로 변경한 다음 할당된 Heap 영역에 저장합니다.
+* This function has the following functions:
+  + Half of the length of the string input from the user is allocated to the heap area.
+  + It extracts characters one by one from the string entered by the user, changes them to 4 bits, and stores them in the allocated heap area.
     - Ex) AA → 0x4141 → 0xAA
-  + lenData에는 다음과 같은 값이 저장됩니다.
-    - count가 홀수일 경우 : data 문자열 길이 / 2 + 1
-    - count가 짝수일 경우 : data 문자열 길이 / 2
+  + The following values ​​are stored in lenData:
+    - If count is odd: data string length / 2 + 1
+    - If count is even: data string length / 2
 
 ```c title="DataCopyToHeap"
 char *__fastcall DataCopyToHeap(const char *data, unsigned int *lenData, __int64 a3)
@@ -254,14 +254,14 @@ char *__fastcall DataCopyToHeap(const char *data, unsigned int *lenData, __int64
 
 #### **getAssembledData()**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + SEQALLINFO의 AllDataSize에 저장된 값만큼 Heap memory를 생성합니다.
-    - 해당 SEQ 번호로 저장된 DATA의 길이 / 2 = AllDataSize
-  + getFirstDataAddr(), getNextDataAddr() 함수를 이용해 해당 SEQ 번호로 저장된 DATAINFO(Addresss)를 추출합니다.
-  + 추출된 DATAINFO 구조체에서 Data 길이(dataLen), 저장된 주소(dataAddr), offset 정보를 추출합니다.
-  + memcpy() 함수를 이용해 allData + offset 영역에 dataAddr의 내용을 dataLen 만큼 복사합니다.
-* 여기에서 Heap Overflow가 발생합니다.
-  + offset 값에 의해 복사될 주소 값이 변경될 수 있습니다.
+* This function has the following functions:
+  + Heap memory is created equal to the value stored in AllDataSize of SEQALLINFO.
+    - Length of DATA stored with the corresponding SEQ number / 2 = AllDataSize
+  + Use the getFirstDataAddr() and getNextDataAddr() functions to extract the DATAINFO(Addresses) stored with the corresponding SEQ number.
+  + Data length (dataLen), stored address (dataAddr), and offset information are extracted from the extracted DATAINFO structure.
+  + Using the memcpy() function, copy the contents of dataAddr to the allData + offset area as much as dataLen.
+* Heap Overflow occurs here.
+  + The address value to be copied may change depending on the offset value.
 
 ```c title="getAssembledData"
 __int64 __fastcall getAssembledData(SEQALLINFO *seqAllInfo, _DWORD *lenAssembled, __int64 a3)
@@ -307,10 +307,10 @@ __int64 __fastcall getAssembledData(SEQALLINFO *seqAllInfo, _DWORD *lenAssembled
 
 #### **setInfo(0x401378)**
 
-* 해당 함수는 다음과 같은 기능을 합니다.
-  + 해당 함수는 setSeqAllInfo() 함수에서 호출합니다.
-  + 새로운 Heap 공간을 할당해 사용자로 부터 입력받은 "Data" 내용을 복사합니다.
-  + 할당된 Heap 주소는 INFO 구조체의 CopyData에 저장됩니다.
+* This function has the following functions:
+  + This function is called from the setSeqAllInfo() function.
+  + Allocates a new heap space and copies the "Data" input from the user.
+  + The assigned heap address is stored in CopyData of the INFO structure.
 
 ```c title="setInfo"
 __int64 __fastcall setInfo(INFO *info, __int16 offset, void *tmpCopyData, unsigned __int8 lenData)
@@ -354,12 +354,12 @@ __int64 __fastcall getAssembledData(SEQALLINFO *seqAllInfo, _DWORD *lenAssembled
 
 :::note[Description]
 * libc leak
-  + offset 값으로 8, Data 값으로 문자 256개 입력
+  + Enter 8 as the offset value and 256 characters as the data value.
 * Heap Overflow
-  + Fake chunk 구조를 저장할 공간 생성
-  + .got.plt 영역을 덮어쓸 내용을 저장할 공간 생성
-    - atol@got.plt 영역에 system() 함수의 주소를 저장
-* "SEQ"의 값으로 "sh" 입력
+  + Create space to store fake chunk structure
+  + Create space to store content that will overwrite the .got.plt area
+    - Save the address of the system() function in the atol@got.plt area.
+* Enter "sh" as the value for "SEQ"
 :::
 
 * The following information is required for an attack:
@@ -373,17 +373,17 @@ __int64 __fastcall getAssembledData(SEQALLINFO *seqAllInfo, _DWORD *lenAssembled
 
 #### **libc addresss leak**
 
-* 다음과 같은 방법으로 addresss를 추출할 수 있습니다.
-  + Small bin을 이용해 base addresss 추출 할 수 있습니다.
-  + DataCopyToHeap() 함수에서 operator new[]()를 이용해 Heap 영역을 생성합니다.
-    - 생성되는 Heap의 형태는 Small bin(0x80 보다 큰 size)입니다.
-  + DataCopyToHeap() 함수에서 생성된 Heap 영역은 setSeqAllInfo() 호출 뒤에 해제됩니다.  
-    - Small bin을 해제하면 unsorted bin에 Small bin이 등록 되고, Free chunk 구조로 변환됩니다.
-    - Free chunk에서 fd, bk영역에 추출할 base addresss가 저장되어 있습니다.
-  + "LSF :"의 입력 값으로 "Yes"를 입력하면getAssembledData() 함수에서 Heap 영역을 생성합니다.
-    - 생성되는 Heap 의 size는 seqAllInfo→AllDataSize 입니다.
-    - DataCopyToHeap()에서 생성한 Heap의 size와 seqAllInfo→AllDataSize 가 같다면, 앞에서 해제된 Free chunk영역을 재사용합니다.
-  + Offset 값으로 8을 전달해서 fd영역에 저장된 값을 출력합니다.
+* You can extract addresses in the following way:
+  + You can extract base addresses using small bin.
+  + In the DataCopyToHeap() function, the heap area is created using operator new[]().
+    - The type of heap created is small bin (size larger than 0x80).
+  + The heap area created in the DataCopyToHeap() function is released after calling setSeqAllInfo().  
+    - When small bin is released, small bin is registered in unsorted bin and converted to free chunk structure.
+    - Base addresses to be extracted are stored in the fd and bk areas of the free chunk.
+  + If you enter “Yes” as the input value for “LSF:”, the getAssembledData() function creates a Heap area.
+    - The size of the created heap is seqAllInfo→AllDataSize.
+    - If the size of the heap created in DataCopyToHeap() and seqAllInfo→AllDataSize are the same, the free chunk area released earlier is reused.
+  + By passing 8 as the offset value, the value saved in the fd area is output.
 
 ```bash
 gdb-peda$ r
@@ -449,10 +449,10 @@ SEQ #:
 
 #### Heap Overflow
 
-* 다음과 같은 방법으로 fastbin attack를 이용해 .got.plt 영역을 Overwrite 할 수 있습니다.
-* 우선 2개의 Heap 공간이 필요합니다.
-  + Fake chunk 구조를 저장할 공간(0x68)
-  + .got.plt 영역을 덮어쓸 data를 저장할 공간(0x38)
+* You can overwrite the .got.plt area using fastbin attack in the following way.
+* First of all, two heap spaces are required.
+  + Space to store the fake chunk structure (0x68)
+  + Space to store data to overwrite the .got.plt area (0x38)
 
 ```python title="exploit.py"
 ...
@@ -461,19 +461,19 @@ Add(0,0,'B'*0x38*2,'Yes') #0x41, Space to store the data to overwrite the ".got.
 ...
 ```
 
-* 이러한 Heap 공간을 생성하기 전에 확인할 내용이 있습니다.
-  + fastbin attack에서 중요한 부분은 다음과 같습니다.
-    - malloc()은 fastbin chunk를 할당할 때 해당 chunk의 size와 fd영역에 저장되는 fake chunk의 size가 유효한지 확인합니다.
-    - 예를 들어 chunk의 크기가 "0x4\*"이라면, fd영역에 저장되는 fake chunk의 size는 최대 "0x4f"까지 유효합니다.
-  + 다음과 같은 .got.plt 영역을 사용할 수 있습니다.
+* There are some things to check before creating this Heap space.
+  + The important parts of a fastbin attack are:
+    - When malloc() allocates a fastbin chunk, it checks whether the size of the chunk and the size of the fake chunk stored in the fd area are valid.
+    - For example, if the size of the chunk is "0x4\*", the size of the fake chunk stored in the fd area is valid up to "0x4f".
+  + You can use the following .got.plt area:
     - 0x604042 <setvbuf@got.plt+2>: 0x0b0600007f8f9cd1 0xc740000000000040
     - 0x604072 <signal@got.plt+2>: 0x0b6600007f8f9cce 0x7650000000000040
     - 0x604082 <alarm@got.plt+2>: 0x0b8600007f8f9cd7 0x0b96000000000040
     - 0x604092 <dlsym@got.plt+2>: 0x0ba6000000000040 0x0bb6000000000040
     - 0x60401a <printf@got.plt+2>: 0x0ab600007f8f9cd0 0xb690000000000040
     - 0x60408a <fclose@got.plt+2>: 0x0b96000000000040 0x0ba6000000000040
-  + System()함수의 주소로 Overwrite 할 atol@got.plt 영역과 가장 가까운 0x604042 주소를 fd의 주소로 사용합니다.  
-    - malloc()은 fd에 저장된 fake chunk(0x604042)를 하나의 Heap chunk로 인식합니다.
+  + Use the 0x604042 address closest to the atol@got.plt area to be overwritten as the address of the System() function as the address of fd.  
+    - malloc() recognizes the fake chunk (0x604042) stored in fd as one heap chunk.
       * prev\_size :  0x7f8f9cd1
       * size : 0x00000040
 
@@ -503,8 +503,8 @@ gdb-peda$ x/20gx 0x604002 - 0x8
 gdb-peda$
 ```
 
-* Chuenk의 prev\_size, size의 type은 INTERNAL\_SIZE\_T으로 선언되어 있습니다.
-  + 64 비트 컴퓨터에서, 2 ^ 32 개 이상의 malloced 공간을 처리 할 수 없으며, malloc 오버 헤드를 줄일 수 있기 때문에 NTERNAL\_SIZE\_T를 32 비트`unsigned int(4byte) '로 정의한다고 합니다.
+* The type of Chuenk's prev\_size and size is declared as INTERNAL\_SIZE\_T.
+  + On 64-bit computers, it cannot handle more than 2^32 malloced spaces, and it is said to define NTERNAL\_SIZE\_T as 32-bit `unsigned int(4byte) ' because it can reduce malloc overhead.
 
 ```c title="INTERNAL_SIZE_T"
 /*
@@ -549,9 +549,9 @@ struct malloc_chunk {
 };
 ```
 
-* 기본적인 Heap 공간을 생성한 후 다음과 같은 내용을 Heap 영역에 Overwrite 합니다.
-  + getAssembledData() 함수에서 생성한 Heap 영역은 0x670c30 입니다.
-  + Overwrite 할 대상으로 부터 0x1d0 떨어져 있습니다.
+* After creating a basic heap space, overwrite the following information in the heap area.
+  + The heap area created in the getAssembledData() function is 0x670c30.
+  + It is 0x1d0 away from the object to be overwritten.
     - 0x670e00- 0x670c30 = 0x1d0
 
 ```bash title="gdb-peda$ i r rax"
@@ -604,7 +604,7 @@ $1 = 0x1d0
 gdb-peda$
 ```
 
-* 다음과 같은 스크립트를 이용해 fd(0x670e00)영역을 덮어씁니다.
+* Overwrite the fd (0x670e00) area using the following script.
 
 ```python title="exploit.py"
 # Overwirte fake chunk
@@ -629,7 +629,7 @@ Add(1, 0x1D0, payload, 'Yes')
 | 0xBBBBBBBBBBBBBBBB | 0xBBBBBBBBBBBBBBBB | 0x0000000000000000 | 0xBBBBBBBBBBBBBBBB |
 :::
 
-* fd영역을 Overwrite한 후 setInfo() 함수에서 생성한 Heap 주소로 .got.plt영역이 할당됩니다.
+* After overwriting the fd area, the .got.plt area is allocated to the heap address created in the setInfo() function.
 
 ```bash title="gdb-peda$ i r rax"
 Breakpoint 3, 0x00000000004013bb in ?? ()
@@ -647,7 +647,7 @@ gdb-peda$
 
 ## **Exploit Code**
 
-* **해당 Exploit code에서는 .got.plt 영역을 Overwrite했지만, 공개된 다른 Writeups을 보면 malloc\_hook 영역을 사용한 것도 볼 수 있습니다.**
+* **In the exploit code, the .got.plt area was overwritten, but if you look at other publicly available Writeups, you can see that the malloc\_hook area was also used.**
 
 ```python title="exploit.py"
 from pwn import *

@@ -28,8 +28,8 @@ Note: The game rule has been simplified to make life easier.
 
 ### OS information
 
-* **해당 문제는 아래와 같은 환경에서 테스트 하였습니다.**
-  + 실제 문제가 출제된 서버 환경과 다릅니다.
+* **This issue was tested in the following environment.**
+  + The actual question is different from the server environment where the question was asked.
 
 ```sh title="OS information"
 lazenca0x0@ubuntu:~/CTF/HITCON/OmegaGo$ lsb_release -a
@@ -54,11 +54,11 @@ autolycos@ubuntu:~/CTF/HITCON/OmegaGo$
 
 ### Binary analysis
 
-* **다음과 같은 기능을 제공합니다.**
-  + 행,열을 번호를 입력하여 원하는 영역에 마크를 표시할 수 있습니다.
+* **Provides the following features.**
+  + You can mark the desired area by entering row and column numbers.
     - Ex) A19
-  + "surrender"를 이용하여 게임을 포기하고 다시 시작할 수 있습니다.
-  + "regret"을 이용하여 플레이를 되돌릴 수 있습니다.
+  + You can use "surrender" to give up the game and start over.
+  + You can revert play using "regret".
 
 ```sh title="Play game"
 autolycos@ubuntu:~/CTF/HITCON/OmegaGo$ ./omega_go_6eef19dbb9f98b67af303f18978914d10d8f06ac 
@@ -183,9 +183,9 @@ Time remain: O: 180.00, X: 180.00
 
 #### **Struct**
 
-* **해당 바이너리를 분석하기 위해 다음과 같은 구조체들이 필요합니다.**
-  + 해당 바이너리는 C++로 개발되어 있으며 vtable을 사용하고 있습니다.
-* **아래 구조체는 AI Class의 play함수를 표현하는 구조체 입니다.**
+* **The following structures are required to analyze the binary.**
+  + The binary is developed in C++ and uses vtables.
+* **The structure below is a structure that expresses the play function of AI Class.**
 
 ```cpp title="Struct for AI Class"
 struct __attribute__((aligned(8))) Method
@@ -195,7 +195,7 @@ struct __attribute__((aligned(8))) Method
 };
 ```
 
-* **아래 구조체는 OmegaGo의 게임 정보를 저장하는 구조체 입니다.**
+* **The structure below is a structure that stores OmegaGo’s game information.**
 
 ```cpp title="Struct for OmegaGo GameInfo"
 struct GameInfo
@@ -211,7 +211,7 @@ struct GameInfo
 
 #### **Main()**
 
-* **해당 함수는 while() 함수를 이용하여 MainFunction()함수를 계속 호출합니다.**
+* **The function continues to call the MainFunction() function using the while() function.**
 
 ```cpp title="main Function"
 __int64 __fastcall main(__int64 a1, char **a2, char **a3)
@@ -232,21 +232,21 @@ __int64 __fastcall main(__int64 a1, char **a2, char **a3)
 
 #### **MainFunction(0x401738)**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + setDefGameinfo() 함수를 통해 게임 진행시 필요한 변수의 초기화를 선언합니다.
-  + **"operator new(8uLL)" 코드를 이용하여 AI, HUMAN 변수에 Heap 영역(8byte)을 할당합니다.**
-    - setAIFunction(), setHUMANFunction() 함수를 이용해 할당 받은 영역에 호출할 함수의 주소를 저장합니다.
-    - 각 구조체의 Play 포인터 함수에 저장되는 주소는 다음과 같습니다.
+* **The function has the following functions.**
+  + Declare the initialization of variables needed when playing the game through the setDefGameinfo() function.
+  + **Allocate the heap area (8 bytes) to AI and HUMAN variables using the “operator new(8uLL)” code.**
+    - Use the setAIFunction() and setHUMANFunction() functions to store the address of the function to be called in the allocated area.
+    - The addresses stored in the Play pointer function of each structure are as follows.
       * AI→Play(0x405040)→0x40290A
       * HUMAN→Play(0x405020)→0x402C12
-    - 할당된 Heap 영역은 게임을 재시작해도 해제되지 않습니다.
-  + **while()을 통해 게임을 플레이하기 위한 기능을 실행합니다.**
-    - gettimeofday() 함수를 이용하여 플레이어의 게임 플레이 시간을 계산합니다.
-    - rowNumber, colNumber 의 값이 -1과 같다면 게임을 종료합니다.
-    - rowNumber, colNumber 의 값이 -2일 경우에는 게임 턴을 한차례 돌리는 regret()함수를 호출합니다.
-    - 그외의 rowNumber, colNumber 값이 입력 되면 플레이어의 플레이시간을 저장합니다.
-      * 총 플레이시간이 0.0보다 작으면 게임을 종료합니다.
-      * 총 플레이시간이 0.0보다 크면 SetMarkForBoard()함수를 이용하여 게임 보드 rowNumber,colNumber 위치에 표시합니다.
+    - The allocated heap area will not be released even if you restart the game.
+  + **Execute the function to play the game through while().**
+    - Calculate the player's game play time using the gettimeofday() function.
+    - If the values ​​of rowNumber and colNumber are equal to -1, the game ends.
+    - If the value of rowNumber and colNumber is -2, the regret() function is called, which takes one game turn.
+    - If other rowNumber and colNumber values ​​are entered, the player's play time is saved.
+      * If the total play time is less than 0.0, the game ends.
+      * If the total play time is greater than 0.0, it is marked at the game board rowNumber and colNumber positions using the SetMarkForBoard() function.
 
 ```cpp title="MainFunction(0x401738)"
 __int64 OmegaGo()
@@ -304,16 +304,16 @@ __int64 OmegaGo()
 
 #### **UserInput(HUMAN→Play(0x405020)→0x402C12)**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + callPrintBoard() 함수에 의해 Borad가 출력됩니다.
-  + scanf() 함수를 이용해 사용자로 부터 좌표 값 또는 명령어를 입력 받습니다.
-    - **특이한 부분은 다음과 같습니다.**
-      * 입력 받은 내용을 gCmd(0x60943C) 전역 변수에 저장
-      * 10개의 문자를 입력 받지만 sscanf()함수에 의해 1개의 문자,1개의 숫자값을 사용
-  + 입력 받은 명령어에 따라 다음과 같이 값을 설정합니다.
+* **The function has the following functions.**
+  + Borad is output by the callPrintBoard() function.
+  + Use the scanf() function to receive coordinate values ​​or commands from the user.
+    - **The unusual parts are as follows:**
+      * Save the input information to the global variable gCmd (0x60943C)
+      * 10 characters are input, but 1 character and 1 numeric value are used by the sscanf() function.
+  + Set the value as follows according to the input command.
     - surrender : col = -1, row = -1
     - regret : col = -2, row = -2
-  + 명령어가 아닐 경우 좌표 값이 저장됩니다.
+  + If it is not a command, the coordinate value is saved.
 
 ```cpp title="UserInput(HUMAN→Play(0x405020)→0x402C12)"
 unsigned __int64 __fastcall UserInput(__int64 a1, GameInfo *gameInfo, __int64 playerNum, signed int *row, signed int *col)
@@ -353,21 +353,21 @@ unsigned __int64 __fastcall UserInput(__int64 a1, GameInfo *gameInfo, __int64 pl
 
 #### **SetMarkForBoard**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + player 변수의 값을 이용해 플레이어의 마크를 결정합니다.
-  + saveMarkofBoard() 함수와 마크를 저장할 좌표 값(row, col)을 이용해gameinfo.Board[] 영역에 값을 저장합니다.
-  + 각종 함수를 이용해 플레이어가 마크를 저장하길 원하는 위치 값이 타당한지 확인합니다.
+* **The function has the following functions.**
+  + The player's mark is determined using the value of the player variable.
+  + Save the value in the gameinfo.Board[] area using the saveMarkofBoard() function and the coordinate values ​​(row, col) to save the mark.
+  + Various functions are used to check whether the location value where the player wants to save the mark is valid.
     - CheckBoardArea(), GetMarkForBoard(), checkLocation(), ...
-  + 입력한 위치 값이 정상적이지 않으면 메시지를 출력하고 프로그램을 종료합니다.
-  + 입력한 위치 값이 정상적이라면 해당 gameInfo를 gHistory[]에 저장합니다.
-    - "operator new(0x80)" 코드에 의해 Heap 영역을 할당합니다.
-    - 할당된 Heap 영역의 주소 값을 gHistory[]변수에 저장합니다.
-    - 즉, 사용자가 입력한 좌표 값이 Heap 영역에 저장됩니다.
-* **취약성은 여기서 발생합니다.**
-  + GameInfo 구조체를 사용하는 gHistory[]의 크기는 364 입니다.
-  + gHistory[] 배열에 저장된 번호가 364를 넘는지에 대한 확인이 없습니다.
-  + 유저가 입력한 값이 364회가 넘으면 gPlayerGameInfo 전역 변수에 **Heap addresss**가 Overflow됩니다.
-  + 즉, **사용자가 입력한 위치 값에 의해 Heap addresss를 변경**할 수 있습니다.
+  + If the entered position value is not normal, a message is output and the program is terminated.
+  + If the entered position value is normal, the corresponding gameInfo is saved in gHistory[].
+    - Allocate the heap area using the “operator new(0x80)” code.
+    - Save the address value of the allocated heap area in the gHistory[] variable.
+    - In other words, the coordinate values ​​entered by the user are stored in the heap area.
+* **This is where the vulnerability comes in**
+  + The size of gHistory[] using the GameInfo structure is 364.
+  + There is no check whether the number stored in the gHistory[] array exceeds 364.
+  + If the value entered by the user exceeds 364 times, **Heap addresses** will overflow in the gPlayerGameInfo global variable.
+  + In other words, **Heap addresses can be changed** based on the location value entered by the user.
 
 ```cpp title="SetMarkForBoard()"
 signed __int64 __fastcall SetMarkForBoard(GameInfo *gameinfo, unsigned int inputRow, unsigned int inputCol, int player, unsigned __int8 printOpt)
@@ -440,20 +440,20 @@ signed __int64 __fastcall SetMarkForBoard(GameInfo *gameinfo, unsigned int input
 
 #### **regret()**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + historyCnt변수의 값이 0 일 경우 해당 함수는 종료됩니다.
-  + historyCnt변수의 값이 0 아닐 경우 다음과 같은 코드를 실행합니다.
-    - DeletePlayHistory() 함수를 이용해 gHistory[] 에 맨 마지막에 플레이한 GameInfo를 삭제 합니다.
-      * AI, Human의 플레이 기록을 삭제합니다.
-    - AI가 마지막에 플레이한 GameInfo를 추출해 gPlayerGameInfo에 저장합니다.
-  + **여기서도 악용 할 수 있는 코드가 있습니다.**
-    - 앞에서 설명한 취약성에 의해 gPlayerGameInfo 전역 변수(gHistory[365]) 에 Heap addresss가 Overflow됩니다.
-    - 사용자 입력 값을 이용해 gPlayerGameInfo 전역 변수(gHistory[365])에 저장된 Heap addresss를 변경합니다.
-      * gHistory[365] : 변경된 Heap addresss
+* **The function has the following functions.**
+  + If the value of the historyCnt variable is 0, the function ends.
+  + If the value of the historyCnt variable is not 0, the following code is executed.
+    - Use the DeletePlayHistory() function to delete the last played GameInfo in gHistory[].
+      * Delete AI and Human play records.
+    - AI extracts the last played GameInfo and stores it in gPlayerGameInfo.
+  + **There is code that can be exploited here as well.**
+    - Heap addresses overflow in the gPlayerGameInfo global variable (gHistory[365]) due to the vulnerability described previously.
+    - Change the heap addresses stored in the gPlayerGameInfo global variable (gHistory[365]) using user input values.
+      * gHistory[365]: Changed Heap addresses
       * gHistory[366] : Heap addresss
       * gHistory[367] : Heap addresss
-    - regret() 함수가 호출되면 "history = (GameInfo \*)::gHistory[historyCnt - 1];" 코드에 의해 "변경된 Heap addresss"를 기준으로 GameInfo를 출력하게 됩니다.
-    - 즉, 해당 취약성을 이용해 Libc addresss를 출력 할 수 있습니다.
+    - When the regret() function is called, "history = (GameInfo \*)::gHistory[historyCnt - 1];" GameInfo is output based on the “changed heap addresses” by the code.
+    - In other words, Libc addresses can be output using the vulnerability.
 
 ```cpp title="regret()"
 signed __int64 __cdecl regret()
@@ -490,8 +490,8 @@ signed __int64 __cdecl regret()
 
 #### **DeletePlayHistory**
 
-* **해당 함수는 다음과 같은 기능을 합니다.**
-  + gHistory[]에 저장된 heap 영역을 해제합니다.
+* **The function has the following functions.**
+  + Releases the heap area stored in gHistory[].
 
 ```cpp title="DeletePlayHistory()"
 unsigned __int64 DeletePlayHistory()
@@ -515,7 +515,7 @@ unsigned __int64 DeletePlayHistory()
 
 #### **Overflow**
 
-* **다음과 같은 코드를 이용하여 gameInfo 전역 변수의 값을 Overflow할 수 있습니다.**
+* **You can overflow the value of the gameInfo global variable using the following code.**
 
 ```python title="Overflow for gameInfo"
 from pwn import *
@@ -545,12 +545,12 @@ Fill('A','K',12)
 p.interactive()
 ```
 
-* **디버깅 전에 각 전역 변수의 위치를 알아야 합니다.**
+* **Before debugging, you need to know the location of each global variable.**
   + gGameInfo : 0x609FC0
   + gHistory : 0x609460
   + gPlayerGameInfo Addresss(0x609FC0) - gHistory(0x609460) = 0xb60(2912) / 0x8(addresss len) = 364
-* **다음은 디버깅을 통해 확인한 내용입니다.**
-  + gPlayerGameInfo(0x609fc0) 전역 변수에 heap addresss(0x609fc0)값이 저장된 것을 확인 할 수 있습니다.
+* **The following is what was confirmed through debugging.**
+  + You can see that the heap addresses (0x609fc0) value is saved in the gPlayerGameInfo (0x609fc0) global variable.
 
 ```sh title="overflow for gameInfo"
 lazenca0x0@ubuntu:~/CTF/HITCON/OmegaGo$ gdb -q -p 3491
@@ -566,8 +566,8 @@ gdb-peda$ x/10gx 0x609FC0
 0x60a000:	0x0000000000000000	0x0000000000000000
 ```
 
-* **해당 Overflow를 통해 출력되는 Board의 내용이 변경된 것을 확인 할 수 있습니다.**
-  + 우리는 해당 정보를 이용하여 heap addresss를 추출 할 수 있습니다.
+* **You can check that the contents of the Board output through the corresponding Overflow have changed.**
+  + We can use that information to extract heap addresses.
 
 ```sh title="overflow for gameInfo"
 lazenca0x0@ubuntu:~/CTF/HITCON/OmegaGo$ python test.py 
@@ -600,10 +600,10 @@ $
 ```
 
 #### **Decode**
-* **화면에 출력된 Addresss를 해석하기 위해서는 Board에 저장되는 Mark의 값이 어떻게 관리 되는지 확인이 필요합니다.**
-* **다음과 같이 유저가 좌표 값을 입력하면 메모리 값은 다음과 같이 변경됩니다.**
-  + 유저가 입력한 값은 0x609fc0 영역에 0x2가 저장됩니다.
-  + 컴퓨터가 입력한 값은 0x60a01A 영역에 0x1가 저장됩니다.
+* **In order to interpret the addresses displayed on the screen, it is necessary to check how the mark value stored on the board is managed.**
+* **When the user inputs coordinate values ​​as follows, the memory value changes as follows.**
+  + The value entered by the user is stored as 0x2 in the 0x609fc0 area.
+  + The value entered by the computer is stored as 0x1 in the 0x60a01A area.
 
 ```sh title="Coordinates input" 
 lazenca0x0@ubuntu:~/CTF/HITCON/OmegaGo$ gdb -q ./omega*
@@ -632,10 +632,10 @@ gdb-peda$ x/12gx 0x609FC0
 gdb-peda$
 ```
 
-* **다음과 같이 추가적인 메모리의 변화를 확인합니다.**
-  + 사용자 입력을 통해 19행을 모두 채우면 메모리에 다음과 같이 저장됩니다.
-    - 유저가 입력한 값은 0x2aaaaaaaaa 입니다.
-    - 컴퓨터가 입력한 값은 0x01555555555 입니다.
+* **Check for additional memory changes as follows.**
+  + When all 19 rows are filled in through user input, they are stored in memory as follows:
+    - The value entered by the user is 0x2aaaaaaaaa.
+    - The value entered by the computer is 0x01555555555.
 
 ```sh title="Fill in line 19"
    ABCDEFGHIJKLMNOPQRS
@@ -674,9 +674,9 @@ gdb-peda$  x/12gx 0x609FC0
 gdb-peda$
 ```
 
-* **Board에 저장되는 값을 다음과 같은 방법으로 관리됩니다.**
-  + Board영역에 저장되는 값을 bit를 이용해 저장될 값을 결정합니다.
-  + 다음과 같은 bit값을 이용해 player를 구분합니다.
+* **Values ​​stored on the Board are managed in the following ways.**
+  + The value to be stored in the Board area is determined using bits.
+  + Players are identified using the following bit values.
     - AI : 10 bit
     - Humman : 01bit
 
@@ -688,7 +688,7 @@ gdb-peda$
 | Humman | 01 | 0x1 | 0100 | 0x4 | 0101 | 0x5 |
 :::
 
-* **이러한 정보를 이용하여 다음과 같은 복호화 도구를 작성할 수 있습니다.**
+* **Using this information, we can write decryption tools such as:**
 
 ```python title="Decode"
 def decode(offset):
@@ -704,17 +704,17 @@ def decode(offset):
 
 ### Structure of Exploit code
 
-* Payload의 순서는 다음과 같습니다.
+* The order of payload is as follows:
 
-:::note[Payload 순서]
+:::note[Payload order]
 1. Leak Libc Addresss
 2. Overwrite the Computer Class
 3. Overwrite the vtable
 :::
 
-* 이를 조금더 자세하게 설명하면 다음과 같습니다.
+* This is explained in more detail as follows.
 
-:::note[상세 설명]
+:::note[Detailed description]
 1. LeakLibcAddresss
    1. Overwrites gameInfo data
    2. Heap addresss change
@@ -728,32 +728,32 @@ def decode(offset):
    1. execve("/bin/sh")
 :::
 
-* payload를 바탕으로 공격을 위해 알아내어야 할 정보는 다음과 같습니다.
+* The information you need to find out for an attack based on the payload is as follows.
 
-:::note[정보 목록]
+:::note[Information List]
 * Leak libc addresss
 * Fake chunk
 * execve("/bin/sh")
 :::
 
-* 다음과 같은 구조로 shell을 획득합니다.
+* Obtain the shell with the following structure.
 
 :::note[Shell Code]
 |  | vtable | void (\_\_fastcall \*Play) | void (\_\_fastcall \*Play) |
 | --- | --- | --- | --- |
 | AI | Heap addresss | 0x405040 | 0x40290A |
-| AI | Heap addresss(UAF) | gCmd(0x60943C) 전역 변수 | User input(Call One gadget) |
+| AI | Heap addresss(UAF) | gCmd(0x60943C) global variable | User input(Call One gadget) |
 :::
 
 ### **Information for attack**
 
 #### **Leak Libc addresss**
 
-* **다음과 같이 "regret"기능을 이용해 Heap 영역에 "main\_arena.top" 영역의 주소를 저장 할 수 있습니다.**
-  + 사용자가 위치 값을 입력하면 GameInfo(0x80)를 생성해서 gHistory[]에 저장합니다.
+* **You can save the address of the “main\_arena.top” area in the Heap area using the “regret” function as follows.**
+  + When the user enters a location value, GameInfo (0x80) is created and stored in gHistory[].
     - AI GameInfo : 0x61d220
     - HUMAN GameInfo : 0x61d160
-  + AI,HUMAN GameInfo 사이에 크기가 0x20인 Heap 영역이 할당되어 있습니다.  
+  + A heap area with a size of 0x20 is allocated between AI and HUMAN GameInfo.  
     - Heap addresss : 0x61d1f0
 
 ```sh title="gHistory[] info"
@@ -790,13 +790,13 @@ gdb-peda$ x/4gx 0x61d1e0
 gdb-peda$
 ```
 
-* **"regret" 기능을 호출하게되면 gHistory[]의 맨 마지막에 저장된 2개의 GameInfo를 삭제합니다.**
-  + 분석을 위해 "0x4015CE" 영역에 Break point를 설정합니다.
-  + AI GameInfo(0x61d220) 영역이 해제되면 해당 영역이 Top chunk가 됩니다.
-    - 0x61d210 영역이 main\_arena의 top 영역에 저장됩니다.
-  + HUMAN GameInfo(0x61d160) 영역이 해제되면 해당 영역은 Unsorted chunk가 됩니다.  
-    - 0x61d150 영역이 main\_arena.bin[0], [1] 영역에 저장됩니다.
-    - Unsorted chunk(0x61d150)의 fd, bk 영역에 main\_arena.top의 주소 값이 저장됩니다.
+* **When the “regret” function is called, the two GameInfos stored at the end of gHistory[] are deleted.**
+  + For analysis, set a break point in the "0x4015CE" area.
+  + When the AI ​​GameInfo (0x61d220) area is released, that area becomes the Top chunk.
+    - Area 0x61d210 is stored in the top area of ​​main\_arena.
+  + When the HUMAN GameInfo (0x61d160) area is released, the area becomes an Unsorted chunk.  
+    - The 0x61d150 area is saved in the main\_arena.bin[0], [1] area.
+    - The address value of main\_arena.top is stored in the fd and bk areas of the unsorted chunk (0x61d150).
 
 ```sh title="Create libc address"
 gdb-peda$ b *0x4015CE
@@ -827,26 +827,26 @@ gdb-peda$ x/4gx 0x61d150
 gdb-peda$
 ```
 
-* ****gPlayerGameInfo에 저장된 값(Heap addresss)을 변경하기 전에 중요한 부분이 있습니다.****
-  + 그것은 바로 gPlayerGameInfo에 저장된 값(Heap addresss) 입니다.
-    - 해당 프로그램은 2bit를 이용해 HUMAN,AI의 표시를 구분합니다.
-  + 다음으로 중요한 것은 사용자 입력값에 의해 2bit 모두 1이 될 수 없습니다.
-  + 즉, 사용자 입력 값으로 gPlayerGameInfo에 저장된 값을 변경하는데 제약이 있다는 것입니다.
-* **다음은 gPlayerGameInfo 전역변수에 0x61cc90 값이 저장되어 있을 경우 입니다.**
-  + 해당 주소를 bit로 변경하면 "0110 0001 1100 1100 1001 0000"이 됩니다.
-  + 여기서 사용자가 값을 입력 할 수 있는 부분은 다음과 같습니다.
-    - bit의 값이 "00"인 부분만 값을 저장 할 수 있습니다.
+* ****There is an important part before changing the values ​​(Heap addresses) stored in gPlayerGameInfo.****
+  + Those are the values ​​(Heap addresses) stored in gPlayerGameInfo.
+    - The program uses 2 bits to distinguish between HUMAN and AI signs.
+  + The next important thing is that both bits cannot be 1 due to user input.
+  + In other words, there are restrictions on changing the values ​​stored in gPlayerGameInfo with user input values.
+* **The following is when the value 0x61cc90 is stored in the gPlayerGameInfo global variable.**
+  + If you change the address to bit, it becomes "0110 0001 1100 1100 1001 0000".
+  + Here's where the user can enter values:
+    - Only the part where the bit value is “00” can be stored.
     - "0110 0001 1100 1100 1001 0000"
-  + gPlayerGameInfo 전역변수에 저장되는 주소 값을 변경하기 위해서 surrender() 함수를 호출하는 것으로 해결 할 수 있습니다.  
-    - surrender() 함수를 호출하면 게임이 재설정됩니다.
-    - 재설정이 이전에 사용하던 AI, HUMAN Class 의 vtable 영역은 해제가 되지 않기 때문에 gPlayerGameInfo 전역변수에 저장되는 Heap 주소가 변경됩니다.
-* **다음과 같은 방법으로 gPlayerGameInfo에 저장된 값(Heap addresss)을 변경할 수 있습니다.**
-  + Script를 이용해 gHistory[]영역에 GameInfo를 365개를 저장합니다.
-    - 이로 인해 gPlayerGameInfo의 board[0] 영역에 Heap 영역이 저장됩니다.
+  + This can be resolved by calling the surrender() function to change the address value stored in the gPlayerGameInfo global variable.  
+    - Calling the surrender() function resets the game.
+    - Since the reset does not release the vtable area of ​​the previously used AI and HUMAN Class, the Heap address stored in the gPlayerGameInfo global variable is changed.
+* **You can change the values ​​(Heap addresses) stored in gPlayerGameInfo in the following way.**
+  + Save 365 GameInfo items in the gHistory[] area using a script.
+    - Due to this, the Heap area is stored in the board[0] area of ​​gPlayerGameInfo.
       * gPlayerGameInfo(0x609fc0) : 0x1c88e30
-    - gPlayerGameInfo 영역에 저장된 Heap 주소 값은 사용자 입력 값으로 변경 할 수 있습니다.
-  + 사용자 입력 값으로 "D19"를 입력합니다.
-    - 해당 값으로 인해 gPlayerGameInfo에 저장된 Heap 주소가 "0x1c88e30" 에서 "0x1c88eb0"으로 변경되었습니다.
+    - The Heap address value stored in the gPlayerGameInfo area can be changed with user input.
+  + Enter "D19" as the user input value.
+    - Due to this value, the Heap address stored in gPlayerGameInfo changed from "0x1c88e30" to "0x1c88eb0".
       * "0x1c88e30" + "0x80" = 0x1c88eb0
 
 ```sh title="Change the Heap address."
@@ -870,15 +870,15 @@ $1 = 0x1c88eb0
 gdb-peda$
 ```
 
-* **다음과 같은 방법으로 Unsorted chunk의 fd, bk영역에 저장된 main\_arena.top의 주소 값 출력 할 수있습니다.**
-  + "regret" 기능을 호출하면 gHistory[] 배열의 마지막에 저장된 2개의 Heap 영역이 해제됩니다.
-    - 앞에서 설명했듯이 HUMAN GameInfo(0x1c88ef0) 영역이 Unsorted chunk됩니다.
-    - Unsorted chunk(0x1c88ee0)의 fd, bk 영역에 main\_arena.top의 주소 값이 저장됩니다.  
+* **You can output the address value of main\_arena.top stored in the fd and bk areas of the unsorted chunk in the following way.**
+  + Calling the "regret" function frees the last two Heap areas stored in the gHistory[] array.
+    - As explained previously, the HUMAN GameInfo (0x1c88ef0) area is Unsorted chunk.
+    - The address value of main\_arena.top is stored in the fd and bk areas of the unsorted chunk (0x1c88ee0).  
       * fd(0x1c88ef0) : 0x7f4b7d233b78
       * bk(0x1c88ef8) : 0x7f4b7d233b78
-  + regret() 함수는 gHistory[365]에 저장된 주소(0x1c88eb0)를 이용해 GameInfo를 gPlayerGameInfo 전역 변수에 저장합니다.  
-    - 즉, Unsorted chunk(0x1c88ee0)의 fd, bk 영역이 출력됩니다.
-    - 해당 값을 앞에서 작성한 Decode() 함수를 이용해 해석 할 수 있습니다.
+  + The regret() function stores GameInfo in the gPlayerGameInfo global variable using the address (0x1c88eb0) stored in gHistory[365].  
+    - In other words, the fd and bk areas of the unsorted chunk (0x1c88ee0) are output.
+    - The value can be interpreted using the Decode() function written earlier.
 
 ```sh title="Get libc address."
 gdb-peda$ c
@@ -910,7 +910,7 @@ gdb-peda$ x/12gx 0x609FC0
 gdb-peda$
 ```
 
-* **다음 코드를 이용할 수 있습니다.**
+* **You can use the following code:**
 
 ```python title="Get libc address"
 from pwn import *
@@ -995,12 +995,12 @@ p.interactive()
 
 #### **Create a UAF vulnerability(Fake chunk)**
 
-* **앞에서 설명한 취약성을 이용해 UAF 취약성을 만들 수 있습니다.**
-  + 공격 대상은 AI Class의 vtable 입니다.
-  + OmegaGo() 함수에서 AI Class의 vtable 공간으로 8 byte를 요청하고 있습니다.
-    - 해당 Chunk의 크기는 0x20이 됩니다.
+* **The previously described vulnerabilities can be used to create UAF vulnerabilities.**
+  + The attack target is the vtable of AI Class.
+  + The OmegaGo() function is requesting 8 bytes as the vtable space of AI Class.
+    - The size of the corresponding chunk will be 0x20.
     - Chunk header(0x10) + Base heap area(0x10)
-  + 즉, UAF취약성을 생성하기 위해서 0x20 byte의 fake chunk가 필요합니다.
+  + In other words, a fake chunk of 0x20 bytes is required to create a UAF vulnerability.
 
 ```sh title="Find the vtable"
 ...
@@ -1014,10 +1014,10 @@ p.interactive()
 ...
 ```
 
-* **다음과 같은 구조로 Fake chunk를 생성할 수 있습니다.**
-  + 해당 바이너리의 취약성을 이용해 아래 조건을 만족하는 Fake chunk addresss를 gHistory[365]영역에 저장합니다.  
-    - Fake chunk의 size가 0x20
-    - Fake chunk의 next chunk(next\_size) 영역에 값이 있어야 함.
+* **Fake chunks can be created with the following structure.**
+  + Fake chunk addresses that meet the conditions below are stored in the gHistory[365] area by exploiting the vulnerability of the binary.  
+    - Fake chunk size is 0x20
+    - There must be a value in the next chunk (next\_size) area of ​​the fake chunk.
 
 **Fake chunk struct**
 
@@ -1033,7 +1033,7 @@ p.interactive()
 | 0x70 | 40665799D0203E64 | 4066800000000000 |
 | 0x80 | 0000000000000000 | 0000000000000031 |
 
-* **아래 스크립트를 이용해 Fake chunk의 기본 모형을 만들수 있습니다.**
+* **You can create a basic model of Fake chunk using the script below.**
 
 ```python title="Create a Fake chunk"
 ...
@@ -1061,9 +1061,9 @@ Fill('A','I',10)
 p.interactive()
 ```
 
-* **다음과 같이 Fake chunk를 확인 할 수 있습니다.**
-  + 182번 위치 값을 입력해 gPlayerGameInfo 전역 변수에 Heap addresss(0xac6010)가 저장되었습니다.
-  + Heap 영역에 Fakechunk가 구현 되어있습니다.
+* **You can check the fake chunk as follows.**
+  + By entering the location value 182, Heap addresses (0xac6010) were saved in the gPlayerGameInfo global variable.
+  + Fakechunk is implemented in the heap area.
 
 ```sh title="Run script"
 lazenca0x0@ubuntu:~/CTF/HITCON/OmegaGo$ python test.py 
@@ -1131,14 +1131,14 @@ gdb-peda$ c
 Continuing.
 ```
 
-* **다음과 같이 gPlayerGameInfo 전역 변수에 저장된 Heap addresss(0xac6010)를 변경되었습니다.**
-  + 위치 값으로 변경 가능한 Heap addresss의 bit 영역은 다음과 같습니다.
+* **Heap addresses (0xac6010) stored in the gPlayerGameInfo global variable have been changed as follows.**
+  + The bit areas of heap addresses that can be changed by position value are as follows.
     - 1010 1100 0110 0000 0001 0000
-  + 다음과 같이 값을 변경합니다.
+  + Change the values ​​as follows:
     - 1010 1100 0110 0010 1001 0000
-    - 위치 값 : D19, E19
-  + 사용자가 입력한 값 D19, E19에 의해 gPlayerGameInfo.board[0]에 저장된 값이 0xac6290 으로 변경되었습니다.
-    - 0xac6290 영역은 GameInfo.board[9] 영역입니다.
+    - Position values: D19, E19
+  + The value stored in gPlayerGameInfo.board[0] was changed to 0xac6290 by the user-entered values ​​D19 and E19.
+    - The 0xac6290 area is the GameInfo.board[9] area.
 
 ```sh title="Position value"
 $ D19
@@ -1181,8 +1181,8 @@ gdb-peda$ x/20gx 0x0000000000ac6290 - 0x10
 gdb-peda$
 ```
 
-* **다음과 같이 Fake chunk에 AI의 vtable공간이 할당됩니다.**
-  + UAF를 확인하기 위해 다음과 같이 Break point를 설정합니다.
+* **AI's vtable space is allocated to the Fake chunk as follows.**
+  + To check UAF, set a break point as follows.
 
 ```sh title="Set Breakpoint"
 gdb-peda$ b *0x401761
@@ -1191,10 +1191,10 @@ gdb-peda$ c
 Continuing.
 ```
 
-* **"surrender" 를 입력하고 게임을 재시작하면 다음과 같이 Heap 영역이 변경됩니다.**
-  + 변경된 heap addresss에 의해 Fake chunk는 fastbins에 추가 되었습니다.
-  + AI의 vtable을 저장 할 Heap 영역을 요청하면 fastbins에 등록되었던 Fake chunk(0xac6290)가 할당됩니다.
-  + 이로 인해 AI vtable(0xac6290) 영역에 board[]의 정보를 덮어쓸 수 있습니다.
+* **If you type “surrender” and restart the game, the Heap area will change as follows.**
+  + Fake chunks were added to fastbins due to changed heap addresses.
+  + When you request a heap area to store AI's vtable, a fake chunk (0xac6290) registered in fastbins is allocated.
+  + This may cause the information in board[] to be overwritten in the AI ​​vtable (0xac6290) area.
 
 ```sh title="After "surrender" and restart, the Heap area has been changed."
 $ surrender
@@ -1266,7 +1266,7 @@ gdb-peda$ x/10i 0x000000000040290a
 gdb-peda$
 ```
 
-* **다음과 같이 스크립트에 코드를 추가합니다.**
+* **Add code to the script as follows:**
 
 ```python title="Add script code"
 #0xXXXX010 -> 0xxxxx290
@@ -1278,12 +1278,12 @@ surrender()
 
 #### **Overwrite the vtable**
 
-* **다음과 같이 AI vtable을 덮어쓸 수 있습니다.**
-  + AI vtable영역에서 호출 할 함수의 주소가 저장된 영역의 주소가 저장된 곳은 GameInfo.board[9] 으로 덮어쓰여 집니다.
-  + 해당 영역에 저장 할 주소는 gCmd 전역 변수 + 4(0x60943C + 0x4 = 0x609440) 입니다.
-* **해당 정보를 이용해 다음과 같은 위치 값을 생성할 수 있습니다.**
-  + 위치 값 : D14, E14, G14, R15, A5, Q6
-  + GameInfo.board[9] 영역에 0x609440이 저장되었습니다.
+* **You can overwrite the AI ​​vtable like this:**
+  + In the AI ​​vtable area, the address of the area where the address of the function to be called is stored is overwritten with GameInfo.board[9].
+  + The address to save in that area is gCmd global variable + 4 (0x60943C + 0x4 = 0x609440).
+* **You can use that information to generate the following location values:**
+  + Position values: D14, E14, G14, R15, A5, Q6
+  + 0x609440 was saved in the GameInfo.board[9] area.
 
 ```sh title="Overwrite the vtable"
 Q6
@@ -1323,7 +1323,7 @@ gdb-peda$ x/20gx 0x609FC0
 gdb-peda$
 ```
 
-* **다음과 같이 스크립트에 코드를 추가합니다.**
+* **Add code to the script as follows:**
 
 ```python title="Overwrite the vtable"
 #Fill out to board
@@ -1345,10 +1345,10 @@ sleep(20)
 Play('F19|'+p64(execve_bash))
 ```
 
-* **다음과 같이 변경된 vtable 정보를 확인 할 수 있습니다.**
-  + AI vtable 영역은 0x1a37290 이며, 해당 영역에 gCmd 전역 변수(+4)의 주소가 저장되어 있습니다.
-  + gCmd 전역 변수 +4(0x609440) 영역에는 One gadget의 주소 값이 저장되어 있습니다.
-  + 해당 주소는 rax에 저장되어 호출되며, shell을 획득하게 됩니다.
+* **You can check the changed vtable information as follows.**
+  + The AI ​​vtable area is 0x1a37290, and the address of the gCmd global variable (+4) is stored in that area.
+  + The address value of One gadget is stored in the gCmd global variable +4 (0x609440) area.
+  + The address is stored in rax and called, and a shell is obtained.
 
 ```sh title="Get shell!"
 lazenca0x0@ubuntu:~$ gdb -q -p 59695

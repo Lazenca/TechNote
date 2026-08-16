@@ -21,7 +21,7 @@ easy-prasky\_335e35448b30ce7697fbb036cce45e34.quals.shallweplayaga.me:10001
 
 ### File information
 
-* File 명령어를 이용해 다음과 같은 정보를 확인할 수 있습니다.
+* Using the file command, we can check the following information:
 
 ```sh title="File information"
 $ tar -jxvf easy-prasky.tar.bz2
@@ -30,8 +30,8 @@ $ file easy-prasky-with-buffalo-on-bing
 easy-prasky-with-buffalo-on-bing: data
 ```
 
-* 정확한 파일 정보를 얻기 위해 파일의 Head를 확인합니다.
-* 해당 파일의 Head를 확인한 결과, 이 파일은 CGC(Cyber Grand Challenge) 포맷의 파일입니다.
+* To obtain accurate file information, check the header of the file.
+* Checking the file header reveals that this is a CGC (Cyber Grand Challenge) format file.
 
 ```sh title="hexdump -C easy-prasky-with-buffalo-on-bing | head"
 00000000  7f 43 47 43 01 01 01 43  01 4d 65 72 69 6e 6f 00  |.CGC...C.Merino.|
@@ -54,7 +54,7 @@ easy-prasky-with-buffalo-on-bing: data
 
 #### **Preferences for running cgc files**
 
-* DARPA에서 CGC 파일을 실행하기 위한 환경을 Vagrant를 이용해 제공하고 있습니다.
+* DARPA provides an environment for running CGC files using Vagrant.
 
 ```sh title="VMs"
 cgc-linux-dev.box	ae1e267b86ac556dac2ed7c6dfc6ffc9370a2134c1a53387c1809e09d21fa27e
@@ -62,13 +62,13 @@ vm.json				7f553ee1cf6d16dae7a23bf9738d678042b33a86caf1525a3e8aaf44d4cb12c5
 Vagrantfile			ff0f8b4a3996a137d2a6eb7088a632928068425b9c4502f6c754c3f079672d00
 ```
 
-* 다음 Site에 방문하여 설치 파일을 다운받아 설치합니다.
+* Visit the following site to download and install Vagrant:
 
 :::note[Download Vagrant]
 <https://www.vagrantup.com/downloads.html>
 :::
 
-* "<http://repo.cybergrandchallenge.com/boxes/>" 에서 "Vagrantfile" 파일을 다운받은 후 다음과 같이 명령어를 실행합니다.
+* Download the "Vagrantfile" from "<http://repo.cybergrandchallenge.com/boxes/>" and run the following command:
 
 ```sh title="Vagrant command"
 $ vagrant up
@@ -89,7 +89,7 @@ Bringing machine 'ti' up with 'virtualbox' provider...
 $
 ```
 
-* 다음과 같은 명령어를 이용해 VM에 접속할 수 있습니다.(PW : vagrant)
+* You can connect to the VM using the following command (Password: vagrant):
 
 ```sh title="Vagrant connect"
 $ ssh vagrant@127.0.0.1 -p 2222
@@ -105,7 +105,7 @@ permitted by applicable law.
 vagrant@cb:~$
 ```
 
-* "easy-prasky-with-buffalo-on-bing"파일을 CGC VM에 전송합니다.
+* Transfer the "easy-prasky-with-buffalo-on-bing" file to the CGC VM:
 
 ```sh title="File transfer"
 $ scp -P 2222 easy-prasky-with-buffalo-on-bing vagrant@127.0.0.1:/home/vagrant
@@ -114,7 +114,7 @@ easy-prasky-with-buffalo-on-bing                                                
 $
 ```
 
-* 다음과 같이 전송된 파일을 실행 할 수 있습니다.
+* You can execute the transferred file as follows:
 
 ```sh title="Execution result"
 vagrant@cb:~$ ./easy-prasky-with-buffalo-on-bing 
@@ -124,9 +124,9 @@ canary okvagrant@cb:~$
 
 #### CGC to elf
 
-* 해당 파일은 앞에서 설명했듯이 CGC 파일 포맷이기 때문에 IDA에서 DATA file로 인식됩니다.
-* 해당 파일을 IDA Pro로 분석하기 위해서는 파일 포맷 변경이 필요합니다.
-  + "Cyber Grand Challenge" 에서 제공하는 "cgc2elf"를 이용하여 cgc 파일 포맷을 elf 파일 포맷으로 변환할 수 있습니다.
+* As explained earlier, because this file is in the CGC file format, IDA recognizes it as a data file.
+* To analyze this file in IDA Pro, the file format must be converted.
+  + You can convert the CGC file format to the ELF file format using "cgc2elf" provided by the Cyber Grand Challenge.
 
 ```sh title="cgc2elf installation"
 $ sudo dpkg -i cgc2elf_10206-cfe-rc6_i386.deb 
@@ -143,7 +143,7 @@ $
 <http://repo.cybergrandchallenge.com/deb/>
 :::
 
-* 다음과 같이 "cgc2elf"를 이용해 cgc 파일 포맷을 elf 파일 포맷으로 변환했습니다.
+* The CGC file format was converted to the ELF file format using "cgc2elf" as shown below:
 
 ```sh title="cgc to elf"
 $ file easy-prasky-with-buffalo-on-bing 
@@ -159,14 +159,14 @@ $
 
 #### sub\_8048370()
 
-* 해당 함수는 다음과 같은 기능을 합니다.  
-  + Canary에 "lddwDrwhkTEBSya\_"이라는 문자열을 저장합니다.
-  + 사용자로 부터 입력받은 값을 "userInputStr"에 저장합니다.
-    - 이 함수는 scanf()를 이용해 값을 입력 받습니다.
-    - 입력받은 값으로 Canary에 저장된 값을 Overwrite가 가능합니다.
-  + strncmp()함수를 이용해 Canary에 저장된 값이 "lddw"와 같은지 비교합니다.
-    - canary변수에 "lddw"라는 문자열이 있으면 "canary ok"라는 문구를 출력합니다.
-    - canary변수에 "lddw"라는 문자열이 없다면 "hacking detected, see ya"라는 문구를 출력합니다.
+* This function performs the following operations:  
+  + Stores the string "lddwDrwhkTEBSya\_" into Canary.
+  + Stores the value received from user input into "userInputStr".
+    - This function receives input using scanf().
+    - The input value can overwrite the value stored in Canary.
+  + Compares whether the value stored in Canary matches "lddw" using the strncmp() function.
+    - If the canary variable contains the string "lddw", it prints "canary ok".
+    - If the canary variable does not contain the string "lddw", it prints "hacking detected, see ya".
 
 ```c title="sub_8048370"
 int sub_8048370()
@@ -187,18 +187,18 @@ int sub_8048370()
 
 ### Structure of Exploit code
 ```
-1. 사용자가 입력한 값이 Canary를 우회하여 Segment fault를 발생시킵니다.
+1. User input bypasses the Canary check and triggers a Segmentation fault.
 ```
 * The following information is required for an attack:
 ```
-1. 메모리 구조 확인("userInputStr","canary")
+1. Verify memory structure ("userInputStr", "canary")
 ```
 
 ### **Information for attack**
 
 #### **Check memory structure**
 
-* 다음과 같이 Break point를 설정합니다.
+* Set breakpoints as follows:
   + 0x804839d : strncpy()
   + 0x80483a8 : scanf()
 
@@ -209,13 +209,12 @@ Breakpoint 1 at 0x804839d
 Breakpoint 2 at 0x80483a8
 ```
 
-* strncpy() 함수에 의해 canary 영역(0xbffff6c3)에 "lddwDrwhkTEBSya\_" 문자열이 저장되었습니다.
+* The string "lddwDrwhkTEBSya\_" is stored in the canary area (0xbffff6c3) by the strncpy() function.
 
 ```sh title="Break point 1 - strncpy()"
 (gdb) r
 Starting program: /home/lazenca0x0/Documents/DEFCON 2016/easy-prasky-with-buffalo-on-bing 
-
-Breakpoint 1, 0x0804839d in ?? ()
+Break point 1, 0x0804839d in ?? ()
 (gdb) x/wx $esp
 0xbffff680:	0xbffff6c3
 (gdb) x/wx 0xbffff6c3
@@ -230,9 +229,9 @@ Breakpoint 2, 0x080483a8 in ?? ()
 0xbffff6c3:	"lddwDrwhkTEBSya_"
 ```
 
-* userInputStr 의 주소는 0xbffff6af이며, canary의 주소는 0xbffff6c3 입니다.
-  + 0xbffff6c3 - 0xbffff6af = 0x14 (20 byte)
-  + 즉, 사용자 입력 값으로 canary영역에 값을 덮어 쓸 수 있습니다.
+* The address of userInputStr is 0xbffff6af, and the address of canary is 0xbffff6c3.
+  + 0xbffff6c3 - 0xbffff6af = 0x14 (20 bytes)
+  + In other words, user input can overwrite the values in the canary area.
 
 ```sh title="Break point 2 - scanf()"
 (gdb) x/wx $esp
@@ -248,9 +247,9 @@ Breakpoint 2, 0x080483a8 in ?? ()
 
 #### **Key information**
 
-1. "userInputStr" 변수의 메모리 Addresss : 0xbffff6af
-2. "canary" 변수의 메모리 Addresss: 0xbffff6c3
-3. "userInputStr" 변수와 "canary" 변수 offset : 20byte
+1. Memory address of "userInputStr" variable: 0xbffff6af
+2. Memory address of "canary" variable: 0xbffff6c3
+3. Offset between "userInputStr" and "canary": 20 bytes
 
 ## **Exploit Code**
 

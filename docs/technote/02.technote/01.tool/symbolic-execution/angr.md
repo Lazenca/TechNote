@@ -8,12 +8,12 @@ sidebar_position: 1
 
 ## **Description**
 
-* Angr은 Python기반의 바이너리 분석 프레임워크입니다.
-* Angr은 정적, 동적으로 Symbolic(Concolic) 분석을 사용합니다.
-* Angr은 다음과 같은 과정을 통해 분석합니다.
-  + Angr은 VEX IR, SimuVex를 이용해 분석할 코드의 IR 생성과 실행을 통해 분석을 진행합니다.
-    - PyVEX(VEX IR)를 이용해 분석할 대상 바이너리의 코드를 IR로 변환합니다.
-    - 변환된 IR은 SimuVex를 이용해 실행 및 분석을 진행합니다.
+* angr is a Python-based binary analysis framework.
+* angr utilizes static and dynamic symbolic (concolic) analysis.
+* angr performs analysis through the following process:
+  + angr performs analysis by generating and executing IR of the target code using VEX IR and SimuVEX.
+    - It translates the target binary code into IR using PyVEX (VEX IR).
+    - The translated IR is executed and analyzed using SimuVEX.
 
 :::note[Github]
 * <https://github.com/angr/pyvex>
@@ -24,11 +24,11 @@ sidebar_position: 1
 
 | API | Description |
 | --- | --- |
-| **Angr** | * **해당 API는 다음과 같은 기능을 지원합니다.**   + 디스 어셈블리 및 중간 표현 리프팅   + 프로그램 계측   + 상징적 실행   + 제어 흐름 분석   + 데이터 종속성 분석   + 가치 집합 분석 (VSA) |
-| **claripy** | * Solver Engine   + 제약 조건을 해결하는 기능을 제공합니다.   + 사용방법은 z3와 유사합니다. |
-| **cle** | * Binary Loader   + 분석 대상 바이너리에서 사용되는 라이브러리 정보들을 출력   + 프로세스 메모리의 추상화 |
-| **pyvex** | * Binary Translator    + 바이너리 코드를 VEX 중간 레졸루션 (IR)으로 변환하는 인터페이스를 제공합니다 |
-| **archinfo** | * Arch Information Repository * 아키텍처 관련 정보를 포함하는 클래스의 모음입니다. |
+| **angr** | * **This API supports the following features:**   + Disassembly and intermediate representation (IR) lifting   + Program instrumentation   + Symbolic execution   + Control-flow analysis   + Data-dependency analysis   + Value-Set Analysis (VSA) |
+| **claripy** | * Solver Engine   + Provides constraint solving capabilities.   + Usage is similar to Z3. |
+| **cle** | * Binary Loader   + Loads and extracts library information used by the analyzed binary.   + Provides process memory abstraction. |
+| **pyvex** | * Binary Translator   + Provides an interface to translate binary code into VEX Intermediate Representation (IR). |
+| **archinfo** | * Arch Information Repository   + A collection of classes containing architecture-specific information. |
 
 :::note[Github]
 * <https://github.com/angr/angr>
@@ -43,7 +43,7 @@ sidebar_position: 1
 ```bash title="Install angr"
 lazenca0x0@ubuntu:~$ sudo apt-get install python-dev libffi-dev build-essential virtualenvwrapper
 
-... 생략 ...
+... omitted ...
 
 (angr) lazenca0x0@ubuntu:~$ deactivate
 lazenca0x0@ubuntu:~/Documents/angr$ workon angr
@@ -70,12 +70,12 @@ lazenca0x0@ubuntu:~/Documents/angr$
 
 #### **Source code**
 
-* **해당 코드는 다음과 같은 기능을 합니다.**
-  + fgets() 함수를 이용해 사용자로 부터 값을 입력 받습니다.
-    - 입력 받는 값의 최대 길이는 255입니다.
-  + 입력받은 값은 sub\_4006FD() 함수로 전달 되며, 해당 함수의 return 값에 의해 다음과 같은 문장이 출력됩니다.
-    - 참 일 경우 : "Incorrect password!"
-    - 거짓 일 경우 : "Nice!"
+* **This code performs the following functions:**
+  + Takes user input using the fgets() function.
+    - The maximum length of the input is 255 bytes.
+  + Passes the received input to the sub_4006FD() function, which outputs different messages depending on the return value:
+    - If true: "Incorrect password!"
+    - If false: "Nice!"
 
 ```c title="main()"
 signed __int64 __fastcall main(__int64 a1, char **a2, char **a3)
@@ -109,13 +109,13 @@ signed __int64 __fastcall main(__int64 a1, char **a2, char **a3)
 }
 ```
 
-#### **Find addresss of function**
+#### **Find address of function**
 
-* **다음과 같이 angr에서 사용될 주소를 찾습니다.**
-  + angr의 Symbolic execution을 이용해 Password를 찾기 위해 다음과 같은 주소 값이 필요합니다.
-  + 0x400864 영역의 jmp 명령어에 의해 다음과 같이 이동합니다.
-    - Password가 틀릴 경우 이동하는 주소 : 0x400855
-    - Password가 정확할 경우 이동하는 주소 : 0x400844
+* **Find the target addresses to be used in angr as follows:**
+  + The following address values are required to find the password using symbolic execution in angr:
+  + Execution branches depending on the comparison before jumping:
+    - Address when password is incorrect: 0x400855
+    - Address when password is correct: 0x400844
 
 ```bash title="Disassemble main"
 gdb-peda$ x/36i 0x4007E8
@@ -160,13 +160,13 @@ gdb-peda$
 
 #### **Source code**
 
-* **다음과 같이 코드를 작성 할 수 있습니다.**
-  + "r100" 바이너리를 분석하기 위해 우선 angr.Project() API를 이용해 Project를 생성합니다.
-  + path\_group() API를 이용해 새로운 Path group를 생성합니다.
-  + explore() API 이용해 찾을 경로와 피해야 할 경로를 설정합니다.
-    - 찾을 경로 : find=0x400844
-    - 피해야 할 경로 : avoid=0x400855
-  + explore() API를 이용해 0x400844 영역으로 가기 위한 값을 확인합니다.
+* **You can write the script as follows:**
+  + First, create a Project using the angr.Project() API to analyze the "r100" binary.
+  + Create a new PathGroup using the path_group() API.
+  + Configure the find and avoid paths using the explore() API:
+    - Target path: find=0x400844
+    - Avoid path: avoid=0x400855
+  + Use the explore() API to find the input value required to reach the 0x400844 address.
 
 ```python title="Symbolic Execution - Using Address"
 import os
@@ -183,7 +183,7 @@ print path_group.found[0]
 print path_group.found[0].state.posix.dumps(0)
 ```
 
-* 다음과 같이 주소가 아닌 문자로 찾을 경로를 설정할 수 도 있습니다.
+* You can also specify the target path using a string condition rather than an address:
 
 ```python title="Symbolic Execution - Using String"
 import os
@@ -201,7 +201,7 @@ print path_group.found[0].state.posix.dumps(0)
 
 #### **Result**
 
-* 다음과 같이 스크립트를 이용해 password값을 확인 할 수 있습니다.
+* You can retrieve the password value using the script as shown below:
 
 ```bash title="Execution result"
 (angr) lazenca0x0@ubuntu:~/Documents/angr$ python symbolicECE.py 
@@ -216,14 +216,14 @@ Nice!
 
 ### angr with it
 
-* **다음과 같은 Tool들을 angr과 같이 사용할 수 있습니다.**
+* **The following tools can be used in conjunction with angr:**
 
-| Tool |  | github |
+| Tool | Description | github |
 | --- | --- | --- |
-| angrop | 자동으로 gadget을 찾고 chain을 생성합니다. | <https://github.com/salls/angrop> |
-| Patcherex | 자동으로 바이너리 패치를 작성하는데 사용됩니다. | <https://github.com/shellphish/patcherex> |
-| rex | 자동으로 Exploit을 생성하는데 사용됩니다. | <https://github.com/shellphish/rex> |
-| Driller | angr을 이용해 AFL의 성능을 향상 시켰습니다. | <https://github.com/shellphish/driller> |
+| angrop | Automatically finds gadgets and builds ROP chains. | <https://github.com/salls/angrop> |
+| Patcherex | Used to automatically generate binary patches. | <https://github.com/shellphish/patcherex> |
+| rex | Used for automated exploit generation. | <https://github.com/shellphish/rex> |
+| Driller | Augments AFL fuzzing performance using angr. | <https://github.com/shellphish/driller> |
 
 ## **Related Sites**
 

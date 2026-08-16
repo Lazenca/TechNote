@@ -6,20 +6,20 @@ sidebar_position: 1
 
 ## **Boofuzz**
 
-* **Boofuzz는 Network Protocol Fuzzing framework 입니다.**
-* **Boofuzz는 Sully fuzzing framework의 후속 모델입니다.**
-* ****Boofuzz는 Sully의 중요한 요소를 모두 포함하고 있습니다.****
-  + 쉽고 빠른 데이터 생성
-  + 계측 - 일명 고장 탐지
-  + 실패 후 대상 재설정
-  + 테스트 데이터 기록
-* ****Boofuzz는 다음과 같이 Sully와 다른 기능도 제공합니다.****  
-  + 쉬운 설치
-  + 임의의 통신 매체 지원
-  + 시리얼 퍼징, 이더넷 및 IP 계층, UDP 브로드 캐스트를 지원
-  + 테스트 데이터를 일관되고 철저하고 명확하게 기록합니다.
-  + 테스트 결과 CSV로 내보내기.
-  + 확장 가능한 계측 및 고장 감지
+* **Boofuzz ​​is a Network Protocol Fuzzing framework.**
+* **Boofuzz ​​is the successor to the Sully fuzzing framework.**
+* ****Boofuzz ​​includes all the important elements of Sully****
+  + Easy and fast data generation
+  + Metrology – aka fault detection
+  + Reset target after failure
+  + Test data recording
+* ****Boofuzz ​​also offers other features than Sully, including:****  
+  + easy installation
+  + Supports arbitrary communication media
+  + Supports serial fuzzing, Ethernet and IP layers, UDP broadcast
+  + Record test data consistently, thoroughly, and clearly.
+  + Export test results to CSV.
+  + Scalable instrumentation and fault detection
 
 ### Install
 

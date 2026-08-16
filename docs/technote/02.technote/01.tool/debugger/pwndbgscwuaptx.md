@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ## **Site**
 
-* gdb-peda에 Heap을 분석하기 위한 기능을 추가해줍니다.
+* Adds features for analyzing the heap to gdb-peda.
 * <https://github.com/scwuaptx/Pwngdb>
 
 ## **Install**

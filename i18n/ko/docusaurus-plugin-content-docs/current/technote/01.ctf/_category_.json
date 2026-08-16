@@ -1,0 +1,11 @@
+{
+  "label": "01.CTF",
+  "position": 1,
+  "key": "technote_01.ctf",
+  "link": {
+    "type": "generated-index",
+    "slug": "/category/01ctf",
+    "title": "01.CTF",
+    "description": "취약점 연구 및 CTF 문제 풀이"
+  }
+}
