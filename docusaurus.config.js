@@ -28,6 +28,13 @@ const config = {
         content: '1',
       },
     },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'naver-site-verification',
+        content: '406a539707ccca1f0a2743d07c1afa0baee2c931',
+      },
+    },
   ],
 
   onBrokenLinks: 'warn',
